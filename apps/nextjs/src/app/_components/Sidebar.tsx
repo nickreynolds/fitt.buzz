@@ -30,13 +30,6 @@ export function Sidebar({ isOpen }: SidebarProps) {
             <span>Home</span>
           </Link>
           <Link
-            href="/activity"
-            className="flex items-center gap-2 rounded-md p-2 hover:bg-accent"
-          >
-            <Activity className="h-5 w-5" />
-            <span>Activity</span>
-          </Link>
-          <Link
             href="/settings"
             className="flex items-center gap-2 rounded-md p-2 hover:bg-accent"
           >

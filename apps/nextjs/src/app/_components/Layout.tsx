@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
@@ -11,6 +11,21 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [prevScreenWidth, setPrevScreenWidth] = useState(0);
+
+  // This is to hide the sidebar when going from small to big screen so that text is hidden correctly during sidebar transition
+  useEffect(() => {
+    const handleResize = () => {
+      const screenWidth = window.innerWidth;
+      if (screenWidth > 768 && prevScreenWidth <= 768) {
+        setIsSidebarOpen(false);
+      }
+      setPrevScreenWidth(screenWidth);
+    };
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.removeEventListener("resize", handleResize);
+  }, [prevScreenWidth]);
 
   return (
     <div className="min-h-screen bg-background">

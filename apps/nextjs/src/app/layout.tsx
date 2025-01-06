@@ -3,10 +3,11 @@ import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 
 import { cn } from "@acme/ui";
-import { ThemeProvider, ThemeToggle } from "@acme/ui/theme";
+import { ThemeProvider } from "@acme/ui/theme";
 import { Toaster } from "@acme/ui/toast";
 
 import { TRPCReactProvider } from "~/trpc/react";
+import { AuthShowcase } from "./_components/auth-showcase";
 
 import "~/app/globals.css";
 
@@ -51,7 +52,9 @@ export default function RootLayout(props: { children: React.ReactNode }) {
         )}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <TRPCReactProvider>{props.children}</TRPCReactProvider>
+          <TRPCReactProvider>
+            <AuthShowcase>{props.children}</AuthShowcase>
+          </TRPCReactProvider>
           <Toaster />
         </ThemeProvider>
       </body>

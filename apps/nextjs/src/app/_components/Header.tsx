@@ -10,7 +10,7 @@ export function Header({ onMenuClick }: HeaderProps) {
       <div className="flex h-full items-center justify-between px-4">
         <button
           onClick={onMenuClick}
-          className="rounded-md p-2 hover:bg-accent lg:hidden"
+          className="rounded-md p-2 hover:bg-accent md:hidden"
           aria-label="Toggle menu"
         >
           <Menu className="h-6 w-6" />

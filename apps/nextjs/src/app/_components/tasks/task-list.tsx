@@ -1,8 +1,12 @@
 "use client";
 
+import { CSSTransition, TransitionGroup } from "react-transition-group";
+
 import { api } from "~/trpc/react";
 import { TaskCard } from "./task-card";
 import { TaskCardSkeleton } from "./task-skeleton";
+
+import "./transitions.css";
 
 export function TaskList() {
   const [tasks] = api.task.getAllMyActiveTasks.useSuspenseQuery();
@@ -23,9 +27,15 @@ export function TaskList() {
 
   return (
     <div className="flex w-full flex-col gap-4">
-      {tasks.map((task) => {
-        return <TaskCard key={task.id} task={task} />;
-      })}
+      <TransitionGroup component={null}>
+        {tasks.map((task) => (
+          <CSSTransition key={task.id} timeout={300} classNames="task">
+            <div>
+              <TaskCard task={task} />
+            </div>
+          </CSSTransition>
+        ))}
+      </TransitionGroup>
     </div>
   );
 }

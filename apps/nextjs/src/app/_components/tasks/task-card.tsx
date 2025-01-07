@@ -61,10 +61,9 @@ export function TaskCard({ task, isRecurring }: TaskCardProps) {
             onClick={() => setIsDetailsOpen(true)}
           >
             {task.title}
+            {isRecurring && <span className="text-muted-foreground"> ↻</span>}
           </h2>
-          {isRecurring && (
-            <span className="text-sm text-muted-foreground">↻ Recurring</span>
-          )}
+
           {getTimeStatus(task.nextDue)}
         </div>
         <p className="mt-2 text-sm">{task.description}</p>

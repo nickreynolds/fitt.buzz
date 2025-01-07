@@ -69,9 +69,48 @@ export function CreateTaskDialogForm({
 
   const utils = api.useUtils();
   const createTask = api.task.createTask.useMutation({
-    onSuccess: async () => {
+    onMutate: (data) => {
+      console.log("onMutate data", data);
+      if (data.frequencyHours) {
+        const recurringTask = {
+          id: "1",
+          title: data.title,
+          description: data.description,
+          nextDue: data.nextDue,
+          frequencyHours: data.frequencyHours,
+          lastCompleted: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          creatorId: "1",
+        };
+        const recurringTasks = utils.task.getRecurringTasks.getData();
+
+        if (recurringTasks) {
+          utils.task.getRecurringTasks.setData(undefined, [
+            ...recurringTasks,
+            recurringTask,
+          ]);
+        }
+      } else {
+        const task = {
+          id: "1",
+          title: data.title,
+          description: data.description,
+          nextDue: data.nextDue,
+          completed: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          creatorId: "1",
+        };
+        const tasks = utils.task.getAllMyActiveTasks.getData();
+        if (tasks) {
+          utils.task.getAllMyActiveTasks.setData(undefined, [...tasks, task]);
+        }
+      }
       form.reset();
       onOpenChange(false);
+    },
+    onSuccess: async () => {
       await Promise.all([
         utils.task.getAllMyActiveTasks.invalidate(),
         utils.task.getRecurringTasks.invalidate(),
@@ -173,12 +212,7 @@ export function CreateTaskDialogForm({
                 <FormItem>
                   <FormLabel>Due Date</FormLabel>
                   <FormControl>
-                    <Input
-                      type="datetime-local"
-                      {...field}
-                      // value={new Date(field.value).toISOString().slice(0, 16)}
-                      // onChange={(e) => field.onChange(new Date(e.target.value))}
-                    />
+                    <Input type="datetime-local" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

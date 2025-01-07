@@ -1,6 +1,10 @@
 "use client";
 
-import { formatDistanceToNow, isPast } from "date-fns";
+import {
+  formatDistanceToNow,
+  formatDistanceToNowStrict,
+  isPast,
+} from "date-fns";
 import { Check } from "lucide-react";
 
 import type { RouterOutputs } from "@acme/api";
@@ -15,7 +19,7 @@ function getTimeStatus(date: Date) {
   }
   return (
     <span className="text-muted-foreground">
-      Due in {formatDistanceToNow(date)}
+      Due in {formatDistanceToNowStrict(date, { unit: "hour" })}
     </span>
   );
 }

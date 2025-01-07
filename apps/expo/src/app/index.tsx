@@ -1,53 +1,44 @@
 import { useState } from "react";
 import { Button, Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Link, Stack } from "expo-router";
+import { Stack } from "expo-router";
 import { FlashList } from "@shopify/flash-list";
+import { Check } from "lucide-react-native";
 
 import type { RouterOutputs } from "~/utils/api";
 import { api } from "~/utils/api";
 import { useSignIn, useSignOut, useUser } from "~/utils/auth";
 
-function PostCard(props: {
-  post: RouterOutputs["post"]["all"][number];
-  onDelete: () => void;
+function TaskCard(props: {
+  task: RouterOutputs["task"]["getAllMyActiveTasks"][number];
+  onComplete: () => void;
 }) {
   return (
     <View className="flex flex-row rounded-lg bg-muted p-4">
       <View className="flex-grow">
-        <Link
-          asChild
-          href={{
-            pathname: "/post/[id]",
-            params: { id: props.post.id },
-          }}
-        >
-          <Pressable className="">
-            <Text className="text-xl font-semibold text-primary">
-              {props.post.title}
-            </Text>
-            <Text className="mt-2 text-foreground">{props.post.content}</Text>
-          </Pressable>
-        </Link>
+        <Text className="text-xl font-semibold text-primary">
+          {props.task.title}
+        </Text>
+        <Text className="mt-2 text-foreground">{props.task.description}</Text>
       </View>
-      <Pressable onPress={props.onDelete}>
-        <Text className="font-bold uppercase text-primary">Delete</Text>
+      <Pressable onPress={props.onComplete}>
+        <Check className="h-6 w-6" stroke="#5B65E9" strokeWidth={2} />
       </Pressable>
     </View>
   );
 }
 
-function CreatePost() {
+function CreateTask() {
   const utils = api.useUtils();
 
   const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [description, setDescription] = useState("");
 
-  const { mutate, error } = api.post.create.useMutation({
+  const { mutate, error } = api.task.createTask.useMutation({
     async onSuccess() {
       setTitle("");
-      setContent("");
-      await utils.post.all.invalidate();
+      setDescription("");
+      await utils.task.getAllMyActiveTasks.invalidate();
     },
   });
 
@@ -57,7 +48,7 @@ function CreatePost() {
         className="items-center rounded-md border border-input bg-background px-3 text-lg leading-[1.25] text-foreground"
         value={title}
         onChangeText={setTitle}
-        placeholder="Title"
+        placeholder="Task Title"
       />
       {error?.data?.zodError?.fieldErrors.title && (
         <Text className="mb-2 text-destructive">
@@ -66,13 +57,13 @@ function CreatePost() {
       )}
       <TextInput
         className="items-center rounded-md border border-input bg-background px-3 text-lg leading-[1.25] text-foreground"
-        value={content}
-        onChangeText={setContent}
-        placeholder="Content"
+        value={description}
+        onChangeText={setDescription}
+        placeholder="Task Description"
       />
-      {error?.data?.zodError?.fieldErrors.content && (
+      {error?.data?.zodError?.fieldErrors.description && (
         <Text className="mb-2 text-destructive">
-          {error.data.zodError.fieldErrors.content}
+          {error.data.zodError.fieldErrors.description}
         </Text>
       )}
       <Pressable
@@ -80,15 +71,15 @@ function CreatePost() {
         onPress={() => {
           mutate({
             title,
-            content,
+            description,
           });
         }}
       >
-        <Text className="text-foreground">Create</Text>
+        <Text className="text-foreground">Create Task</Text>
       </Pressable>
       {error?.data?.code === "UNAUTHORIZED" && (
         <Text className="mt-2 text-destructive">
-          You need to be logged in to create a post
+          You need to be logged in to create a task
         </Text>
       )}
     </View>
@@ -117,42 +108,42 @@ function MobileAuth() {
 export default function Index() {
   const utils = api.useUtils();
 
-  const postQuery = api.post.all.useQuery();
+  const taskQuery = api.task.getAllMyActiveTasks.useQuery();
 
-  const deletePostMutation = api.post.delete.useMutation({
-    onSettled: () => utils.post.all.invalidate(),
+  const completeTaskMutation = api.task.completeTask.useMutation({
+    onSettled: () => utils.task.getAllMyActiveTasks.invalidate(),
   });
 
   return (
     <SafeAreaView className="bg-background">
       {/* Changes page title visible on the header */}
-      <Stack.Screen options={{ title: "Home Page" }} />
+      <Stack.Screen options={{ title: "Tasks" }} />
       <View className="h-full w-full bg-background p-4">
         <Text className="pb-2 text-center text-5xl font-bold text-foreground">
-          Create <Text className="text-primary">T3</Text> Turbo
+          fitt.<Text className="text-primary">buzz</Text>
         </Text>
 
         <MobileAuth />
 
         <View className="py-2">
           <Text className="font-semibold italic text-primary">
-            Press on a post
+            Tap the check to complete a task
           </Text>
         </View>
 
         <FlashList
-          data={postQuery.data}
+          data={taskQuery.data}
           estimatedItemSize={20}
           ItemSeparatorComponent={() => <View className="h-2" />}
           renderItem={(p) => (
-            <PostCard
-              post={p.item}
-              onDelete={() => deletePostMutation.mutate(p.item.id)}
+            <TaskCard
+              task={p.item}
+              onComplete={() => completeTaskMutation.mutate({ id: p.item.id })}
             />
           )}
         />
 
-        <CreatePost />
+        <CreateTask />
       </View>
     </SafeAreaView>
   );

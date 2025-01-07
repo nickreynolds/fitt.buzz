@@ -16,11 +16,24 @@ export const taskRouter = {
     }),
   completeTask: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
-    .mutation(({ ctx, input }) => {
-      return ctx.db
+    .mutation(async ({ ctx, input }) => {
+      console.log("completeTask", input);
+
+      const task = await ctx.db.query.Task.findFirst({
+        where: eq(Task.id, input.id),
+      });
+
+      if (task?.creatorId !== ctx.session.user.id) {
+        throw new Error("You are not the owner of this task");
+      }
+
+      console.log("you own this task");
+      const res = await ctx.db
         .update(Task)
         .set({ completed: true })
         .where(eq(Task.id, input.id));
+      console.log("res", res);
+      return res;
     }),
   getAllMyTasks: protectedProcedure.query(({ ctx }) => {
     return ctx.db

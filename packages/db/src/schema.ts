@@ -30,7 +30,7 @@ export const Task = pgTable("task", (t) => ({
   createdAt: t.timestamp().defaultNow().notNull(),
   updatedAt: t
     .timestamp({ mode: "date", withTimezone: true })
-    .$onUpdateFn(() => sql`now()`),
+    .$onUpdateFn(() => new Date()),
   creatorId: t
     .uuid()
     .notNull()

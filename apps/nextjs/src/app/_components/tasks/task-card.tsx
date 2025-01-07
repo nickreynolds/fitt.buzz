@@ -1,11 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  formatDistanceToNow,
-  formatDistanceToNowStrict,
-  isPast,
-} from "date-fns";
+import { formatDistanceToNowStrict, isPast } from "date-fns";
 import { Check } from "lucide-react";
 
 import type { RouterOutputs } from "@acme/api";

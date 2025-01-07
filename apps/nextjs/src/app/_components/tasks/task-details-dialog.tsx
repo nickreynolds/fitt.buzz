@@ -38,7 +38,7 @@ export function TaskDetailsDialog({
           <div>
             <h3 className="text-sm font-medium">Description</h3>
             <p className="mt-1 text-muted-foreground">
-              {task.description || "No description provided"}
+              {task.description ?? "No description provided"}
             </p>
           </div>
 

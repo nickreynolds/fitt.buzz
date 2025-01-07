@@ -25,7 +25,12 @@ export function TaskCard(props: {
 }) {
   const utils = api.useUtils();
   const completeTask = api.task.completeTask.useMutation({
-    onSuccess: async () => {
+    onMutate: () => {
+      const tasks = utils.task.getAllMyActiveTasks.getData();
+      const updatedTasks = tasks?.filter((t) => t.id !== props.task.id);
+      utils.task.getAllMyActiveTasks.setData(undefined, updatedTasks);
+    },
+    onSettled: async () => {
       await utils.task.invalidate();
     },
     onError: (err) => {

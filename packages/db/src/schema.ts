@@ -26,6 +26,7 @@ export const Task = pgTable("task", (t) => ({
   id: t.uuid().notNull().primaryKey().defaultRandom(),
   title: t.varchar({ length: 256 }).notNull(),
   description: t.text().notNull(),
+  nextDue: t.timestamp({ mode: "date", withTimezone: true }).notNull(),
   completed: t.boolean().notNull().default(false),
   createdAt: t.timestamp().defaultNow().notNull(),
   updatedAt: t
@@ -39,7 +40,10 @@ export const Task = pgTable("task", (t) => ({
 
 export const CreateTaskSchema = createInsertSchema(Task, {
   title: z.string().max(256),
-  description: z.string().max(256),
+  description: z.string().max(256).optional(),
+  nextDue: z.coerce.date().refine((data) => data > new Date(), {
+    message: "Start date must be in the future",
+  }),
 }).omit({
   id: true,
   createdAt: true,
@@ -49,16 +53,17 @@ export const CreateTaskSchema = createInsertSchema(Task, {
 });
 
 export const RecurringTask = pgTable("recurring_task", (t) => ({
-  id: t.text().primaryKey(),
+  id: t.uuid().notNull().primaryKey().defaultRandom(),
   title: t.text().notNull(),
   description: t.text(),
-  completed: t.boolean().notNull().default(false),
   // Hours between occurrences
   frequencyHours: t.integer().notNull(),
-  lastCompleted: t.timestamp(),
-  nextDue: t.timestamp().notNull(),
+  lastCompleted: t.timestamp({ mode: "date", withTimezone: true }),
+  nextDue: t.timestamp({ mode: "date", withTimezone: true }).notNull(),
   createdAt: t.timestamp().notNull().defaultNow(),
-  updatedAt: t.timestamp().notNull().defaultNow(),
+  updatedAt: t
+    .timestamp({ mode: "date", withTimezone: true })
+    .$onUpdateFn(() => new Date()),
   creatorId: t
     .uuid()
     .notNull()
@@ -73,6 +78,9 @@ export const CreateRecurringTaskSchema = createInsertSchema(RecurringTask, {
   id: true,
   createdAt: true,
   updatedAt: true,
+  creatorId: true,
+  lastCompleted: true,
+  nextDue: true,
 });
 
 export const User = pgTable("user", (t) => ({

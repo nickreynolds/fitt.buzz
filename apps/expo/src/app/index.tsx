@@ -32,12 +32,10 @@ function CreateTask() {
   const utils = api.useUtils();
 
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
 
   const { mutate, error } = api.task.createTask.useMutation({
     async onSuccess() {
       setTitle("");
-      setDescription("");
       await utils.task.getAllMyActiveTasks.invalidate();
     },
   });
@@ -55,23 +53,12 @@ function CreateTask() {
           {error.data.zodError.fieldErrors.title}
         </Text>
       )}
-      <TextInput
-        className="items-center rounded-md border border-input bg-background px-3 text-lg leading-[1.25] text-foreground"
-        value={description}
-        onChangeText={setDescription}
-        placeholder="Task Description"
-      />
-      {error?.data?.zodError?.fieldErrors.description && (
-        <Text className="mb-2 text-destructive">
-          {error.data.zodError.fieldErrors.description}
-        </Text>
-      )}
       <Pressable
         className="flex items-center rounded bg-primary p-2"
         onPress={() => {
           mutate({
             title,
-            description,
+            description: "",
           });
         }}
       >

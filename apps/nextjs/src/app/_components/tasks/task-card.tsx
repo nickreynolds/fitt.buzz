@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   formatDistanceToNow,
   formatDistanceToNowStrict,
@@ -12,6 +13,7 @@ import { Button } from "@acme/ui/button";
 import { toast } from "@acme/ui/toast";
 
 import { api } from "~/trpc/react";
+import { TaskDetailsDialog } from "./task-details-dialog";
 
 function getTimeStatus(date: Date) {
   if (isPast(date)) {
@@ -48,12 +50,18 @@ export function TaskCard({ task, isRecurring }: TaskCardProps) {
       );
     },
   });
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   return (
     <div className="flex w-full flex-row rounded-lg bg-muted p-4">
       <div className="flex-grow">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-primary">{task.title}</h2>
+          <h2
+            className="text-2xl font-bold text-primary"
+            onClick={() => setIsDetailsOpen(true)}
+          >
+            {task.title}
+          </h2>
           {isRecurring && (
             <span className="text-sm text-muted-foreground">↻ Recurring</span>
           )}
@@ -70,6 +78,11 @@ export function TaskCard({ task, isRecurring }: TaskCardProps) {
           <Check className="h-5 w-5" />
         </Button>
       </div>
+      <TaskDetailsDialog
+        open={isDetailsOpen}
+        onOpenChange={setIsDetailsOpen}
+        task={task}
+      />
     </div>
   );
 }

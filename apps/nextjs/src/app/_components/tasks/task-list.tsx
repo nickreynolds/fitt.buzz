@@ -42,7 +42,7 @@ export function TaskList() {
     <div className="flex w-full flex-col gap-4">
       <TransitionGroup component={null}>
         {allTasks.map((task) => (
-          <CSSTransition key={task.id} timeout={300} classNames="task">
+          <CSSTransition key={task.title} timeout={300} classNames="task">
             <div>
               <TaskCard task={task} isRecurring={task.frequencyHours !== 0} />
             </div>

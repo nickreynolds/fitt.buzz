@@ -12,24 +12,26 @@ export default function HomePage() {
   return (
     <HydrateClient>
       <Layout>
-        <main className="container py-16">
-          <div className="flex flex-col items-center justify-center gap-4">
-            <div className="w-full max-w-2xl overflow-y-scroll">
+        <div className="flex min-h-full w-full flex-col items-center px-4 py-16 sm:px-6 lg:px-8">
+          <div className="w-full">
+            <div className="mx-auto w-full min-w-[33%] md:w-3/4 lg:w-2/3">
               <CreateTaskForm />
-              <Suspense
-                fallback={
-                  <div className="flex w-full flex-col gap-4">
-                    <TaskCardSkeleton />
-                    <TaskCardSkeleton />
-                    <TaskCardSkeleton />
-                  </div>
-                }
-              >
-                <TaskList />
-              </Suspense>
+              <div className="mt-8">
+                <Suspense
+                  fallback={
+                    <div className="flex w-full flex-col gap-4">
+                      <TaskCardSkeleton />
+                      <TaskCardSkeleton />
+                      <TaskCardSkeleton />
+                    </div>
+                  }
+                >
+                  <TaskList />
+                </Suspense>
+              </div>
             </div>
           </div>
-        </main>
+        </div>
       </Layout>
     </HydrateClient>
   );

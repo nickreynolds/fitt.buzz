@@ -31,9 +31,9 @@ export function Layout({ children }: LayoutProps) {
     <div className="min-h-screen bg-background">
       <Header onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
       <Sidebar isOpen={isSidebarOpen} />
-      <div className="md:pl-16 lg:pl-64">
-        <div className="pt-16">{children}</div>
-      </div>
+      <main className="flex min-h-screen flex-col md:pl-16 lg:pl-64">
+        <div className="flex-1 pt-16">{children}</div>
+      </main>
     </div>
   );
 }

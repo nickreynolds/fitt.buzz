@@ -20,9 +20,5 @@ export async function AuthShowcase(props: { children: React.ReactNode }) {
     );
   }
 
-  return (
-    <div className="flex flex-col items-center justify-center gap-4">
-      <div className="flex flex-col items-center gap-4">{props.children}</div>
-    </div>
-  );
+  return <div>{props.children}</div>;
 }

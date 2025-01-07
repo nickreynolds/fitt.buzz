@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDistanceToNow, isPast } from "date-fns";
 import { Check } from "lucide-react";
 
 import type { RouterOutputs } from "@acme/api";
@@ -7,6 +8,17 @@ import { Button } from "@acme/ui/button";
 import { toast } from "@acme/ui/toast";
 
 import { api } from "~/trpc/react";
+
+function getTimeStatus(date: Date) {
+  if (isPast(date)) {
+    return <span className="text-destructive">Past due</span>;
+  }
+  return (
+    <span className="text-muted-foreground">
+      Due in {formatDistanceToNow(date)}
+    </span>
+  );
+}
 
 export function TaskCard(props: {
   task: RouterOutputs["task"]["getAllMyActiveTasks"][number];
@@ -28,7 +40,12 @@ export function TaskCard(props: {
   return (
     <div className="flex w-full flex-row rounded-lg bg-muted p-4">
       <div className="flex-grow">
-        <h2 className="text-2xl font-bold text-primary">{props.task.title}</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-primary">
+            {props.task.title}
+          </h2>
+          {getTimeStatus(props.task.nextDue)}
+        </div>
         <p className="mt-2 text-sm">{props.task.description}</p>
       </div>
       <div>

@@ -28,36 +28,28 @@ import { toast } from "@acme/ui/toast";
 import { api } from "~/trpc/react";
 
 export function CreateTaskDialogForm({
-  initialTitle,
   open,
   onOpenChange,
 }: {
-  initialTitle: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     new Date(),
   );
-  const [inputTitle, setInputTitle] = useState(initialTitle);
 
   console.log("selectedDate: ", selectedDate);
-  console.log("initialTitle: ", initialTitle);
-
-  // const form = useForm({
-  //   schema: CreateTaskSchema,
-  //   defaultValues: {
-  //     title: "",
-  //     description: "",
-  //     nextDue: new Date(),
-  //   },
-  // });
 
   const form = useForm({
-    schema: z.object({ title: z.string(), description: z.string() }),
+    schema: z.object({
+      title: z.string(),
+      description: z.string(),
+      nextDueISO: z.string(),
+    }),
     defaultValues: {
       title: "",
       description: "",
+      nextDueISO: new Date().toISOString(),
     },
   });
 
@@ -99,11 +91,7 @@ export function CreateTaskDialogForm({
           <Form {...form}>
             <form
               className="flex w-full max-w-2xl flex-col gap-4"
-              onSubmit={form.handleSubmit((data) => {
-                console.log("form1 data: ", data);
-                console.log("form.getValues(): ", form.getValues());
-                onOpenChange(true);
-              })}
+              onSubmit={handleSubmit}
             >
               <DialogHeader>
                 <DialogTitle>Create Task</DialogTitle>
@@ -119,13 +107,7 @@ export function CreateTaskDialogForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input
-                        {...field}
-                        type="text"
-                        defaultValue={initialTitle}
-                        key={initialTitle}
-                        // placeholder={initialTitle}
-                      />
+                      <Input {...field} type="text" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -139,22 +121,23 @@ export function CreateTaskDialogForm({
                   initialFocus
                 />
               </div>
-              {/* <FormField
+              <FormField
                 control={form.control}
-                name="nextDue"
+                name="nextDueISO"
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
                       <Input
                         {...field}
-                        type="date"
-                        value={selectedDate?.toISOString().slice(0, 10)}
+                        type="text"
+                        value={selectedDate?.toISOString()}
+                        defaultValue={selectedDate?.toISOString()}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
-              /> */}
+              />
               <FormField
                 control={form.control}
                 name="description"

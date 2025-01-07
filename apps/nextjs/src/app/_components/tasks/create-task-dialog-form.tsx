@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { format } from "date-fns";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@acme/ui/button";
-import { Calendar } from "@acme/ui/calendar";
+import { Checkbox } from "@acme/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -15,37 +16,54 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
-  useForm,
 } from "@acme/ui/form";
 import { Input } from "@acme/ui/input";
-import { toast } from "@acme/ui/toast";
+import { Label } from "@acme/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@acme/ui/select";
+import { Textarea } from "@acme/ui/textarea";
 
 import { api } from "~/trpc/react";
+
+const FREQUENCY_OPTIONS = [
+  { value: "24", label: "Daily" },
+  { value: "168", label: "Weekly" },
+  { value: "336", label: "Bi-weekly" },
+  { value: "720", label: "Monthly" },
+];
+
+interface CreateTaskDialogFormProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
 
 export function CreateTaskDialogForm({
   open,
   onOpenChange,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}) {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    new Date(),
-  );
+}: CreateTaskDialogFormProps) {
+  const [isRecurring, setIsRecurring] = useState(false);
 
-  console.log("selectedDate: ", selectedDate);
+  const zodSchema = z.object({
+    title: z.string(),
+    description: z.string(),
+    nextDueString: z.string(),
+    frequencyHours: z.number().optional(),
+  });
 
   const form = useForm({
-    schema: z.object({
-      title: z.string(),
-      description: z.string(),
-      nextDueISO: z.string(),
-    }),
+    resolver: zodResolver(zodSchema),
     defaultValues: {
       title: "",
       description: "",
-      nextDueISO: new Date().toISOString(),
+      nextDueString: new Date().toISOString(),
+      frequencyHours: 24,
     },
   });
 
@@ -53,107 +71,124 @@ export function CreateTaskDialogForm({
   const createTask = api.task.createTask.useMutation({
     onSuccess: async () => {
       form.reset();
-      setSelectedDate(new Date());
       onOpenChange(false);
-      await utils.task.invalidate();
-    },
-    onError: (err) => {
-      console.log("ERROR err: ", err);
-      toast.error(
-        err.data?.code === "UNAUTHORIZED"
-          ? "You must be logged in to create a task"
-          : "Failed to create task",
-      );
+      await Promise.all([
+        utils.task.getAllMyActiveTasks.invalidate(),
+        utils.task.getRecurringTasks.invalidate(),
+      ]);
     },
   });
 
-  const handleSubmit = form.handleSubmit(() => {
-    if (!selectedDate) {
-      toast.error("Please select a due date");
-      return;
-    }
-
-    console.log("submit selectedDate", selectedDate);
+  function onSubmit(data: z.infer<typeof zodSchema>) {
     createTask.mutate({
-      ...form.getValues(),
-      nextDue: selectedDate,
+      title: data.title,
+      description: data.description,
+      nextDue: new Date(data.nextDueString),
+      frequencyHours: isRecurring ? data.frequencyHours : undefined,
     });
-  });
+  }
 
   return (
-    <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent>
-          <Form {...form}>
-            <form
-              className="flex w-full max-w-2xl flex-col gap-4"
-              onSubmit={handleSubmit}
-            >
-              <DialogHeader>
-                <DialogTitle>Create Task</DialogTitle>
-              </DialogHeader>
-              {/* <Input
-                type="text"
-                value={inputTitle}
-                onChange={(e) => setInputTitle(e.target.value)}
-              /> */}
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create New Task</DialogTitle>
+        </DialogHeader>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="recurring"
+                checked={isRecurring}
+                onCheckedChange={(checked: boolean) => setIsRecurring(checked)}
+              />
+              <Label htmlFor="recurring">Recurring Task</Label>
+            </div>
+
+            {isRecurring && (
               <FormField
                 control={form.control}
-                name="title"
+                name="frequencyHours"
                 render={({ field }) => (
                   <FormItem>
-                    <FormControl>
-                      <Input {...field} type="text" />
-                    </FormControl>
+                    <FormLabel>Frequency</FormLabel>
+                    <Select
+                      onValueChange={(value: string) =>
+                        field.onChange(parseInt(value))
+                      }
+                      defaultValue={field.value.toString()}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select frequency" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {FREQUENCY_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <div className="py-4">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  initialFocus
-                />
-              </div>
-              <FormField
-                control={form.control}
-                name="nextDueISO"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="text"
-                        value={selectedDate?.toISOString()}
-                        defaultValue={selectedDate?.toISOString()}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input {...field} type="text" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit">
-                Create Task due{" "}
-                {selectedDate ? format(selectedDate, "PPP") : "..."}
-              </Button>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-    </>
+            )}
+
+            <FormField
+              control={form.control}
+              name="nextDueString"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Due Date</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="datetime-local"
+                      {...field}
+                      // value={new Date(field.value).toISOString().slice(0, 16)}
+                      // onChange={(e) => field.onChange(new Date(e.target.value))}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button type="submit">Create Task</Button>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -2,18 +2,30 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
 import { and, eq } from "@acme/db";
-import { CreateTaskSchema, Task } from "@acme/db/schema";
+import { RecurringTask, Task } from "@acme/db/schema";
 
 import { protectedProcedure } from "../trpc";
 
+const zodSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  nextDue: z.date(),
+  frequencyHours: z.number().optional(),
+});
+
 export const taskRouter = {
-  createTask: protectedProcedure
-    .input(CreateTaskSchema)
-    .mutation(({ ctx, input }) => {
-      return ctx.db
-        .insert(Task)
-        .values({ ...input, creatorId: ctx.session.user.id });
-    }),
+  createTask: protectedProcedure.input(zodSchema).mutation(({ ctx, input }) => {
+    if (input.frequencyHours && input.frequencyHours > 0) {
+      return ctx.db.insert(RecurringTask).values({
+        ...input,
+        creatorId: ctx.session.user.id,
+        frequencyHours: input.frequencyHours,
+      });
+    }
+    return ctx.db
+      .insert(Task)
+      .values({ ...input, creatorId: ctx.session.user.id });
+  }),
   completeTask: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
@@ -23,17 +35,42 @@ export const taskRouter = {
         where: eq(Task.id, input.id),
       });
 
-      if (task?.creatorId !== ctx.session.user.id) {
-        throw new Error("You are not the owner of this task");
+      if (task) {
+        if (task.creatorId !== ctx.session.user.id) {
+          throw new Error("You are not the owner of this task");
+        }
+
+        console.log("you own this task");
+        const res = await ctx.db
+          .update(Task)
+          .set({ completed: true })
+          .where(eq(Task.id, input.id));
+        console.log("res", res);
+        return res;
       }
 
-      console.log("you own this task");
-      const res = await ctx.db
-        .update(Task)
-        .set({ completed: true })
-        .where(eq(Task.id, input.id));
-      console.log("res", res);
-      return res;
+      const recurringTask = await ctx.db.query.RecurringTask.findFirst({
+        where: eq(RecurringTask.id, input.id),
+      });
+
+      if (recurringTask) {
+        if (recurringTask.creatorId !== ctx.session.user.id) {
+          throw new Error("You are not the owner of this task");
+        }
+
+        const res = await ctx.db
+          .update(RecurringTask)
+          .set({
+            lastCompleted: new Date(),
+            nextDue: new Date(
+              recurringTask.nextDue.getTime() +
+                recurringTask.frequencyHours * 60 * 60 * 1000,
+            ),
+          })
+          .where(eq(RecurringTask.id, input.id));
+        console.log("res", res);
+        return res;
+      }
     }),
   getAllMyTasks: protectedProcedure.query(({ ctx }) => {
     return ctx.db
@@ -48,6 +85,12 @@ export const taskRouter = {
         eq(Task.creatorId, ctx.session.user.id),
         eq(Task.completed, false),
       ),
+    });
+  }),
+  getRecurringTasks: protectedProcedure.query(async ({ ctx }) => {
+    return await ctx.db.query.RecurringTask.findMany({
+      where: (tasks, { eq }) => eq(tasks.creatorId, ctx.session.user.id),
+      orderBy: (tasks, { asc }) => [asc(tasks.nextDue)],
     });
   }),
 } satisfies TRPCRouterRecord;

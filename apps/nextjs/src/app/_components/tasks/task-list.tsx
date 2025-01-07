@@ -4,34 +4,47 @@ import { CSSTransition, TransitionGroup } from "react-transition-group";
 
 import { api } from "~/trpc/react";
 import { TaskCard } from "./task-card";
-import { TaskCardSkeleton } from "./task-skeleton";
 
 import "./transitions.css";
 
 export function TaskList() {
-  const [tasks] = api.task.getAllMyActiveTasks.useSuspenseQuery();
+  const { data: regularTasks, isLoading: isLoadingRegular } =
+    api.task.getAllMyActiveTasks.useQuery();
+  const { data: recurringTasks, isLoading: isLoadingRecurring } =
+    api.task.getRecurringTasks.useQuery();
 
-  if (tasks.length === 0) {
-    return (
-      <div className="relative flex w-full flex-col gap-4">
-        <TaskCardSkeleton pulse={false} />
-        <TaskCardSkeleton pulse={false} />
-        <TaskCardSkeleton pulse={false} />
+  const isLoading = isLoadingRegular || isLoadingRecurring;
 
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/10">
-          <p className="text-2xl font-bold text-white">No active tasks</p>
-        </div>
-      </div>
-    );
+  const regularTasksExtra = regularTasks?.map((t) => {
+    return { ...t, frequencyHours: 0 };
+  });
+
+  const recurringTasksExtra = recurringTasks?.map((t) => {
+    return { ...t, completed: false };
+  });
+
+  const allTasks = [
+    ...(regularTasksExtra ?? []),
+    ...(recurringTasksExtra ?? []),
+  ].sort(
+    (a, b) => new Date(a.nextDue).getTime() - new Date(b.nextDue).getTime(),
+  );
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (allTasks.length === 0) {
+    return <div>No tasks found</div>;
   }
 
   return (
     <div className="flex w-full flex-col gap-4">
       <TransitionGroup component={null}>
-        {tasks.map((task) => (
+        {allTasks.map((task) => (
           <CSSTransition key={task.id} timeout={300} classNames="task">
             <div>
-              <TaskCard task={task} />
+              <TaskCard task={task} isRecurring={task.frequencyHours !== 0} />
             </div>
           </CSSTransition>
         ))}

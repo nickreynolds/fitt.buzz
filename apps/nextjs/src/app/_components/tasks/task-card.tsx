@@ -20,14 +20,17 @@ function getTimeStatus(date: Date) {
   );
 }
 
-export function TaskCard(props: {
+interface TaskCardProps {
   task: RouterOutputs["task"]["getAllMyActiveTasks"][number];
-}) {
+  isRecurring?: boolean;
+}
+
+export function TaskCard({ task, isRecurring }: TaskCardProps) {
   const utils = api.useUtils();
   const completeTask = api.task.completeTask.useMutation({
     onMutate: () => {
       const tasks = utils.task.getAllMyActiveTasks.getData();
-      const updatedTasks = tasks?.filter((t) => t.id !== props.task.id);
+      const updatedTasks = tasks?.filter((t) => t.id !== task.id);
       utils.task.getAllMyActiveTasks.setData(undefined, updatedTasks);
     },
     onSettled: async () => {
@@ -46,18 +49,19 @@ export function TaskCard(props: {
     <div className="flex w-full flex-row rounded-lg bg-muted p-4">
       <div className="flex-grow">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-primary">
-            {props.task.title}
-          </h2>
-          {getTimeStatus(props.task.nextDue)}
+          <h2 className="text-2xl font-bold text-primary">{task.title}</h2>
+          {isRecurring && (
+            <span className="text-sm text-muted-foreground">↻ Recurring</span>
+          )}
+          {getTimeStatus(task.nextDue)}
         </div>
-        <p className="mt-2 text-sm">{props.task.description}</p>
+        <p className="mt-2 text-sm">{task.description}</p>
       </div>
       <div>
         <Button
           variant="ghost"
           className="cursor-pointer text-sm font-bold uppercase text-primary hover:bg-transparent hover:text-white"
-          onClick={() => completeTask.mutate({ id: props.task.id })}
+          onClick={() => completeTask.mutate({ id: task.id })}
         >
           <Check className="h-5 w-5" />
         </Button>

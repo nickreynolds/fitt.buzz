@@ -25,7 +25,7 @@ export const CreatePostSchema = createInsertSchema(Post, {
 export const Task = pgTable("task", (t) => ({
   id: t.uuid().notNull().primaryKey().defaultRandom(),
   title: t.varchar({ length: 256 }).notNull(),
-  description: t.text().notNull(),
+  description: t.text(),
   nextDue: t.timestamp({ mode: "date", withTimezone: true }).notNull(),
   completed: t.boolean().notNull().default(false),
   createdAt: t.timestamp().defaultNow().notNull(),
@@ -75,13 +75,13 @@ export const CreateRecurringTaskSchema = createInsertSchema(RecurringTask, {
   title: z.string().max(256),
   description: z.string().max(256),
   frequencyHours: z.number(),
+  nextDue: z.date(),
 }).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
   creatorId: true,
   lastCompleted: true,
-  nextDue: true,
 });
 
 export const User = pgTable("user", (t) => ({

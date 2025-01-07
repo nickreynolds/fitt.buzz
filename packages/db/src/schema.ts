@@ -40,10 +40,11 @@ export const Task = pgTable("task", (t) => ({
 
 export const CreateTaskSchema = createInsertSchema(Task, {
   title: z.string().max(256),
-  description: z.string().max(256).optional(),
-  nextDue: z.coerce.date().refine((data) => data > new Date(), {
-    message: "Start date must be in the future",
-  }),
+  description: z.string().max(256),
+  // nextDue: z.coerce.date().refine((data) => data > new Date(), {
+  //   message: "nextDue must be in the future",
+  // }),
+  nextDue: z.date(),
 }).omit({
   id: true,
   createdAt: true,

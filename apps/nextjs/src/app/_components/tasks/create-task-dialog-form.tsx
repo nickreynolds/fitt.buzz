@@ -1,16 +1,12 @@
-"use client";
-
 import { useState } from "react";
 import { format } from "date-fns";
 import { z } from "zod";
 
-import { CreateTaskSchema } from "@acme/db/schema";
 import { Button } from "@acme/ui/button";
 import { Calendar } from "@acme/ui/calendar";
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@acme/ui/dialog";

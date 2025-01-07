@@ -22,6 +22,57 @@ export const CreatePostSchema = createInsertSchema(Post, {
   updatedAt: true,
 });
 
+export const Task = pgTable("task", (t) => ({
+  id: t.uuid().notNull().primaryKey().defaultRandom(),
+  title: t.varchar({ length: 256 }).notNull(),
+  description: t.text().notNull(),
+  completed: t.boolean().notNull().default(false),
+  createdAt: t.timestamp().defaultNow().notNull(),
+  updatedAt: t
+    .timestamp({ mode: "date", withTimezone: true })
+    .$onUpdateFn(() => sql`now()`),
+  creatorId: t
+    .uuid()
+    .notNull()
+    .references(() => User.id),
+}));
+
+export const CreateTaskSchema = createInsertSchema(Task, {
+  title: z.string().max(256),
+  description: z.string().max(256),
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const RecurringTask = pgTable("recurring_task", (t) => ({
+  id: t.text().primaryKey(),
+  title: t.text().notNull(),
+  description: t.text(),
+  completed: t.boolean().notNull().default(false),
+  // Hours between occurrences
+  frequencyHours: t.integer().notNull(),
+  lastCompleted: t.timestamp(),
+  nextDue: t.timestamp().notNull(),
+  createdAt: t.timestamp().notNull().defaultNow(),
+  updatedAt: t.timestamp().notNull().defaultNow(),
+  creatorId: t
+    .uuid()
+    .notNull()
+    .references(() => User.id),
+}));
+
+export const CreateRecurringTaskSchema = createInsertSchema(RecurringTask, {
+  title: z.string().max(256),
+  description: z.string().max(256),
+  frequencyHours: z.number(),
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const User = pgTable("user", (t) => ({
   id: t.uuid().notNull().primaryKey().defaultRandom(),
   name: t.varchar({ length: 255 }),

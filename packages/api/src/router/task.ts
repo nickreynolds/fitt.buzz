@@ -10,7 +10,9 @@ export const taskRouter = {
   createTask: protectedProcedure
     .input(CreateTaskSchema)
     .mutation(({ ctx, input }) => {
-      return ctx.db.insert(Task).values(input);
+      return ctx.db
+        .insert(Task)
+        .values({ ...input, creatorId: ctx.session.user.id });
     }),
   completeTask: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))

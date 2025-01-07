@@ -127,7 +127,7 @@ export function TaskCard(props: {
   });
 
   return (
-    <div className="flex flex-row rounded-lg bg-muted p-4">
+    <div className="flex w-full flex-row rounded-lg bg-muted p-4">
       <div className="flex-grow">
         <h2 className="text-2xl font-bold text-primary">{props.task.title}</h2>
         <p className="mt-2 text-sm">{props.task.description}</p>

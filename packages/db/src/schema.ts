@@ -44,6 +44,8 @@ export const CreateTaskSchema = createInsertSchema(Task, {
   id: true,
   createdAt: true,
   updatedAt: true,
+  completed: true,
+  creatorId: true,
 });
 
 export const RecurringTask = pgTable("recurring_task", (t) => ({

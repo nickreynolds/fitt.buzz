@@ -31,9 +31,29 @@ export function TaskCard({ task, isRecurring }: TaskCardProps) {
   const utils = api.useUtils();
   const completeTask = api.task.completeTask.useMutation({
     onMutate: () => {
+      console.log("on mutate.");
+
+      // remove regular task if found
       const tasks = utils.task.getAllMyActiveTasks.getData();
       const updatedTasks = tasks?.filter((t) => t.id !== task.id);
       utils.task.getAllMyActiveTasks.setData(undefined, updatedTasks);
+
+      // bump recurring task if found
+      const recurringTasks = utils.task.getRecurringTasks.getData();
+      const recurringTask = recurringTasks?.find((t) => t.id === task.id);
+      if (recurringTask) {
+        const updatedRecurringTask = {
+          ...recurringTask,
+          nextDue: new Date(
+            recurringTask.nextDue.getTime() +
+              recurringTask.frequencyHours * 60 * 60 * 1000,
+          ),
+        };
+        const updatedRecurringTasks = recurringTasks?.map((t) =>
+          t.id === task.id ? updatedRecurringTask : t,
+        );
+        utils.task.getRecurringTasks.setData(undefined, updatedRecurringTasks);
+      }
     },
     onSettled: async () => {
       await utils.task.invalidate();

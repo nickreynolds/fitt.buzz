@@ -71,6 +71,8 @@ export const taskRouter = {
         console.log("res", res);
         return res;
       }
+
+      throw new Error("Task not found");
     }),
   getAllMyTasks: protectedProcedure.query(({ ctx }) => {
     return ctx.db
@@ -93,4 +95,35 @@ export const taskRouter = {
       orderBy: (tasks, { asc }) => [asc(tasks.nextDue)],
     });
   }),
+  deleteTask: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      // First try to find and delete a regular task
+      const task = await ctx.db.query.Task.findFirst({
+        where: eq(Task.id, input.id),
+      });
+
+      if (task) {
+        if (task.creatorId !== ctx.session.user.id) {
+          throw new Error("You are not the owner of this task");
+        }
+        return await ctx.db.delete(Task).where(eq(Task.id, input.id));
+      }
+
+      // If no regular task found, try to find and delete a recurring task
+      const recurringTask = await ctx.db.query.RecurringTask.findFirst({
+        where: eq(RecurringTask.id, input.id),
+      });
+
+      if (recurringTask) {
+        if (recurringTask.creatorId !== ctx.session.user.id) {
+          throw new Error("You are not the owner of this task");
+        }
+        return await ctx.db
+          .delete(RecurringTask)
+          .where(eq(RecurringTask.id, input.id));
+      }
+
+      throw new Error("Task not found");
+    }),
 } satisfies TRPCRouterRecord;

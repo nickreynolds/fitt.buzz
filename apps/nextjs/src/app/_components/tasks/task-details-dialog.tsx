@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { Trash2 } from "lucide-react";
 
 import { Button } from "@acme/ui/button";
 import {
@@ -7,11 +8,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@acme/ui/dialog";
+import { toast } from "@acme/ui/toast";
+
+import { api } from "~/trpc/react";
 
 interface TaskDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   task: {
+    id: string;
     title: string;
     description: string | null;
     nextDue: Date;
@@ -25,7 +30,37 @@ export function TaskDetailsDialog({
   onOpenChange,
   task,
 }: TaskDetailsDialogProps) {
+  const utils = api.useUtils();
   const isRecurring = typeof task.frequencyHours !== "undefined";
+
+  const deleteTask = api.task.deleteTask.useMutation({
+    onMutate: () => {
+      const tasks = utils.task.getAllMyActiveTasks.getData();
+      const updatedTasks = tasks?.filter((t) => t.id !== task.id);
+      utils.task.getAllMyActiveTasks.setData(undefined, updatedTasks);
+
+      const recurringTasks = utils.task.getRecurringTasks.getData();
+      const updatedRecurringTasks = recurringTasks?.filter(
+        (t) => t.id !== task.id,
+      );
+      utils.task.getRecurringTasks.setData(undefined, updatedRecurringTasks);
+
+      onOpenChange(false);
+    },
+    onSettled: async () => {
+      await Promise.all([
+        utils.task.getAllMyActiveTasks.invalidate(),
+        utils.task.getRecurringTasks.invalidate(),
+      ]);
+    },
+    onError: (err) => {
+      toast.error(
+        err.data?.code === "UNAUTHORIZED"
+          ? "You must be logged in to delete this task"
+          : "Failed to delete task",
+      );
+    },
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -77,13 +112,21 @@ export function TaskDetailsDialog({
           )}
         </div>
 
-        <div className="mt-6">
+        <div className="mt-6 flex gap-2">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="w-full"
+            className="flex-1"
           >
             Close
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => deleteTask.mutate({ id: task.id })}
+            className="flex items-center gap-2"
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete
           </Button>
         </div>
       </DialogContent>

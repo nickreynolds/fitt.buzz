@@ -3,25 +3,40 @@ import { Button, Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
 import { FlashList } from "@shopify/flash-list";
+import { formatDistanceToNowStrict, isPast } from "date-fns";
 import { Check } from "lucide-react-native";
 
 import type { RouterOutputs } from "~/utils/api";
 import { api } from "~/utils/api";
 import { useSignIn, useSignOut, useUser } from "~/utils/auth";
 
-function TaskCard(props: {
-  task: RouterOutputs["task"]["getAllMyActiveTasks"][number];
+type RegularTask = RouterOutputs["task"]["getAllMyActiveTasks"][number];
+type RecurringTask = RouterOutputs["task"]["getRecurringTasks"][number];
+type TaskWithFrequency = RegularTask & { frequencyHours: number };
+type RecurringWithCompleted = RecurringTask & { completed: boolean };
+type CombinedTask = TaskWithFrequency | RecurringWithCompleted;
+
+interface TaskCardProps {
+  task: CombinedTask;
   onComplete: () => void;
-}) {
+  isRecurring?: boolean;
+}
+
+function TaskCard({ task, onComplete, isRecurring }: TaskCardProps) {
   return (
     <View className="flex flex-row rounded-lg bg-muted p-4">
       <View className="flex-grow">
-        <Text className="text-xl font-semibold text-primary">
-          {props.task.title}
+        <View className="flex flex-row items-center justify-between">
+          <Text className="text-xl font-semibold text-primary">
+            {task.title}
+            {isRecurring && <Text className="text-muted-foreground"> ↻</Text>}
+          </Text>
+        </View>
+        <Text className="mt-2 text-foreground">
+          Due in {formatDistanceToNowStrict(task.nextDue, { unit: "hour" })}
         </Text>
-        <Text className="mt-2 text-foreground">{props.task.description}</Text>
       </View>
-      <Pressable onPress={props.onComplete}>
+      <Pressable onPress={onComplete}>
         <Check className="h-6 w-6" stroke="#5B65E9" strokeWidth={2} />
       </Pressable>
     </View>
@@ -59,6 +74,7 @@ function CreateTask() {
           mutate({
             title,
             description: "",
+            nextDue: new Date(), // For now, just set to current date
           });
         }}
       >
@@ -76,16 +92,18 @@ function CreateTask() {
 function MobileAuth() {
   const user = useUser();
   const signIn = useSignIn();
-  const signOut = useSignOut();
 
+  if (user) {
+    return null;
+  }
   return (
     <>
       <Text className="pb-2 text-center text-xl font-semibold text-white">
-        {user?.name ?? "Not logged in"}
+        {"Not logged in"}
       </Text>
       <Button
-        onPress={() => (user ? signOut() : signIn())}
-        title={user ? "Sign Out" : "Sign In With Google"}
+        onPress={() => signIn()}
+        title={"Sign In With Google"}
         color={"#5B65E9"}
       />
     </>
@@ -95,18 +113,36 @@ function MobileAuth() {
 export default function Index() {
   const utils = api.useUtils();
 
-  const taskQuery = api.task.getAllMyActiveTasks.useQuery();
+  const { data: regularTasks } = api.task.getAllMyActiveTasks.useQuery();
+  const { data: recurringTasks } = api.task.getRecurringTasks.useQuery();
 
   const completeTaskMutation = api.task.completeTask.useMutation({
     onSettled: () => utils.task.getAllMyActiveTasks.invalidate(),
   });
 
+  const regularTasksExtra = regularTasks?.map((t) => ({
+    ...t,
+    frequencyHours: 0,
+  }));
+
+  const recurringTasksExtra = recurringTasks?.map((t) => ({
+    ...t,
+    completed: false,
+  }));
+
+  const allTasks = [
+    ...(regularTasksExtra ?? []),
+    ...(recurringTasksExtra ?? []),
+  ].sort(
+    (a, b) => new Date(a.nextDue).getTime() - new Date(b.nextDue).getTime(),
+  );
+
   return (
     <SafeAreaView className="bg-background">
       {/* Changes page title visible on the header */}
-      <Stack.Screen options={{ title: "Tasks" }} />
+      <Stack.Screen options={{ title: "Tasks", headerShown: false }} />
       <View className="h-full w-full bg-background p-4">
-        <Text className="pb-2 text-center text-5xl font-bold text-foreground">
+        <Text className="top-0 pb-2 text-center text-5xl font-bold text-foreground">
           fitt.<Text className="text-primary">buzz</Text>
         </Text>
 
@@ -119,12 +155,13 @@ export default function Index() {
         </View>
 
         <FlashList
-          data={taskQuery.data}
+          data={allTasks}
           estimatedItemSize={20}
           ItemSeparatorComponent={() => <View className="h-2" />}
           renderItem={(p) => (
             <TaskCard
               task={p.item}
+              isRecurring={p.item.frequencyHours !== 0}
               onComplete={() => completeTaskMutation.mutate({ id: p.item.id })}
             />
           )}

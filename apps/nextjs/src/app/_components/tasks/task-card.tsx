@@ -38,22 +38,45 @@ export function TaskCard({ task, isRecurring }: TaskCardProps) {
       const updatedTasks = tasks?.filter((t) => t.id !== task.id);
       utils.task.getAllMyActiveTasks.setData(undefined, updatedTasks);
 
-      // bump recurring task if found
-      const recurringTasks = utils.task.getRecurringTasks.getData();
-      const recurringTask = recurringTasks?.find((t) => t.id === task.id);
-      if (recurringTask) {
-        const updatedRecurringTask = {
-          ...recurringTask,
-          nextDue: new Date(
-            recurringTask.nextDue.getTime() +
-              recurringTask.frequencyHours * 60 * 60 * 1000,
-          ),
-        };
-        const updatedRecurringTasks = recurringTasks?.map((t) =>
-          t.id === task.id ? updatedRecurringTask : t,
-        );
-        utils.task.getRecurringTasks.setData(undefined, updatedRecurringTasks);
-      }
+      // remove recurring task if found (it will come back later)
+      const recurringTasks = utils.task.getMyActiveRecurringTasks.getData();
+      const updatedRecurringTasks = recurringTasks?.filter(
+        (t) => t.id !== task.id,
+      );
+      utils.task.getMyActiveRecurringTasks.setData(
+        undefined,
+        updatedRecurringTasks,
+      );
+
+      // just remove recurring task for now since it won't come back for a while
+      // if (recurringTask) {
+      //   const minimumNextDueDate =
+      //     new Date().getTime() +
+      //     recurringTask.frequencyHours * 60 * 60 * 1000 * 0.7;
+
+      //   let dueDate =
+      //     recurringTask.nextDue.getTime() +
+      //     recurringTask.frequencyHours * 60 * 60 * 1000;
+
+      //   while (dueDate < minimumNextDueDate) {
+      //     dueDate += recurringTask.frequencyHours * 60 * 60 * 1000;
+      //   }
+
+      //   const updatedRecurringTask = {
+      //     ...recurringTask,
+      //     nextDue: new Date(dueDate),
+      //     completionPeriodBegins: new Date(
+      //       dueDate - recurringTask.frequencyHours * 60 * 60 * 1000 * 0.3,
+      //     ),
+      //   };
+      //   const updatedRecurringTasks = recurringTasks?.map((t) =>
+      //     t.id === task.id ? updatedRecurringTask : t,
+      //   );
+      //   utils.task.getMyActiveRecurringTasks.setData(
+      //     undefined,
+      //     updatedRecurringTasks,
+      //   );
+      // }
     },
     onSettled: async () => {
       await utils.task.invalidate();
@@ -83,6 +106,12 @@ export function TaskCard({ task, isRecurring }: TaskCardProps) {
           {getTimeStatus(task.nextDue)}
         </div>
         <p className="mt-2 text-sm">{task.description}</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Due Date: {task.nextDue.toISOString()}
+          <br />
+          CompletionPeriodBegins:{" "}
+          {(task as any)?.completionPeriodBegins?.toISOString()}
+        </p>
       </div>
       <div>
         <Button

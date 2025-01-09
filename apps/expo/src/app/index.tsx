@@ -11,7 +11,7 @@ import { api } from "~/utils/api";
 import { useSignIn, useSignOut, useUser } from "~/utils/auth";
 
 type RegularTask = RouterOutputs["task"]["getAllMyActiveTasks"][number];
-type RecurringTask = RouterOutputs["task"]["getRecurringTasks"][number];
+type RecurringTask = RouterOutputs["task"]["getMyActiveRecurringTasks"][number];
 type TaskWithFrequency = RegularTask & { frequencyHours: number };
 type RecurringWithCompleted = RecurringTask & { completed: boolean };
 type CombinedTask = TaskWithFrequency | RecurringWithCompleted;
@@ -114,7 +114,8 @@ export default function Index() {
   const utils = api.useUtils();
 
   const { data: regularTasks } = api.task.getAllMyActiveTasks.useQuery();
-  const { data: recurringTasks } = api.task.getRecurringTasks.useQuery();
+  const { data: recurringTasks } =
+    api.task.getMyActiveRecurringTasks.useQuery();
 
   const completeTaskMutation = api.task.completeTask.useMutation({
     onSettled: () => utils.task.getAllMyActiveTasks.invalidate(),

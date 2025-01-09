@@ -39,18 +39,21 @@ export function TaskDetailsDialog({
       const updatedTasks = tasks?.filter((t) => t.id !== task.id);
       utils.task.getAllMyActiveTasks.setData(undefined, updatedTasks);
 
-      const recurringTasks = utils.task.getRecurringTasks.getData();
+      const recurringTasks = utils.task.getMyActiveRecurringTasks.getData();
       const updatedRecurringTasks = recurringTasks?.filter(
         (t) => t.id !== task.id,
       );
-      utils.task.getRecurringTasks.setData(undefined, updatedRecurringTasks);
+      utils.task.getMyActiveRecurringTasks.setData(
+        undefined,
+        updatedRecurringTasks,
+      );
 
       onOpenChange(false);
     },
     onSettled: async () => {
       await Promise.all([
         utils.task.getAllMyActiveTasks.invalidate(),
-        utils.task.getRecurringTasks.invalidate(),
+        utils.task.getMyActiveRecurringTasks.invalidate(),
       ]);
     },
     onError: (err) => {

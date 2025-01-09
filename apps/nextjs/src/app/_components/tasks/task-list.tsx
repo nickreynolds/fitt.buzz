@@ -11,7 +11,7 @@ export function TaskList() {
   const { data: regularTasks, isLoading: isLoadingRegular } =
     api.task.getAllMyActiveTasks.useQuery();
   const { data: recurringTasks, isLoading: isLoadingRecurring } =
-    api.task.getRecurringTasks.useQuery();
+    api.task.getMyActiveRecurringTasks.useQuery();
 
   const isLoading = isLoadingRegular || isLoadingRecurring;
 

@@ -33,6 +33,7 @@ import { Textarea } from "@acme/ui/textarea";
 import { api } from "~/trpc/react";
 
 const FREQUENCY_OPTIONS = [
+  { value: "1", label: "Hourly" },
   { value: "24", label: "Daily" },
   { value: "168", label: "Weekly" },
   { value: "336", label: "Bi-weekly" },
@@ -77,16 +78,19 @@ export function CreateTaskDialogForm({
           title: data.title,
           description: data.description,
           nextDue: data.nextDue,
+          completionPeriodBegins: new Date(
+            data.nextDue.getTime() - data.frequencyHours * 60 * 60 * 1000 * 0.7,
+          ),
           frequencyHours: data.frequencyHours,
           lastCompleted: null,
           createdAt: new Date(),
           updatedAt: new Date(),
           creatorId: "1",
         };
-        const recurringTasks = utils.task.getRecurringTasks.getData();
+        const recurringTasks = utils.task.getMyActiveRecurringTasks.getData();
 
         if (recurringTasks) {
-          utils.task.getRecurringTasks.setData(undefined, [
+          utils.task.getMyActiveRecurringTasks.setData(undefined, [
             ...recurringTasks,
             recurringTask,
           ]);
@@ -113,7 +117,7 @@ export function CreateTaskDialogForm({
     onSuccess: async () => {
       await Promise.all([
         utils.task.getAllMyActiveTasks.invalidate(),
-        utils.task.getRecurringTasks.invalidate(),
+        utils.task.getMyActiveRecurringTasks.invalidate(),
       ]);
     },
   });

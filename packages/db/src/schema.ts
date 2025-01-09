@@ -60,6 +60,10 @@ export const RecurringTask = pgTable("recurring_task", (t) => ({
   // Hours between occurrences
   frequencyHours: t.integer().notNull(),
   lastCompleted: t.timestamp({ mode: "date", withTimezone: true }),
+  completionPeriodBegins: t
+    .timestamp({ mode: "date", withTimezone: true })
+    .notNull()
+    .defaultNow(),
   nextDue: t.timestamp({ mode: "date", withTimezone: true }).notNull(),
   createdAt: t.timestamp().notNull().defaultNow(),
   updatedAt: t
@@ -76,6 +80,7 @@ export const CreateRecurringTaskSchema = createInsertSchema(RecurringTask, {
   description: z.string().max(256),
   frequencyHours: z.number(),
   nextDue: z.date(),
+  // nextDue: z.date(),
 }).omit({
   id: true,
   createdAt: true,

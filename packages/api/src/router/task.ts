@@ -1,7 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { and, eq } from "@acme/db";
+import { and, eq, gte, lte } from "@acme/db";
 import { RecurringTask, Task } from "@acme/db/schema";
 
 import { protectedProcedure } from "../trpc";
@@ -20,6 +20,9 @@ export const taskRouter = {
         ...input,
         creatorId: ctx.session.user.id,
         frequencyHours: input.frequencyHours,
+        completionPeriodBegins: new Date(
+          input.nextDue.getTime() - input.frequencyHours * 60 * 60 * 1000 * 0.7,
+        ),
       });
     }
     return ctx.db
@@ -29,8 +32,6 @@ export const taskRouter = {
   completeTask: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      console.log("completeTask", input);
-
       const task = await ctx.db.query.Task.findFirst({
         where: eq(Task.id, input.id),
       });
@@ -40,12 +41,10 @@ export const taskRouter = {
           throw new Error("You are not the owner of this task");
         }
 
-        console.log("you own this task");
         const res = await ctx.db
           .update(Task)
           .set({ completed: true })
           .where(eq(Task.id, input.id));
-        console.log("res", res);
         return res;
       }
 
@@ -58,14 +57,32 @@ export const taskRouter = {
           throw new Error("You are not the owner of this task");
         }
 
+        if (recurringTask.completionPeriodBegins > new Date()) {
+          throw new Error("Task cannot be completed yet");
+        }
+
+        // find good nextDue date. Should be a date in the future at least 70% of the way through the frequency period and should be an exact multiple of the frequency period
+
+        const minimumNextDueDate =
+          new Date().getTime() +
+          recurringTask.frequencyHours * 60 * 60 * 1000 * 0.7;
+
+        let dueDate =
+          recurringTask.nextDue.getTime() +
+          recurringTask.frequencyHours * 60 * 60 * 1000;
+
+        while (dueDate < minimumNextDueDate) {
+          dueDate += recurringTask.frequencyHours * 60 * 60 * 1000;
+        }
+
         const res = await ctx.db
           .update(RecurringTask)
           .set({
             lastCompleted: new Date(),
-            nextDue: new Date(
-              recurringTask.nextDue.getTime() +
-                recurringTask.frequencyHours * 60 * 60 * 1000,
+            completionPeriodBegins: new Date(
+              dueDate - recurringTask.frequencyHours * 60 * 60 * 1000 * 0.3,
             ),
+            nextDue: new Date(dueDate),
           })
           .where(eq(RecurringTask.id, input.id));
         console.log("res", res);
@@ -89,9 +106,19 @@ export const taskRouter = {
       ),
     });
   }),
-  getRecurringTasks: protectedProcedure.query(async ({ ctx }) => {
+  getAllMyRecurringTasks: protectedProcedure.query(async ({ ctx }) => {
     return await ctx.db.query.RecurringTask.findMany({
       where: (tasks, { eq }) => eq(tasks.creatorId, ctx.session.user.id),
+      orderBy: (tasks, { asc }) => [asc(tasks.nextDue)],
+    });
+  }),
+  getMyActiveRecurringTasks: protectedProcedure.query(async ({ ctx }) => {
+    return await ctx.db.query.RecurringTask.findMany({
+      where: (tasks, { eq }) =>
+        and(
+          eq(tasks.creatorId, ctx.session.user.id),
+          lte(tasks.completionPeriodBegins, new Date()),
+        ),
       orderBy: (tasks, { asc }) => [asc(tasks.nextDue)],
     });
   }),

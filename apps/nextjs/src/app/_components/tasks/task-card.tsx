@@ -47,36 +47,6 @@ export function TaskCard({ task, isRecurring }: TaskCardProps) {
         undefined,
         updatedRecurringTasks,
       );
-
-      // just remove recurring task for now since it won't come back for a while
-      // if (recurringTask) {
-      //   const minimumNextDueDate =
-      //     new Date().getTime() +
-      //     recurringTask.frequencyHours * 60 * 60 * 1000 * 0.7;
-
-      //   let dueDate =
-      //     recurringTask.nextDue.getTime() +
-      //     recurringTask.frequencyHours * 60 * 60 * 1000;
-
-      //   while (dueDate < minimumNextDueDate) {
-      //     dueDate += recurringTask.frequencyHours * 60 * 60 * 1000;
-      //   }
-
-      //   const updatedRecurringTask = {
-      //     ...recurringTask,
-      //     nextDue: new Date(dueDate),
-      //     completionPeriodBegins: new Date(
-      //       dueDate - recurringTask.frequencyHours * 60 * 60 * 1000 * 0.3,
-      //     ),
-      //   };
-      //   const updatedRecurringTasks = recurringTasks?.map((t) =>
-      //     t.id === task.id ? updatedRecurringTask : t,
-      //   );
-      //   utils.task.getMyActiveRecurringTasks.setData(
-      //     undefined,
-      //     updatedRecurringTasks,
-      //   );
-      // }
     },
     onSettled: async () => {
       await utils.task.invalidate();

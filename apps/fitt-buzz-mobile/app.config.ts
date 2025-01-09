@@ -2,9 +2,9 @@ import type { ConfigContext, ExpoConfig } from "expo/config";
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: "expo",
-  slug: "expo",
-  scheme: "expo",
+  name: "fitt-buzz-mobile",
+  slug: "fitt-buzz-mobile",
+  scheme: "fitt-buzz-mobile",
   version: "0.1.0",
   orientation: "portrait",
   icon: "./assets/icon.png",
@@ -39,4 +39,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     typedRoutes: true,
   },
   plugins: ["expo-router"],
+  owner: "nickreynolds2",
+  extra: {
+    eas: {
+      projectId: "91735343-26db-4e80-93f0-5bc15f2d8161",
+    },
+  },
 });

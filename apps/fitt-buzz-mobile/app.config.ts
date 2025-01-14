@@ -28,6 +28,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       foregroundImage: "./assets/icon.png",
       backgroundColor: "#1F104A",
     },
+    versionCode: 2,
   },
   // extra: {
   //   eas: {

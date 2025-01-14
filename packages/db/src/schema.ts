@@ -3,67 +3,15 @@ import { pgTable, primaryKey } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const Post = pgTable("post", (t) => ({
-  id: t.uuid().notNull().primaryKey().defaultRandom(),
-  title: t.varchar({ length: 256 }).notNull(),
-  content: t.text().notNull(),
-  createdAt: t.timestamp().defaultNow().notNull(),
-  updatedAt: t
-    .timestamp({ mode: "date", withTimezone: true })
-    .$onUpdateFn(() => sql`now()`),
-}));
-
-export const CreatePostSchema = createInsertSchema(Post, {
-  title: z.string().max(256),
-  content: z.string().max(256),
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
 export const Task = pgTable("task", (t) => ({
-  id: t.uuid().notNull().primaryKey().defaultRandom(),
-  title: t.varchar({ length: 256 }).notNull(),
-  description: t.text(),
-  nextDue: t.timestamp({ mode: "date", withTimezone: true }).notNull(),
-  completed: t.boolean().notNull().default(false),
-  createdAt: t.timestamp().defaultNow().notNull(),
-  updatedAt: t
-    .timestamp({ mode: "date", withTimezone: true })
-    .$onUpdateFn(() => new Date()),
-  creatorId: t
-    .uuid()
-    .notNull()
-    .references(() => User.id),
-}));
-
-export const CreateTaskSchema = createInsertSchema(Task, {
-  title: z.string().max(256),
-  description: z.string().max(256),
-  // nextDue: z.coerce.date().refine((data) => data > new Date(), {
-  //   message: "nextDue must be in the future",
-  // }),
-  nextDue: z.date(),
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  completed: true,
-  creatorId: true,
-});
-
-export const RecurringTask = pgTable("recurring_task", (t) => ({
   id: t.uuid().notNull().primaryKey().defaultRandom(),
   title: t.text().notNull(),
   description: t.text(),
+  recurring: t.boolean().notNull().default(false),
   // Hours between occurrences
-  frequencyHours: t.integer().notNull(),
+  frequencyHours: t.integer(),
   lastCompleted: t.timestamp({ mode: "date", withTimezone: true }),
-  completionPeriodBegins: t
-    .timestamp({ mode: "date", withTimezone: true })
-    .notNull()
-    .defaultNow(),
+  completionPeriodBegins: t.timestamp({ mode: "date", withTimezone: true }),
   nextDue: t.timestamp({ mode: "date", withTimezone: true }).notNull(),
   createdAt: t.timestamp().notNull().defaultNow(),
   updatedAt: t
@@ -75,18 +23,27 @@ export const RecurringTask = pgTable("recurring_task", (t) => ({
     .references(() => User.id),
 }));
 
-export const CreateRecurringTaskSchema = createInsertSchema(RecurringTask, {
+// export const CreateTaskSchema = createInsertSchema(Task, {
+//   title: z.string().max(256),
+//   description: z.string().max(256),
+//   recurring: z.boolean(),
+//   frequencyHours: z.number().optional(),
+//   nextDue: z.date(),
+// }).omit({
+//   id: true,
+//   createdAt: true,
+//   updatedAt: true,
+//   creatorId: true,
+//   lastCompleted: true,
+//   completionPeriodBegins: true,
+// });
+
+export const CreateTaskSchema = z.object({
   title: z.string().max(256),
   description: z.string().max(256),
-  frequencyHours: z.number(),
+  recurring: z.boolean(),
+  frequencyHours: z.number().optional(),
   nextDue: z.date(),
-  // nextDue: z.date(),
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  creatorId: true,
-  lastCompleted: true,
 });
 
 export const User = pgTable("user", (t) => ({

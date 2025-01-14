@@ -7,44 +7,48 @@ import { TaskCard } from "./task-card";
 
 import "./transitions.css";
 
+import { Button } from "@acme/ui/button";
+import { toast } from "@acme/ui/toast";
+
 export function TaskList() {
-  const { data: regularTasks, isLoading: isLoadingRegular } =
+  const { data: tasks, isLoading: isLoadingRegular } =
     api.task.getAllMyActiveTasks.useQuery();
-  const { data: recurringTasks, isLoading: isLoadingRecurring } =
-    api.task.getMyActiveRecurringTasks.useQuery();
-
-  const isLoading = isLoadingRegular || isLoadingRecurring;
-
-  const regularTasksExtra = regularTasks?.map((t) => {
-    return { ...t, frequencyHours: 0 };
+  const utils = api.useUtils();
+  const bootstrap = api.task.bootstrapTasks.useMutation({
+    onSuccess: async () => {
+      await utils.task.invalidate();
+    },
+    onError: (err) => {
+      toast.error(
+        err.data?.code === "UNAUTHORIZED"
+          ? "You must be logged in to post"
+          : "Failed to create post",
+      );
+    },
   });
 
-  const recurringTasksExtra = recurringTasks?.map((t) => {
-    return { ...t, completed: false };
-  });
-
-  const allTasks = [
-    ...(regularTasksExtra ?? []),
-    ...(recurringTasksExtra ?? []),
-  ].sort(
-    (a, b) => new Date(a.nextDue).getTime() - new Date(b.nextDue).getTime(),
-  );
+  const isLoading = isLoadingRegular;
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  if (allTasks.length === 0) {
-    return <div>No tasks found</div>;
+  if (!tasks || tasks.length === 0) {
+    return (
+      <div>
+        No tasks found. Would you like to bootstrap a set of tasks?
+        <Button onClick={() => bootstrap.mutate()}>Bootstrap tasks</Button>
+      </div>
+    );
   }
 
   return (
     <div className="flex w-full flex-col gap-4">
       <TransitionGroup component={null}>
-        {allTasks.map((task) => (
+        {tasks.map((task) => (
           <CSSTransition key={task.title} timeout={300} classNames="task">
             <div>
-              <TaskCard task={task} isRecurring={task.frequencyHours !== 0} />
+              <TaskCard task={task} isRecurring={task.recurring} />
             </div>
           </CSSTransition>
         ))}

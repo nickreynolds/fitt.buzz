@@ -251,6 +251,9 @@ importers:
       '@acme/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@acme/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@acme/validators':
         specifier: workspace:*
         version: link:../../packages/validators
@@ -345,6 +348,9 @@ importers:
       '@acme/db':
         specifier: workspace:*
         version: link:../db
+      '@acme/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@acme/validators':
         specifier: workspace:*
         version: link:../validators
@@ -547,6 +553,27 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 3.23.8
+
+  packages/utils:
+    devDependencies:
+      '@acme/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@acme/prettier-config':
+        specifier: workspace:*
+        version: link:../../tooling/prettier
+      '@acme/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      eslint:
+        specifier: 'catalog:'
+        version: 9.12.0(jiti@2.4.0)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.3.3
+      typescript:
+        specifier: 'catalog:'
+        version: 5.6.3
 
   packages/validators:
     dependencies:

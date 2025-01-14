@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { CreateTaskSchema } from "@acme/db/schema";
 import { Button } from "@acme/ui/button";
 import { Checkbox } from "@acme/ui/checkbox";
 import {
@@ -29,6 +30,7 @@ import {
   SelectValue,
 } from "@acme/ui/select";
 import { Textarea } from "@acme/ui/textarea";
+import { getCompletionPeriodBegins } from "@acme/utils";
 
 import { api } from "~/trpc/react";
 
@@ -51,19 +53,19 @@ export function CreateTaskDialogForm({
 }: CreateTaskDialogFormProps) {
   const [isRecurring, setIsRecurring] = useState(false);
 
-  const zodSchema = z.object({
-    title: z.string(),
-    description: z.string(),
-    nextDueString: z.string(),
-    frequencyHours: z.number().optional(),
-  });
+  const zodSchema = CreateTaskSchema.extend({ nextDueString: z.string() }).omit(
+    { nextDue: true },
+  );
 
   const form = useForm({
     resolver: zodResolver(zodSchema),
     defaultValues: {
       title: "",
       description: "",
-      nextDueString: new Date().toISOString(),
+      recurring: false,
+      nextDueString: new Date(
+        new Date().getTime() + 16 * 60 * 60 * 1000,
+      ).toISOString(),
       frequencyHours: 24,
     },
   });
@@ -71,41 +73,28 @@ export function CreateTaskDialogForm({
   const utils = api.useUtils();
   const createTask = api.task.createTask.useMutation({
     onMutate: (data) => {
+      const completionPeriodBegins = data.frequencyHours
+        ? getCompletionPeriodBegins(data.nextDue, data.frequencyHours)
+        : null;
       console.log("onMutate data", data);
-      if (data.frequencyHours) {
-        const recurringTask = {
-          id: "1",
-          title: data.title,
-          description: data.description,
-          nextDue: data.nextDue,
-          completionPeriodBegins: new Date(
-            data.nextDue.getTime() - data.frequencyHours * 60 * 60 * 1000 * 0.7,
-          ),
-          frequencyHours: data.frequencyHours,
-          lastCompleted: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          creatorId: "1",
-        };
-        const recurringTasks = utils.task.getMyActiveRecurringTasks.getData();
+      const task = {
+        id: "1",
+        title: data.title,
+        description: data.description ?? "",
+        nextDue: data.nextDue,
+        lastCompleted: null,
+        recurring: data.recurring ?? false,
+        frequencyHours: data.frequencyHours ?? null,
+        completionPeriodBegins,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        creatorId: "1",
+      };
 
-        if (recurringTasks) {
-          utils.task.getMyActiveRecurringTasks.setData(undefined, [
-            ...recurringTasks,
-            recurringTask,
-          ]);
-        }
-      } else {
-        const task = {
-          id: "1",
-          title: data.title,
-          description: data.description,
-          nextDue: data.nextDue,
-          completed: false,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          creatorId: "1",
-        };
+      if (
+        !data.recurring ||
+        (completionPeriodBegins && completionPeriodBegins < new Date())
+      ) {
         const tasks = utils.task.getAllMyActiveTasks.getData();
         if (tasks) {
           utils.task.getAllMyActiveTasks.setData(undefined, [...tasks, task]);
@@ -115,10 +104,7 @@ export function CreateTaskDialogForm({
       onOpenChange(false);
     },
     onSuccess: async () => {
-      await Promise.all([
-        utils.task.getAllMyActiveTasks.invalidate(),
-        utils.task.getMyActiveRecurringTasks.invalidate(),
-      ]);
+      await Promise.all([utils.task.getAllMyActiveTasks.invalidate()]);
     },
   });
 
@@ -128,6 +114,7 @@ export function CreateTaskDialogForm({
       description: data.description,
       nextDue: new Date(data.nextDueString),
       frequencyHours: isRecurring ? data.frequencyHours : undefined,
+      recurring: isRecurring,
     });
   }
 
@@ -168,13 +155,37 @@ export function CreateTaskDialogForm({
               )}
             />
 
+            <FormField
+              control={form.control}
+              name="nextDueString"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Due Date</FormLabel>
+                  <FormControl>
+                    <Input type="datetime-local" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="flex items-center space-x-2">
-              <Checkbox
-                id="recurring"
-                checked={isRecurring}
-                onCheckedChange={(checked: boolean) => setIsRecurring(checked)}
+              <FormField
+                control={form.control}
+                name="recurring"
+                render={({ field }) => (
+                  <FormItem>
+                    <Checkbox
+                      id="recurring"
+                      checked={isRecurring}
+                      onCheckedChange={(checked: boolean) =>
+                        setIsRecurring(checked)
+                      }
+                    />
+                    <Label htmlFor="recurring">Recurring Task</Label>
+                  </FormItem>
+                )}
               />
-              <Label htmlFor="recurring">Recurring Task</Label>
             </div>
 
             {isRecurring && (
@@ -208,20 +219,6 @@ export function CreateTaskDialogForm({
                 )}
               />
             )}
-
-            <FormField
-              control={form.control}
-              name="nextDueString"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Due Date</FormLabel>
-                  <FormControl>
-                    <Input type="datetime-local" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             <Button type="submit">Create Task</Button>
           </form>

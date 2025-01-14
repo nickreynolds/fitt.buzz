@@ -1,13 +1,10 @@
 {
-  "name": "@acme/api",
-  "version": "0.1.0",
+  "name": "@acme/utils",
   "private": true,
+  "version": "0.1.0",
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./src/index.ts"
-    }
+    ".": "./src/index.ts"
   },
   "license": "MIT",
   "scripts": {
@@ -17,15 +14,6 @@
     "format": "prettier --check . --ignore-path ../../.gitignore",
     "lint": "eslint",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
-  },
-  "dependencies": {
-    "@acme/auth": "workspace:*",
-    "@acme/db": "workspace:*",
-    "@acme/utils": "workspace:*",
-    "@acme/validators": "workspace:*",
-    "@trpc/server": "catalog:",
-    "superjson": "2.2.1",
-    "zod": "catalog:"
   },
   "devDependencies": {
     "@acme/eslint-config": "workspace:*",

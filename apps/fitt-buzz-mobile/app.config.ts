@@ -19,11 +19,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   assetBundlePatterns: ["**/*"],
   ios: {
-    bundleIdentifier: "buzz.fit.mobile",
+    bundleIdentifier: "buzz.fitt.mobile",
     supportsTablet: true,
   },
   android: {
-    package: "buzz.fit.mobile",
+    package: "buzz.fitt.mobile",
     adaptiveIcon: {
       foregroundImage: "./assets/icon.png",
       backgroundColor: "#1F104A",

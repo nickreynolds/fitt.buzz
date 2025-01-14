@@ -11,13 +11,9 @@ import { api } from "~/utils/api";
 import { useSignIn, useSignOut, useUser } from "~/utils/auth";
 
 type RegularTask = RouterOutputs["task"]["getAllMyActiveTasks"][number];
-type RecurringTask = RouterOutputs["task"]["getMyActiveRecurringTasks"][number];
-type TaskWithFrequency = RegularTask & { frequencyHours: number };
-type RecurringWithCompleted = RecurringTask & { completed: boolean };
-type CombinedTask = TaskWithFrequency | RecurringWithCompleted;
 
 interface TaskCardProps {
-  task: CombinedTask;
+  task: RegularTask;
   onComplete: () => void;
   isRecurring?: boolean;
 }
@@ -75,6 +71,7 @@ function CreateTask() {
             title,
             description: "",
             nextDue: new Date(), // For now, just set to current date
+            recurring: false,
           });
         }}
       >
@@ -113,30 +110,11 @@ function MobileAuth() {
 export default function Index() {
   const utils = api.useUtils();
 
-  const { data: regularTasks } = api.task.getAllMyActiveTasks.useQuery();
-  const { data: recurringTasks } =
-    api.task.getMyActiveRecurringTasks.useQuery();
+  const { data: tasks } = api.task.getAllMyActiveTasks.useQuery();
 
   const completeTaskMutation = api.task.completeTask.useMutation({
     onSettled: () => utils.task.getAllMyActiveTasks.invalidate(),
   });
-
-  const regularTasksExtra = regularTasks?.map((t) => ({
-    ...t,
-    frequencyHours: 0,
-  }));
-
-  const recurringTasksExtra = recurringTasks?.map((t) => ({
-    ...t,
-    completed: false,
-  }));
-
-  const allTasks = [
-    ...(regularTasksExtra ?? []),
-    ...(recurringTasksExtra ?? []),
-  ].sort(
-    (a, b) => new Date(a.nextDue).getTime() - new Date(b.nextDue).getTime(),
-  );
 
   return (
     <SafeAreaView className="bg-background">
@@ -156,13 +134,13 @@ export default function Index() {
         </View>
 
         <FlashList
-          data={allTasks}
+          data={tasks}
           estimatedItemSize={20}
           ItemSeparatorComponent={() => <View className="h-2" />}
           renderItem={(p) => (
             <TaskCard
               task={p.item}
-              isRecurring={p.item.frequencyHours !== 0}
+              isRecurring={p.item.recurring}
               onComplete={() => completeTaskMutation.mutate({ id: p.item.id })}
             />
           )}

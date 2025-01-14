@@ -9,7 +9,7 @@ import { Check } from "lucide-react-native";
 
 import type { RouterOutputs } from "~/utils/api";
 import { api } from "~/utils/api";
-import { useSignIn, useUser } from "~/utils/auth";
+import { useSignIn, useSignOut, useUser } from "~/utils/auth";
 import { CreateTaskDialog } from "./_components/create-task-dialog";
 
 type RegularTask = RouterOutputs["task"]["getAllMyActiveTasks"][number];
@@ -44,9 +44,18 @@ function TaskCard({ task, onComplete, isRecurring }: TaskCardProps) {
 function MobileAuth() {
   const user = useUser();
   const signIn = useSignIn();
+  const signOut = useSignOut();
 
   if (user) {
-    return null;
+    return (
+      <>
+        <Button
+          onPress={() => signOut()}
+          title={"Sign Out"}
+          color={"#5B65E9"}
+        />
+      </>
+    );
   }
   return (
     <>

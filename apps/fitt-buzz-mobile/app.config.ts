@@ -5,7 +5,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: "fitt-buzz-mobile",
   slug: "fitt-buzz-mobile",
   scheme: "fitt-buzz-mobile",
-  version: "0.1.0",
+  version: "0.1.2",
   orientation: "portrait",
   icon: "./assets/icon.png",
   userInterfaceStyle: "automatic",

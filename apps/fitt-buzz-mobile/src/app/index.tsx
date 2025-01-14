@@ -68,6 +68,15 @@ export default function Index() {
   const { data: tasks } = api.task.getAllMyActiveTasks.useQuery();
 
   const completeTaskMutation = api.task.completeTask.useMutation({
+    onMutate: (data) => {
+      const tasks = utils.task.getAllMyActiveTasks.getData();
+      if (tasks) {
+        utils.task.getAllMyActiveTasks.setData(
+          undefined,
+          tasks.filter((t) => t.id !== data.id),
+        );
+      }
+    },
     onSettled: () => utils.task.getAllMyActiveTasks.invalidate(),
   });
 

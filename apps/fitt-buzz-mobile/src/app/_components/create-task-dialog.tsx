@@ -32,7 +32,31 @@ export function CreateTaskDialog({ isOpen, onClose }: CreateTaskDialogProps) {
 
   const utils = api.useUtils();
   const { mutate, error } = api.task.createTask.useMutation({
-    async onSuccess() {
+    onMutate: () => {
+      if (!isRecurring) {
+        const nextDue = new Date(
+          dueDate.toDateString() + " " + dueTime.toTimeString(),
+        );
+        const task = {
+          id: "temp",
+          creatorId: "temp",
+          title,
+          description,
+          nextDue,
+          recurring: false,
+          frequencyHours: null,
+          completionPeriodBegins: null,
+          lastCompleted: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+
+        const tasks = utils.task.getAllMyActiveTasks.getData();
+        if (tasks) {
+          utils.task.getAllMyActiveTasks.setData(undefined, [...tasks, task]);
+        }
+      }
+
       setTitle("");
       setDescription("");
       setIsRecurring(false);
@@ -40,6 +64,8 @@ export function CreateTaskDialog({ isOpen, onClose }: CreateTaskDialogProps) {
       setDueDate(new Date());
       setDueTime(new Date());
       onClose();
+    },
+    onSuccess: async () => {
       await utils.task.getAllMyActiveTasks.invalidate();
     },
   });

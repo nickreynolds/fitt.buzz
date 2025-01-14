@@ -115,6 +115,9 @@ importers:
       '@expo/metro-config':
         specifier: ^0.18.11
         version: 0.18.11
+      '@react-native-community/datetimepicker':
+        specifier: 8.0.1
+        version: 8.0.1(react-native@0.74.6(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.11)(bufferutil@4.0.8)(react@18.3.1))(react@18.3.1)
       '@shopify/flash-list':
         specifier: 1.7.1
         version: 1.7.1(@babel/runtime@7.26.0)(react-native@0.74.6(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.11)(bufferutil@4.0.8)(react@18.3.1))(react@18.3.1)
@@ -2883,6 +2886,16 @@ packages:
     resolution: {integrity: sha512-hFJL4cgLPxncJJd/epQ4dHnMg5Jy/7Q56jFvA3MHViuKpzzfTCJCB+pGY54maZbtym53UJON9WTGpM3S81UfjQ==}
     engines: {node: '>=18'}
     hasBin: true
+
+  '@react-native-community/datetimepicker@8.0.1':
+    resolution: {integrity: sha512-4BO0t3geMNNw9cIIm9p9FNUzwMXexdzD4pAH0AaUAycs3BS71HLrX8jHbrI7nzq/+8O7cLAXn5Gudte+YpTV8Q==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
+      react-native-windows: '*'
+    peerDependenciesMeta:
+      react-native-windows:
+        optional: true
 
   '@react-native/assets-registry@0.74.88':
     resolution: {integrity: sha512-tOvA+ikxa0Yxk3gLWR4+Pp4Y6Se+JEs6XXabX4/jgxIDnDfhT/czFNhqH/hdk4uOT8uVJGnilvevsia2TCFMiw==}
@@ -11173,6 +11186,12 @@ snapshots:
       - encoding
       - supports-color
       - utf-8-validate
+
+  '@react-native-community/datetimepicker@8.0.1(react-native@0.74.6(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.11)(bufferutil@4.0.8)(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      invariant: 2.2.4
+      react: 18.3.1
+      react-native: 0.74.6(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.11)(bufferutil@4.0.8)(react@18.3.1)
 
   '@react-native/assets-registry@0.74.88': {}
 

@@ -23,21 +23,6 @@ export const Task = pgTable("task", (t) => ({
     .references(() => User.id),
 }));
 
-// export const CreateTaskSchema = createInsertSchema(Task, {
-//   title: z.string().max(256),
-//   description: z.string().max(256),
-//   recurring: z.boolean(),
-//   frequencyHours: z.number().optional(),
-//   nextDue: z.date(),
-// }).omit({
-//   id: true,
-//   createdAt: true,
-//   updatedAt: true,
-//   creatorId: true,
-//   lastCompleted: true,
-//   completionPeriodBegins: true,
-// });
-
 export const CreateTaskSchema = z.object({
   title: z.string().max(256),
   description: z.string().max(256),

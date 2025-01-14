@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Pressable, Text, TextInput, View } from "react-native";
+import { Button, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
 import { FlashList } from "@shopify/flash-list";
@@ -8,7 +8,8 @@ import { Check } from "lucide-react-native";
 
 import type { RouterOutputs } from "~/utils/api";
 import { api } from "~/utils/api";
-import { useSignIn, useSignOut, useUser } from "~/utils/auth";
+import { useSignIn, useUser } from "~/utils/auth";
+import { CreateTaskDialog } from "./_components/create-task-dialog";
 
 type RegularTask = RouterOutputs["task"]["getAllMyActiveTasks"][number];
 
@@ -39,53 +40,6 @@ function TaskCard({ task, onComplete, isRecurring }: TaskCardProps) {
   );
 }
 
-function CreateTask() {
-  const utils = api.useUtils();
-
-  const [title, setTitle] = useState("");
-
-  const { mutate, error } = api.task.createTask.useMutation({
-    async onSuccess() {
-      setTitle("");
-      await utils.task.getAllMyActiveTasks.invalidate();
-    },
-  });
-
-  return (
-    <View className="mt-4 flex gap-2">
-      <TextInput
-        className="items-center rounded-md border border-input bg-background px-3 text-lg leading-[1.25] text-foreground"
-        value={title}
-        onChangeText={setTitle}
-        placeholder="Task Title"
-      />
-      {error?.data?.zodError?.fieldErrors.title && (
-        <Text className="mb-2 text-destructive">
-          {error.data.zodError.fieldErrors.title}
-        </Text>
-      )}
-      <Pressable
-        className="flex items-center rounded bg-primary p-2"
-        onPress={() => {
-          mutate({
-            title,
-            description: "",
-            nextDue: new Date(), // For now, just set to current date
-            recurring: false,
-          });
-        }}
-      >
-        <Text className="text-foreground">Create Task</Text>
-      </Pressable>
-      {error?.data?.code === "UNAUTHORIZED" && (
-        <Text className="mt-2 text-destructive">
-          You need to be logged in to create a task
-        </Text>
-      )}
-    </View>
-  );
-}
-
 function MobileAuth() {
   const user = useUser();
   const signIn = useSignIn();
@@ -108,6 +62,7 @@ function MobileAuth() {
 }
 
 export default function Index() {
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const utils = api.useUtils();
 
   const { data: tasks } = api.task.getAllMyActiveTasks.useQuery();
@@ -146,7 +101,19 @@ export default function Index() {
           )}
         />
 
-        <CreateTask />
+        <Pressable
+          className="mt-4 items-center rounded-lg bg-primary p-4"
+          onPress={() => setIsCreateDialogOpen(true)}
+        >
+          <Text className="text-lg font-semibold text-primary-foreground">
+            Create Task
+          </Text>
+        </Pressable>
+
+        <CreateTaskDialog
+          isOpen={isCreateDialogOpen}
+          onClose={() => setIsCreateDialogOpen(false)}
+        />
       </View>
     </SafeAreaView>
   );

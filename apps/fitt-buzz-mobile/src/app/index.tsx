@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button, Pressable, Text, View } from "react-native";
+import Animated, { LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
 import { FlashList } from "@shopify/flash-list";
@@ -21,7 +22,7 @@ interface TaskCardProps {
 
 function TaskCard({ task, onComplete, isRecurring }: TaskCardProps) {
   return (
-    <View className="flex flex-row rounded-lg bg-muted p-4">
+    <View className="flex flex-row rounded-lg bg-muted p-4" key={task.title}>
       <View className="flex-grow">
         <View className="flex flex-row items-center justify-between">
           <Text className="text-xl font-semibold text-primary">
@@ -71,14 +72,15 @@ export default function Index() {
     onMutate: (data) => {
       const tasks = utils.task.getAllMyActiveTasks.getData();
       if (tasks) {
-        utils.task.getAllMyActiveTasks.setData(
-          undefined,
-          tasks.filter((t) => t.id !== data.id),
-        );
+        const newTasks = tasks.filter((t) => t.id !== data.id);
+        console.log("newTasks", JSON.stringify(newTasks));
+        utils.task.getAllMyActiveTasks.setData(undefined, newTasks);
       }
     },
-    onSettled: () => utils.task.getAllMyActiveTasks.invalidate(),
+    onSettled: async () => await utils.task.getAllMyActiveTasks.invalidate(),
   });
+
+  console.log("my tasks", JSON.stringify(tasks));
 
   return (
     <SafeAreaView className="bg-background">
@@ -97,9 +99,9 @@ export default function Index() {
           </Text>
         </View>
 
-        <FlashList
+        <Animated.FlatList
           data={tasks}
-          estimatedItemSize={20}
+          // estimatedItemSize={20}
           ItemSeparatorComponent={() => <View className="h-2" />}
           renderItem={(p) => (
             <TaskCard
@@ -108,7 +110,20 @@ export default function Index() {
               onComplete={() => completeTaskMutation.mutate({ id: p.item.id })}
             />
           )}
+          contentContainerStyle={{ minHeight: "100%" }}
+          itemLayoutAnimation={LinearTransition}
         />
+
+        {/* <Animated.ScrollView>
+          {tasks?.map((task) => (
+            <TaskCard
+              task={task}
+              isRecurring={task.recurring}
+              onComplete={() => completeTaskMutation.mutate({ id: task.id })}
+              key={task.title}
+            />
+          ))}
+        </Animated.ScrollView> */}
 
         <Pressable
           className="mt-4 items-center rounded-lg bg-primary p-4"

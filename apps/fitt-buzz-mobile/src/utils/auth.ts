@@ -1,3 +1,4 @@
+import { Alert } from "react-native";
 import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 import * as Browser from "expo-web-browser";
@@ -13,6 +14,8 @@ export const signIn = async () => {
     `${signInUrl}?expo-redirect=${encodeURIComponent(redirectTo)}`,
     redirectTo,
   );
+
+  Alert.alert("result", JSON.stringify(result));
 
   if (result.type !== "success") return false;
   const url = Linking.parse(result.url);

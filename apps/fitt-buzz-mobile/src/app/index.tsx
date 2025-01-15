@@ -1,10 +1,10 @@
+import type { PropsWithChildren } from "react";
 import { useState } from "react";
 import { Button, Pressable, Text, View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
-import { FlashList } from "@shopify/flash-list";
-import { formatDistanceToNowStrict, isPast } from "date-fns";
+import { formatDistanceToNowStrict } from "date-fns";
 import { Check } from "lucide-react-native";
 
 import type { RouterOutputs } from "~/utils/api";
@@ -41,7 +41,7 @@ function TaskCard({ task, onComplete, isRecurring }: TaskCardProps) {
   );
 }
 
-function MobileAuth() {
+function MobileAuth({ children }: PropsWithChildren<object>) {
   const user = useUser();
   const signIn = useSignIn();
   const signOut = useSignOut();
@@ -54,6 +54,7 @@ function MobileAuth() {
           title={"Sign Out"}
           color={"#5B65E9"}
         />
+        {children}
       </>
     );
   }
@@ -71,7 +72,7 @@ function MobileAuth() {
   );
 }
 
-export default function Index() {
+export function MyTasks() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const utils = api.useUtils();
 
@@ -89,64 +90,57 @@ export default function Index() {
     onSettled: async () => await utils.task.getAllMyActiveTasks.invalidate(),
   });
 
-  console.log("my tasks", JSON.stringify(tasks));
+  return (
+    <View>
+      <View className="py-2">
+        <Text className="font-semibold italic text-primary">
+          Tap the check to complete a task
+        </Text>
+      </View>
 
+      <Animated.FlatList
+        data={tasks}
+        // estimatedItemSize={20}
+        ItemSeparatorComponent={() => <View className="h-2" />}
+        renderItem={(p) => (
+          <TaskCard
+            task={p.item}
+            isRecurring={p.item.recurring}
+            onComplete={() => completeTaskMutation.mutate({ id: p.item.id })}
+          />
+        )}
+        contentContainerStyle={{ minHeight: "100%" }}
+        itemLayoutAnimation={LinearTransition}
+      />
+
+      <Pressable
+        className="mt-4 items-center rounded-lg bg-primary p-4"
+        onPress={() => setIsCreateDialogOpen(true)}
+      >
+        <Text className="text-lg font-semibold text-primary-foreground">
+          Create Task
+        </Text>
+      </Pressable>
+
+      <CreateTaskDialog
+        isOpen={isCreateDialogOpen}
+        onClose={() => setIsCreateDialogOpen(false)}
+      />
+    </View>
+  );
+}
+
+export default function Index() {
   return (
     <SafeAreaView className="bg-background">
-      {/* Changes page title visible on the header */}
       <Stack.Screen options={{ title: "Tasks", headerShown: false }} />
       <View className="h-full w-full bg-background p-4">
         <Text className="top-0 pb-2 text-center text-5xl font-bold text-foreground">
           fitt.<Text className="text-primary">buzz</Text>
         </Text>
-
-        <MobileAuth />
-
-        <View className="py-2">
-          <Text className="font-semibold italic text-primary">
-            Tap the check to complete a task
-          </Text>
-        </View>
-
-        <Animated.FlatList
-          data={tasks}
-          // estimatedItemSize={20}
-          ItemSeparatorComponent={() => <View className="h-2" />}
-          renderItem={(p) => (
-            <TaskCard
-              task={p.item}
-              isRecurring={p.item.recurring}
-              onComplete={() => completeTaskMutation.mutate({ id: p.item.id })}
-            />
-          )}
-          contentContainerStyle={{ minHeight: "100%" }}
-          itemLayoutAnimation={LinearTransition}
-        />
-
-        {/* <Animated.ScrollView>
-          {tasks?.map((task) => (
-            <TaskCard
-              task={task}
-              isRecurring={task.recurring}
-              onComplete={() => completeTaskMutation.mutate({ id: task.id })}
-              key={task.title}
-            />
-          ))}
-        </Animated.ScrollView> */}
-
-        <Pressable
-          className="mt-4 items-center rounded-lg bg-primary p-4"
-          onPress={() => setIsCreateDialogOpen(true)}
-        >
-          <Text className="text-lg font-semibold text-primary-foreground">
-            Create Task
-          </Text>
-        </Pressable>
-
-        <CreateTaskDialog
-          isOpen={isCreateDialogOpen}
-          onClose={() => setIsCreateDialogOpen(false)}
-        />
+        <MobileAuth>
+          <MyTasks />
+        </MobileAuth>
       </View>
     </SafeAreaView>
   );

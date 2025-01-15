@@ -89,6 +89,7 @@ export function CreateTaskDialogForm({
         createdAt: new Date(),
         updatedAt: new Date(),
         creatorId: "1",
+        parentTaskId: null,
       };
 
       if (

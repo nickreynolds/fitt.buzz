@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { format } from "date-fns";
 import { Trash2 } from "lucide-react";
 
@@ -11,50 +12,35 @@ import {
 import { toast } from "@acme/ui/toast";
 
 import { api } from "~/trpc/react";
+import { CreateSubtaskDialogForm } from "./create-subtask-dialog";
+import { SubtaskList } from "./subtask-list";
 
 interface TaskDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  task: {
-    id: string;
-    title: string;
-    description: string | null;
-    nextDue: Date;
-    frequencyHours?: number;
-    lastCompleted?: Date | null;
-  };
+  id: string;
 }
 
 export function TaskDetailsDialog({
   open,
   onOpenChange,
-  task,
+  id,
 }: TaskDetailsDialogProps) {
+  console.log("TaskDetailsDialog id: ", id);
   const utils = api.useUtils();
-  const isRecurring = typeof task.frequencyHours !== "undefined";
+  const [createSubtaskOpen, setCreateSubtaskOpen] = useState(false);
+  const { data: task } = api.task.getTask.useQuery({ id });
 
   const deleteTask = api.task.deleteTask.useMutation({
     onMutate: () => {
       const tasks = utils.task.getAllMyActiveTasks.getData();
-      const updatedTasks = tasks?.filter((t) => t.id !== task.id);
+      const updatedTasks = tasks?.filter((t) => t.id !== id);
       utils.task.getAllMyActiveTasks.setData(undefined, updatedTasks);
-
-      const recurringTasks = utils.task.getMyActiveRecurringTasks.getData();
-      const updatedRecurringTasks = recurringTasks?.filter(
-        (t) => t.id !== task.id,
-      );
-      utils.task.getMyActiveRecurringTasks.setData(
-        undefined,
-        updatedRecurringTasks,
-      );
 
       onOpenChange(false);
     },
     onSettled: async () => {
-      await Promise.all([
-        utils.task.getAllMyActiveTasks.invalidate(),
-        utils.task.getMyActiveRecurringTasks.invalidate(),
-      ]);
+      await Promise.all([utils.task.getAllMyActiveTasks.invalidate()]);
     },
     onError: (err) => {
       toast.error(
@@ -64,6 +50,11 @@ export function TaskDetailsDialog({
       );
     },
   });
+  console.log("task", task);
+  if (!task) {
+    return null;
+  }
+  const isRecurring = task.recurring;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -114,6 +105,18 @@ export function TaskDetailsDialog({
             </>
           )}
         </div>
+
+        <SubtaskList parentTaskId={task.id} />
+
+        <Button variant="outline" onClick={() => setCreateSubtaskOpen(true)}>
+          Create Subtask
+        </Button>
+
+        <CreateSubtaskDialogForm
+          open={createSubtaskOpen}
+          onOpenChange={setCreateSubtaskOpen}
+          parentTaskId={task.id}
+        />
 
         <div className="mt-6 flex gap-2">
           <Button

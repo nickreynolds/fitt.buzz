@@ -2,7 +2,7 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
 import { eq, lte } from "@acme/db";
-import { CreateTaskSchema, Task } from "@acme/db/schema";
+import { CreateSubtaskSchema, CreateTaskSchema, Task } from "@acme/db/schema";
 import { getCompletionPeriodBegins } from "@acme/utils";
 
 import { protectedProcedure } from "../trpc";
@@ -48,11 +48,35 @@ export const taskRouter = {
         .insert(Task)
         .values({ ...input, creatorId: ctx.session.user.id });
     }),
+  createSubtask: protectedProcedure
+    .input(CreateSubtaskSchema)
+    .mutation(async ({ ctx, input }) => {
+      const parent = await ctx.db.query.Task.findFirst({
+        where: eq(Task.id, input.parentTaskId),
+      });
+      if (!parent) {
+        throw new Error("Parent task not found");
+      }
+      if (parent.creatorId !== ctx.session.user.id) {
+        throw new Error("You are not the owner of the parent task");
+      }
+      return ctx.db.insert(Task).values({
+        ...input,
+        recurring: parent.recurring,
+        frequencyHours: parent.frequencyHours ?? null,
+        nextDue: parent.nextDue,
+        completionPeriodBegins: parent.completionPeriodBegins,
+        creatorId: ctx.session.user.id,
+      });
+    }),
   completeTask: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
       const task = await ctx.db.query.Task.findFirst({
         where: eq(Task.id, input.id),
+        with: {
+          childTasks: true,
+        },
       });
 
       if (task) {
@@ -60,7 +84,26 @@ export const taskRouter = {
           throw new Error("You are not the owner of this task");
         }
 
-        if (task.recurring) {
+        // if task has children, check that all children are completed.
+        if (task.childTasks.length > 0) {
+          for (const childTask of task.childTasks) {
+            if (!childTask.lastCompleted) {
+              throw new Error("Cannot complete task with incomplete subtasks");
+            }
+            if (
+              task.completionPeriodBegins &&
+              childTask.lastCompleted < task.completionPeriodBegins
+            ) {
+              throw new Error(
+                "Cannot complete task with subtasks completed before completionPeriodBegins",
+              );
+            }
+          }
+        }
+
+        const childrenIDs = task.childTasks.map((child) => child.id);
+
+        if (!task.parentTaskId && task.recurring) {
           if (!task.frequencyHours) {
             throw new Error("Recurring task has no frequencyHours set");
           }
@@ -98,6 +141,20 @@ export const taskRouter = {
 
       throw new Error("Task not found");
     }),
+  getTask: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(({ ctx, input }) => {
+      return ctx.db.query.Task.findFirst({
+        where: eq(Task.id, input.id),
+        with: {
+          childTasks: {
+            with: {
+              childTasks: true,
+            },
+          },
+        },
+      });
+    }),
   getAllMyTasks: protectedProcedure.query(({ ctx }) => {
     return ctx.db
       .select()
@@ -105,7 +162,6 @@ export const taskRouter = {
       .where(eq(Task.creatorId, ctx.session.user.id));
   }),
   getAllMyActiveTasks: protectedProcedure.query(({ ctx }) => {
-    console.log("getAllMyActiveTasks");
     return ctx.db.query.Task.findMany({
       where: (tasks, { eq, or, and, isNull }) =>
         and(
@@ -117,6 +173,7 @@ export const taskRouter = {
               lte(tasks.completionPeriodBegins, new Date()),
             ),
           ),
+          isNull(tasks.parentTaskId),
         ),
     });
   }),

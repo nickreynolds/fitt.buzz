@@ -19,6 +19,12 @@ export const bootstrapTasks: Task[] = [
     nextDue: new Date("2025-01-20 05:51:00+00"),
   },
   {
+    title: "Pull Weights",
+    recurring: true,
+    frequencyHours: 168,
+    nextDue: new Date("2025-01-16 14:41:00+00"),
+  },
+  {
     title: "1 Hour Leetcode",
     recurring: true,
     frequencyHours: 24,

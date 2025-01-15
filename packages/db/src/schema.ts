@@ -1,3 +1,4 @@
+import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
 import { pgTable, primaryKey } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
@@ -21,6 +22,16 @@ export const Task = pgTable("task", (t) => ({
     .uuid()
     .notNull()
     .references(() => User.id),
+  parentTaskId: t.uuid().references((): AnyPgColumn => Task.id),
+}));
+
+export const TaskRelations = relations(Task, ({ one, many }) => ({
+  parentTask: one(Task, {
+    fields: [Task.parentTaskId],
+    references: [Task.id],
+    relationName: "ParentTask",
+  }),
+  childTasks: many(Task, { relationName: "ParentTask" }),
 }));
 
 export const CreateTaskSchema = z.object({
@@ -29,6 +40,12 @@ export const CreateTaskSchema = z.object({
   recurring: z.boolean(),
   frequencyHours: z.number().optional(),
   nextDue: z.date(),
+});
+
+export const CreateSubtaskSchema = z.object({
+  title: z.string().max(256),
+  description: z.string().max(256),
+  parentTaskId: z.string().uuid(),
 });
 
 export const User = pgTable("user", (t) => ({

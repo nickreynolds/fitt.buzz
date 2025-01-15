@@ -37,16 +37,6 @@ export function TaskCard({ task, isRecurring }: TaskCardProps) {
       const tasks = utils.task.getAllMyActiveTasks.getData();
       const updatedTasks = tasks?.filter((t) => t.id !== task.id);
       utils.task.getAllMyActiveTasks.setData(undefined, updatedTasks);
-
-      // remove recurring task if found (it will come back later)
-      const recurringTasks = utils.task.getMyActiveRecurringTasks.getData();
-      const updatedRecurringTasks = recurringTasks?.filter(
-        (t) => t.id !== task.id,
-      );
-      utils.task.getMyActiveRecurringTasks.setData(
-        undefined,
-        updatedRecurringTasks,
-      );
     },
     onSettled: async () => {
       await utils.task.invalidate();
@@ -61,6 +51,15 @@ export function TaskCard({ task, isRecurring }: TaskCardProps) {
   });
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
+  // if (nextDue is in past AND lastCompleted is not set or lastCompleted is before completionPeriodBegins)
+  const showNextDue =
+    task.nextDue < new Date() &&
+    (!task.lastCompleted ||
+      (task.completionPeriodBegins &&
+        task.lastCompleted < task.completionPeriodBegins));
+
+  console.log("showNextDue", showNextDue);
+
   return (
     <div className="flex w-full flex-row rounded-lg bg-muted p-4">
       <div className="flex-grow">
@@ -73,7 +72,7 @@ export function TaskCard({ task, isRecurring }: TaskCardProps) {
             {isRecurring && <span className="text-muted-foreground"> ↻</span>}
           </h2>
 
-          {getTimeStatus(task.nextDue)}
+          {showNextDue && getTimeStatus(task.nextDue)}
         </div>
         <p className="mt-2 text-sm">{task.description}</p>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -88,6 +87,7 @@ export function TaskCard({ task, isRecurring }: TaskCardProps) {
           variant="ghost"
           className="cursor-pointer text-sm font-bold uppercase text-primary hover:bg-transparent hover:text-white"
           onClick={() => completeTask.mutate({ id: task.id })}
+          disabled={!showNextDue}
         >
           <Check className="h-5 w-5" />
         </Button>
@@ -95,7 +95,7 @@ export function TaskCard({ task, isRecurring }: TaskCardProps) {
       <TaskDetailsDialog
         open={isDetailsOpen}
         onOpenChange={setIsDetailsOpen}
-        task={task}
+        id={task.id}
       />
     </div>
   );

@@ -1,7 +1,6 @@
-import { Text } from "react-native";
+import { Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
-import { View } from "lucide-react-native";
 
 export default function Index() {
   return (

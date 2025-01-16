@@ -1,45 +1,12 @@
 import type { PropsWithChildren } from "react";
-import { useState } from "react";
-import { Button, Pressable, Text, View } from "react-native";
+import { Button, Text, View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
-import { formatDistanceToNowStrict } from "date-fns";
-import { Check } from "lucide-react-native";
 
-import type { RouterOutputs } from "~/utils/api";
 import { api } from "~/utils/api";
 import { useSignIn, useSignOut, useUser } from "~/utils/auth";
-import { CreateTaskDialog } from "./_components/create-task-dialog";
-
-type RegularTask = RouterOutputs["task"]["getAllMyActiveTasks"][number];
-
-interface TaskCardProps {
-  task: RegularTask;
-  onComplete: () => void;
-  isRecurring?: boolean;
-}
-
-function TaskCard({ task, onComplete, isRecurring }: TaskCardProps) {
-  return (
-    <View className="flex flex-row rounded-lg bg-muted p-4" key={task.title}>
-      <View className="flex-grow">
-        <View className="flex flex-row items-center justify-between">
-          <Text className="text-xl font-semibold text-primary">
-            {task.title}
-            {isRecurring && <Text className="text-muted-foreground"> ↻</Text>}
-          </Text>
-        </View>
-        <Text className="mt-2 text-foreground">
-          Due in {formatDistanceToNowStrict(task.nextDue, { unit: "hour" })}
-        </Text>
-      </View>
-      <Pressable onPress={onComplete}>
-        <Check className="h-6 w-6" stroke="#5B65E9" strokeWidth={2} />
-      </Pressable>
-    </View>
-  );
-}
+import TaskCard from "../_components/task-card";
 
 function MobileAuth({ children }: PropsWithChildren<object>) {
   const user = useUser();
@@ -73,7 +40,6 @@ function MobileAuth({ children }: PropsWithChildren<object>) {
 }
 
 export function MyTasks() {
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const utils = api.useUtils();
 
   const { data: tasks } = api.task.getAllMyActiveTasks.useQuery();
@@ -91,7 +57,7 @@ export function MyTasks() {
   });
 
   return (
-    <View>
+    <View className="relative h-full grow">
       <View className="py-2">
         <Text className="font-semibold italic text-primary">
           Tap the check to complete a task
@@ -111,20 +77,6 @@ export function MyTasks() {
         )}
         contentContainerStyle={{ minHeight: "100%" }}
         itemLayoutAnimation={LinearTransition}
-      />
-
-      <Pressable
-        className="mt-4 items-center rounded-lg bg-primary p-4"
-        onPress={() => setIsCreateDialogOpen(true)}
-      >
-        <Text className="text-lg font-semibold text-primary-foreground">
-          Create Task
-        </Text>
-      </Pressable>
-
-      <CreateTaskDialog
-        isOpen={isCreateDialogOpen}
-        onClose={() => setIsCreateDialogOpen(false)}
       />
     </View>
   );

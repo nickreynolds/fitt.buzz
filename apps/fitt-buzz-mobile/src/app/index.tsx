@@ -5,8 +5,7 @@ import Animated, { LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
 import { formatDistanceToNowStrict } from "date-fns";
-
-// import { Check } from "lucide-react-native";
+import { Check } from "lucide-react-native";
 
 import type { RouterOutputs } from "~/utils/api";
 import { api } from "~/utils/api";
@@ -36,7 +35,7 @@ function TaskCard({ task, onComplete, isRecurring }: TaskCardProps) {
         </Text>
       </View>
       <Pressable onPress={onComplete}>
-        {/* <Check className="h-6 w-6" stroke="#5B65E9" strokeWidth={2} /> */}
+        <Check className="h-6 w-6" stroke="#5B65E9" strokeWidth={2} />
       </Pressable>
     </View>
   );

@@ -9,23 +9,26 @@ import { deleteToken, setToken } from "./session-store";
 
 export const signIn = async () => {
   const signInUrl = `${getBaseUrl()}/api/auth/signin`;
-  const redirectTo = Linking.createURL("/login");
+  const redirectTo = Linking.createURL("/");
   const result = await Browser.openAuthSessionAsync(
     `${signInUrl}?expo-redirect=${encodeURIComponent(redirectTo)}`,
     redirectTo,
   );
-
-  Alert.alert("result", JSON.stringify(result));
 
   if (result.type !== "success") return false;
   const url = Linking.parse(result.url);
   const sessionToken = String(url.queryParams?.session_token);
   if (!sessionToken) throw new Error("No session token found");
 
+  console.log("set session: ", sessionToken);
   setToken(sessionToken);
 
   return true;
 };
+
+function delay(time: number) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}
 
 export const useUser = () => {
   const { data: session } = api.auth.getSession.useQuery();
@@ -41,6 +44,16 @@ export const useSignIn = () => {
     if (!success) return;
 
     await utils.invalidate();
+    await utils.invalidate();
+    await utils.auth.getSession.invalidate();
+    console.log("delay.");
+    await delay(1000);
+    await utils.invalidate();
+    await utils.auth.getSession.invalidate();
+    console.log("delay.2.");
+    await delay(1000);
+    await utils.invalidate();
+    await utils.auth.getSession.invalidate();
     router.replace("/");
   };
 };

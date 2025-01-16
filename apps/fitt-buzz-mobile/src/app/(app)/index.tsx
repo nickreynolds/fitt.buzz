@@ -6,7 +6,7 @@ import { Stack } from "expo-router";
 
 import { api } from "~/utils/api";
 import { useSignIn, useSignOut, useUser } from "~/utils/auth";
-import TaskCard from "../_components/task-card";
+import TaskCard from "../../_components/task-card";
 
 function MobileAuth({ children }: PropsWithChildren<object>) {
   const user = useUser();

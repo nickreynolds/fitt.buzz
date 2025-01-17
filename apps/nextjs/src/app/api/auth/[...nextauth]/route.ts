@@ -33,6 +33,7 @@ export const GET = async (
   _req: NextRequest,
   props: { params: { nextauth: string[] } },
 ) => {
+  console.log("GET", _req.url);
   // First step must be to correct the request URL.
   const req = rewriteRequestUrlInDevelopment(_req);
 

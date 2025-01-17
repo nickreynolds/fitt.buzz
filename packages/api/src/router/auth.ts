@@ -6,12 +6,14 @@ import { protectedProcedure, publicProcedure } from "../trpc";
 
 export const authRouter = {
   getSession: publicProcedure.query(({ ctx }) => {
+    console.log("getting session:", ctx);
     return ctx.session;
   }),
   getSecretMessage: protectedProcedure.query(() => {
     return "you can see this secret message!";
   }),
   signOut: protectedProcedure.mutation(async (opts) => {
+    console.log("sign out.");
     if (!opts.ctx.token) {
       return { success: false };
     }

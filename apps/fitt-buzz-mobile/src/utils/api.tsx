@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Alert } from "react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
@@ -38,6 +39,7 @@ export function TRPCProvider(props: { children: React.ReactNode }) {
             headers.set("x-trpc-source", "expo-react");
 
             const token = getToken();
+            Alert.alert("token", token ?? "none");
             if (token) headers.set("Authorization", `Bearer ${token}`);
 
             return Object.fromEntries(headers);

@@ -21,7 +21,7 @@ import { db } from "@acme/db/client";
  */
 const isomorphicGetSession = async (headers: Headers) => {
   console.log("isomorphicGetSession headers: ", headers);
-  const authToken = headers.get("Authorization") ?? null;
+  const authToken = headers.get("X-Authorization") ?? null;
   if (authToken) return validateToken(authToken);
   return auth();
 };
@@ -42,7 +42,7 @@ export const createTRPCContext = async (opts: {
   headers: Headers;
   session: Session | null;
 }) => {
-  const authToken = opts.headers.get("Authorization") ?? null;
+  const authToken = opts.headers.get("X-Authorization") ?? null;
   const session = await isomorphicGetSession(opts.headers);
 
   const source = opts.headers.get("x-trpc-source") ?? "unknown";

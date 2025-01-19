@@ -80,16 +80,17 @@ export function CreateTaskDialogForm({
       const task = {
         id: "1",
         title: data.title,
-        description: data.description ?? "",
+        description: data.description,
         nextDue: data.nextDue,
         lastCompleted: null,
-        recurring: data.recurring ?? false,
+        recurring: data.recurring,
         frequencyHours: data.frequencyHours ?? null,
         completionPeriodBegins,
         createdAt: new Date(),
         updatedAt: new Date(),
         creatorId: "1",
         parentTaskId: null,
+        childTasks: [],
       };
 
       if (

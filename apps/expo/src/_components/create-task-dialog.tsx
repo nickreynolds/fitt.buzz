@@ -50,6 +50,7 @@ export function CreateTaskDialog({ isOpen, onClose }: CreateTaskDialogProps) {
           createdAt: new Date(),
           updatedAt: new Date(),
           parentTaskId: null,
+          childTasks: [],
         };
 
         const tasks = utils.task.getAllMyActiveTasks.getData();

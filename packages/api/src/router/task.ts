@@ -156,10 +156,13 @@ export const taskRouter = {
       });
     }),
   getAllMyTasks: protectedProcedure.query(({ ctx }) => {
-    return ctx.db
-      .select()
-      .from(Task)
-      .where(eq(Task.creatorId, ctx.session.user.id));
+    return ctx.db.query.Task.findMany({
+      where: (tasks, { eq, and }) =>
+        and(eq(tasks.creatorId, ctx.session.user.id)),
+      with: {
+        childTasks: true,
+      },
+    });
   }),
   getAllMyActiveTasks: protectedProcedure.query(({ ctx }) => {
     return ctx.db.query.Task.findMany({
@@ -175,9 +178,11 @@ export const taskRouter = {
           ),
           isNull(tasks.parentTaskId),
         ),
+      with: {
+        childTasks: true,
+      },
     });
   }),
-
   deleteTask: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {

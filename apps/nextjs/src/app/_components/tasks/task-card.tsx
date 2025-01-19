@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link.js";
 import { formatDistanceToNowStrict, isPast } from "date-fns";
 import { Check } from "lucide-react";
 
@@ -58,23 +59,41 @@ export function TaskCard({ task, isRecurring }: TaskCardProps) {
       (task.completionPeriodBegins &&
         task.lastCompleted < task.completionPeriodBegins));
 
-  const canBeCompleted =
+  const inCompletionPeriod =
     !task.recurring ||
     (task.completionPeriodBegins && new Date() > task.completionPeriodBegins);
 
+  const numChildTasks = task.childTasks.length;
+
+  console.log("numChildTasks", numChildTasks);
+  const numCompletedChildTasks = task.completionPeriodBegins
+    ? task.childTasks.filter(
+        (childTask) =>
+          childTask.lastCompleted &&
+          task.completionPeriodBegins &&
+          childTask.lastCompleted > task.completionPeriodBegins,
+      ).length
+    : 0;
+  console.log("numCompletedChildTasks", numCompletedChildTasks);
+
   console.log("showNextDue", showNextDue);
+
+  const canBeCompleted =
+    inCompletionPeriod && numCompletedChildTasks === numChildTasks;
 
   return (
     <div className="flex w-full flex-row rounded-lg bg-muted p-4">
       <div className="flex-grow">
         <div className="flex items-center justify-between">
-          <h2
-            className="text-2xl font-bold text-primary"
-            onClick={() => setIsDetailsOpen(true)}
-          >
-            {task.title}
-            {isRecurring && <span className="text-muted-foreground"> ↻</span>}
-          </h2>
+          <Link href={`/task/${task.id}`}>
+            <h2
+              className="text-2xl font-bold text-primary"
+              // onClick={() => setIsDetailsOpen(true)}
+            >
+              {task.title}
+              {isRecurring && <span className="text-muted-foreground"> ↻</span>}
+            </h2>
+          </Link>
 
           {showNextDue && getTimeStatus(task.nextDue)}
         </div>
@@ -82,25 +101,28 @@ export function TaskCard({ task, isRecurring }: TaskCardProps) {
         <p className="mt-2 text-sm text-muted-foreground">
           Due Date: {task.nextDue.toISOString()}
           <br />
-          CompletionPeriodBegins:{" "}
-          {(task as any)?.completionPeriodBegins?.toISOString()}
+          CompletionPeriodBegins: {task.completionPeriodBegins?.toISOString()}
         </p>
       </div>
       <div>
-        <Button
-          variant="ghost"
-          className="cursor-pointer text-sm font-bold uppercase text-primary hover:bg-transparent hover:text-white"
-          onClick={() => completeTask.mutate({ id: task.id })}
-          disabled={!canBeCompleted}
-        >
-          <Check className="h-5 w-5" />
-        </Button>
+        {canBeCompleted && (
+          <Button
+            variant="ghost"
+            className="cursor-pointer text-sm font-bold uppercase text-primary hover:bg-transparent hover:text-white"
+            onClick={() => completeTask.mutate({ id: task.id })}
+            disabled={!canBeCompleted}
+          >
+            <Check className="h-5 w-5" />
+          </Button>
+        )}
+        {numCompletedChildTasks < numChildTasks &&
+          numCompletedChildTasks + " / " + numChildTasks}
       </div>
-      <TaskDetailsDialog
+      {/* <TaskDetailsDialog
         open={isDetailsOpen}
         onOpenChange={setIsDetailsOpen}
         id={task.id}
-      />
+      /> */}
     </div>
   );
 }

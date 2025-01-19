@@ -58,6 +58,10 @@ export function TaskCard({ task, isRecurring }: TaskCardProps) {
       (task.completionPeriodBegins &&
         task.lastCompleted < task.completionPeriodBegins));
 
+  const canBeCompleted =
+    !task.recurring ||
+    (task.completionPeriodBegins && new Date() > task.completionPeriodBegins);
+
   console.log("showNextDue", showNextDue);
 
   return (
@@ -87,7 +91,7 @@ export function TaskCard({ task, isRecurring }: TaskCardProps) {
           variant="ghost"
           className="cursor-pointer text-sm font-bold uppercase text-primary hover:bg-transparent hover:text-white"
           onClick={() => completeTask.mutate({ id: task.id })}
-          disabled={!showNextDue}
+          disabled={!canBeCompleted}
         >
           <Check className="h-5 w-5" />
         </Button>

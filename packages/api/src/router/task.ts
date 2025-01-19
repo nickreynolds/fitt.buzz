@@ -1,7 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { eq, lte } from "@acme/db";
+import { eq, inArray, lte } from "@acme/db";
 import { CreateSubtaskSchema, CreateTaskSchema, Task } from "@acme/db/schema";
 import { getCompletionPeriodBegins } from "@acme/utils";
 
@@ -127,7 +127,7 @@ export const taskRouter = {
               ),
               nextDue: new Date(dueDate),
             })
-            .where(eq(Task.id, input.id));
+            .where(inArray(Task.id, [input.id, ...childrenIDs]));
           console.log("res", res);
           return res;
         } else {

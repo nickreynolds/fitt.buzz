@@ -10,7 +10,6 @@ import { Button } from "@acme/ui/button";
 import { toast } from "@acme/ui/toast";
 
 import { api } from "~/trpc/react";
-import { TaskDetailsDialog } from "./task-details-dialog";
 
 function getTimeStatus(date: Date) {
   if (isPast(date)) {
@@ -50,7 +49,6 @@ export function TaskCard({ task, isRecurring }: TaskCardProps) {
       );
     },
   });
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   // if (nextDue is in past AND lastCompleted is not set or lastCompleted is before completionPeriodBegins)
   const showNextDue =
@@ -63,23 +61,32 @@ export function TaskCard({ task, isRecurring }: TaskCardProps) {
     !task.recurring ||
     (task.completionPeriodBegins && new Date() > task.completionPeriodBegins);
 
+  const alreadyCompleted =
+    (!task.recurring && task.lastCompleted) ||
+    (task.recurring &&
+      task.completionPeriodBegins &&
+      task.lastCompleted &&
+      task.lastCompleted > task.completionPeriodBegins);
+
   const numChildTasks = task.childTasks.length;
 
   console.log("numChildTasks", numChildTasks);
-  const numCompletedChildTasks = task.completionPeriodBegins
-    ? task.childTasks.filter(
-        (childTask) =>
-          childTask.lastCompleted &&
-          task.completionPeriodBegins &&
-          childTask.lastCompleted > task.completionPeriodBegins,
-      ).length
-    : 0;
+  const numCompletedChildTasks = task.childTasks.filter(
+    (childTask) =>
+      (task.recurring &&
+        childTask.lastCompleted &&
+        task.completionPeriodBegins &&
+        childTask.lastCompleted > task.completionPeriodBegins) ||
+      (!task.recurring && childTask.lastCompleted),
+  ).length;
   console.log("numCompletedChildTasks", numCompletedChildTasks);
 
   console.log("showNextDue", showNextDue);
 
   const canBeCompleted =
-    inCompletionPeriod && numCompletedChildTasks === numChildTasks;
+    inCompletionPeriod &&
+    numCompletedChildTasks === numChildTasks &&
+    !alreadyCompleted;
 
   return (
     <div className="flex w-full flex-row rounded-lg bg-muted p-4">

@@ -1,15 +1,13 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
-import { ArrowLeft } from "lucide-react";
-
-import { Button } from "@acme/ui/button";
 
 import { Layout } from "~/app/_components/Layout";
 import BackButton from "~/app/_components/tasks/back-button";
 import { CreateSubtaskButton } from "~/app/_components/tasks/create-subtask-button";
 import { DeleteTaskButton } from "~/app/_components/tasks/delete-task-button";
 import { SubtaskList } from "~/app/_components/tasks/subtask-list";
+import { TaskDetails } from "~/app/_components/tasks/task-details";
+import { TaskDetailsDialog } from "~/app/_components/tasks/task-details-dialog";
 import { api, HydrateClient } from "~/trpc/server";
 
 export default async function TaskPage({ params }: { params: { id: string } }) {
@@ -20,66 +18,21 @@ export default async function TaskPage({ params }: { params: { id: string } }) {
     notFound();
   }
 
-  const isRecurring = task.recurring;
-
   return (
     <HydrateClient>
       <Layout>
-        <div className="flex min-h-full w-full flex-col items-center px-4 py-16 sm:px-6 lg:px-8">
-          <div className="w-full">
-            <div className="mx-auto w-full min-w-[33%] md:w-3/4 lg:w-2/3">
-              <div className="mb-6">
+        <div className="flex min-h-full w-full flex-col px-4 py-16 sm:px-6 lg:px-8">
+          <div className="flex w-full gap-8">
+            {/* Main Content */}
+            <div className="flex-1">
+              <div className="mb-6 flex items-center justify-between">
                 <BackButton parentTaskId={task.parentTaskId} />
+                <TaskDetailsDialog id={task.id} />
               </div>
 
               <div className="space-y-6">
                 <div>
                   <h1 className="text-2xl font-bold">{task.title}</h1>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-sm font-medium">Description</h3>
-                    <p className="mt-1 text-muted-foreground">
-                      {task.description ?? "No description provided"}
-                    </p>
-                  </div>
-
-                  <div>
-                    <h3 className="text-sm font-medium">Due Date</h3>
-                    <p className="mt-1 text-muted-foreground">
-                      {format(task.nextDue, "PPP 'at' p")}
-                    </p>
-                  </div>
-
-                  {isRecurring && (
-                    <>
-                      <div>
-                        <h3 className="text-sm font-medium">Frequency</h3>
-                        <p className="mt-1 text-muted-foreground">
-                          Every{" "}
-                          {task.frequencyHours === 24
-                            ? "day"
-                            : task.frequencyHours === 168
-                              ? "week"
-                              : task.frequencyHours === 336
-                                ? "two weeks"
-                                : "month"}
-                        </p>
-                      </div>
-
-                      {task.lastCompleted && (
-                        <div>
-                          <h3 className="text-sm font-medium">
-                            Last Completed
-                          </h3>
-                          <p className="mt-1 text-muted-foreground">
-                            {format(task.lastCompleted, "PPP 'at' p")}
-                          </p>
-                        </div>
-                      )}
-                    </>
-                  )}
                 </div>
 
                 <div>
@@ -92,6 +45,12 @@ export default async function TaskPage({ params }: { params: { id: string } }) {
                   <DeleteTaskButton taskId={task.id} />
                 </div>
               </div>
+            </div>
+
+            {/* Details Sidebar - Hidden on smaller screens */}
+            <div className="hidden w-80 shrink-0 rounded-lg border border-border bg-card p-6 xl:block">
+              <h2 className="mb-4 text-lg font-semibold">Task Details</h2>
+              <TaskDetails id={task.id} />
             </div>
           </div>
         </div>

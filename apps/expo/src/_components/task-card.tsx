@@ -1,4 +1,5 @@
 import { Pressable, Text, View } from "react-native";
+import { Link } from "expo-router";
 import { formatDistanceToNowStrict } from "date-fns";
 import { Check } from "lucide-react-native";
 
@@ -17,14 +18,17 @@ export default function TaskCard({
   onComplete,
   isRecurring,
 }: TaskCardProps) {
+  console.log("going to add link to task id: ", task.id);
   return (
     <View className="flex flex-row rounded-lg bg-muted p-4" key={task.title}>
       <View className="flex-grow">
         <View className="flex flex-row items-center justify-between">
-          <Text className="text-xl font-semibold text-primary">
-            {task.title}
-            {isRecurring && <Text className="text-muted-foreground"> ↻</Text>}
-          </Text>
+          <Link href={`/task/${task.id}`}>
+            <Text className="text-xl font-semibold text-primary">
+              {task.title}
+              {isRecurring && <Text className="text-muted-foreground"> ↻</Text>}
+            </Text>
+          </Link>
         </View>
         <Text className="mt-2 text-foreground">
           Due in {formatDistanceToNowStrict(task.nextDue, { unit: "hour" })}

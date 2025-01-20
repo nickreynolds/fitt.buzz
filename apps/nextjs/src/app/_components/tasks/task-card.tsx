@@ -33,12 +33,30 @@ export function TaskCard({ task, isRecurring }: TaskCardProps) {
     onMutate: () => {
       console.log("on mutate.");
 
+      if (task.parentTaskId) {
+        const parentTask = utils.task.getTask.getData({
+          id: task.parentTaskId,
+        });
+        if (parentTask) {
+          const updatedChildTasks = parentTask.childTasks.map((t) => {
+            if (t.id === task.id) {
+              return { ...t, lastCompleted: new Date() };
+            }
+            return t;
+          });
+          parentTask.childTasks = updatedChildTasks;
+          utils.task.getTask.setData({ id: task.parentTaskId }, parentTask);
+        }
+      }
       // remove regular task if found
       const tasks = utils.task.getAllMyActiveTasks.getData();
       const updatedTasks = tasks?.filter((t) => t.id !== task.id);
       utils.task.getAllMyActiveTasks.setData(undefined, updatedTasks);
     },
     onSettled: async () => {
+      if (task.parentTaskId) {
+        await utils.task.getTask.invalidate({ id: task.parentTaskId });
+      }
       await utils.task.invalidate();
     },
     onError: (err) => {

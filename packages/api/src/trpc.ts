@@ -20,7 +20,6 @@ import { db } from "@acme/db/client";
  * - Next.js requests will have a session token in cookies
  */
 const isomorphicGetSession = async (headers: Headers) => {
-  console.log("isomorphicGetSession headers: ", headers);
   const authToken = headers.get("X-Authorization") ?? null;
   if (authToken) return validateToken(authToken);
   return auth();

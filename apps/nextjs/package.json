@@ -48,6 +48,7 @@
     "jiti": "^1.21.6",
     "prettier": "catalog:",
     "tailwindcss": "catalog:",
+    "tailwindcss-motion": "^1.0.1",
     "typescript": "catalog:"
   },
   "prettier": "@acme/prettier-config"

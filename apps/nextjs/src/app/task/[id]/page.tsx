@@ -37,7 +37,10 @@ export default async function TaskPage({ params }: { params: { id: string } }) {
 
                 <div>
                   <h2 className="mb-4 text-xl font-semibold">Subtasks</h2>
-                  <SubtaskList parentTaskId={task.id} />
+                  <SubtaskList
+                    childTasks={task.childTasks}
+                    parentTaskId={task.id}
+                  />
                   <CreateSubtaskButton taskId={task.id} />
                 </div>
 
@@ -48,9 +51,15 @@ export default async function TaskPage({ params }: { params: { id: string } }) {
             </div>
 
             {/* Details Sidebar - Hidden on smaller screens */}
-            <div className="hidden w-80 shrink-0 rounded-lg border border-border bg-card p-6 xl:block">
+            <div className="motion-translate-x-in-[0%] motion-translate-y-in-[-100%] motion-rotate-in-[-35deg] hidden w-80 shrink-0 rounded-lg border border-border bg-card p-6 xl:block">
               <h2 className="mb-4 text-lg font-semibold">Task Details</h2>
-              <TaskDetails id={task.id} />
+              <TaskDetails
+                isRecurring={task.recurring}
+                description={task.description}
+                nextDue={task.nextDue}
+                frequencyHours={task.frequencyHours}
+                lastCompleted={task.lastCompleted}
+              />
             </div>
           </div>
         </div>

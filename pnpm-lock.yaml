@@ -348,6 +348,9 @@ importers:
       tailwindcss:
         specifier: 'catalog:'
         version: 3.4.14(ts-node@10.9.2(@types/node@20.17.7)(typescript@5.6.3))
+      tailwindcss-motion:
+        specifier: ^1.0.1
+        version: 1.0.1(tailwindcss@3.4.14(ts-node@10.9.2(@types/node@20.17.7)(typescript@5.6.3)))
       typescript:
         specifier: 'catalog:'
         version: 5.6.3
@@ -7999,6 +8002,11 @@ packages:
 
   tailwindcss-animate@1.0.7:
     resolution: {integrity: sha512-bl6mpH3T7I3UFxuvDEXLxy/VuFxBk5bbzplh7tXI68mwMokNYd1t9qPBHlnyTwfa4JGC4zP516I1hYYtQ/vspA==}
+    peerDependencies:
+      tailwindcss: '>=3.0.0 || insiders'
+
+  tailwindcss-motion@1.0.1:
+    resolution: {integrity: sha512-ZqarvI3XSclT46Dq1wOo9qG9Yx0TIyEtkMfTo8l0JuVKvO1WiSbvAECuTqdYHpC9Ml7abuJIk7u907SBHYprwQ==}
     peerDependencies:
       tailwindcss: '>=3.0.0 || insiders'
 
@@ -17114,6 +17122,10 @@ snapshots:
   tailwindcss-animate@1.0.7(tailwindcss@3.4.14(ts-node@10.9.2(@types/node@22.10.5)(typescript@5.6.3))):
     dependencies:
       tailwindcss: 3.4.14(ts-node@10.9.2(@types/node@22.10.5)(typescript@5.6.3))
+
+  tailwindcss-motion@1.0.1(tailwindcss@3.4.14(ts-node@10.9.2(@types/node@20.17.7)(typescript@5.6.3))):
+    dependencies:
+      tailwindcss: 3.4.14(ts-node@10.9.2(@types/node@20.17.7)(typescript@5.6.3))
 
   tailwindcss@3.4.14(ts-node@10.9.2(@types/node@20.17.7)(typescript@5.6.3)):
     dependencies:

@@ -5,7 +5,7 @@ import * as Browser from "expo-web-browser";
 
 import { api } from "./api";
 import { getBaseUrl } from "./base-url";
-import { deleteToken, getToken, setToken } from "./session-store";
+import { deleteToken, setToken } from "./session-store";
 
 export const signIn = async () => {
   const signInUrl = `${getBaseUrl()}/api/auth/signin`;
@@ -20,11 +20,7 @@ export const signIn = async () => {
   const sessionToken = String(url.queryParams?.session_token);
   if (!sessionToken) throw new Error("No session token found");
 
-  Alert.alert("setting sessionToken", sessionToken);
   setToken(sessionToken);
-
-  const newToken = getToken();
-  Alert.alert("New token", newToken ?? "none");
 
   return true;
 };

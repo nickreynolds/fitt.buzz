@@ -40,7 +40,6 @@ export function TRPCProvider(props: { children: React.ReactNode }) {
             // headers.set("x-fake-header", "fake-value");
 
             const token = getToken();
-            Alert.alert("token", token ?? "none");
             if (token) headers.set("X-Authorization", `Bearer ${token}`);
 
             return Object.fromEntries(headers);

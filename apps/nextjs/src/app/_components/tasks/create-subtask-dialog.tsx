@@ -1,11 +1,9 @@
 import type { z } from "zod";
-import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import { CreateSubtaskSchema, CreateTaskSchema } from "@acme/db/schema";
+import { CreateSubtaskSchema } from "@acme/db/schema";
 import { Button } from "@acme/ui/button";
-import { Checkbox } from "@acme/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -21,14 +19,6 @@ import {
   FormMessage,
 } from "@acme/ui/form";
 import { Input } from "@acme/ui/input";
-import { Label } from "@acme/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@acme/ui/select";
 import { Textarea } from "@acme/ui/textarea";
 import { getCompletionPeriodBegins } from "@acme/utils";
 
@@ -45,8 +35,6 @@ export function CreateSubtaskDialogForm({
   onOpenChange,
   parentTaskId,
 }: CreateSubtaskDialogFormProps) {
-  const [isRecurring, setIsRecurring] = useState(false);
-
   const zodSchema = CreateSubtaskSchema.omit({ parentTaskId: true });
 
   const form = useForm({
@@ -77,7 +65,7 @@ export function CreateSubtaskDialogForm({
       const task = {
         id: "1",
         title: data.title,
-        description: data.description ?? "",
+        description: data.description,
         nextDue: parentTask.nextDue,
         lastCompleted: null,
         recurring: parentTask.recurring,

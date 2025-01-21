@@ -27,7 +27,7 @@ export function SubtaskList({ childTasks, parentTaskId }: SubtaskListProps) {
   return (
     <div className="flex w-full flex-col gap-4">
       <TransitionGroup component={null}>
-        {childTasks.map((task, index) => {
+        {childTasks.map((task) => {
           // const delay = index * 500;
           return (
             <CSSTransition key={task.title} timeout={300} classNames="task">

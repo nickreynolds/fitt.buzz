@@ -10,5 +10,5 @@ export default function getNumCompletedChildTasks(
         task.completionPeriodBegins &&
         childTask.lastCompleted > task.completionPeriodBegins) ||
       (!task.recurring && childTask.lastCompleted),
-  )?.length;
+  ).length;
 }

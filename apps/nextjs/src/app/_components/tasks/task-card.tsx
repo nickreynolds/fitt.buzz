@@ -1,27 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link.js";
-import { formatDistanceToNowStrict, isPast } from "date-fns";
-import { Check } from "lucide-react";
-
 import type { RouterOutputs } from "@acme/api";
-import { Button } from "@acme/ui/button";
-import { toast } from "@acme/ui/toast";
 
 import { api } from "~/trpc/react";
 import TaskHeader from "./task-header";
-
-function getTimeStatus(date: Date) {
-  if (isPast(date)) {
-    return <span className="text-destructive">Past due</span>;
-  }
-  return (
-    <span className="text-muted-foreground">
-      Due in {formatDistanceToNowStrict(date, { unit: "hour" })}
-    </span>
-  );
-}
 
 interface TaskCardProps {
   task: RouterOutputs["task"]["getTask"];

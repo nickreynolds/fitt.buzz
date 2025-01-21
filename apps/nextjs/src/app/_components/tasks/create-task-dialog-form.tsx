@@ -175,7 +175,7 @@ export function CreateTaskDialogForm({
               <FormField
                 control={form.control}
                 name="recurring"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <Checkbox
                       id="recurring"

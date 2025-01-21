@@ -1,11 +1,7 @@
 import { notFound } from "next/navigation";
-import { format } from "date-fns";
-
-import { canBeCompleted } from "@acme/api";
 
 import { Layout } from "~/app/_components/Layout";
 import BackButton from "~/app/_components/tasks/back-button";
-import { CompleteTaskButton } from "~/app/_components/tasks/complete-task-button";
 import { CreateSubtaskButton } from "~/app/_components/tasks/create-subtask-button";
 import { DeleteTaskButton } from "~/app/_components/tasks/delete-task-button";
 import { SubtaskList } from "~/app/_components/tasks/subtask-list";

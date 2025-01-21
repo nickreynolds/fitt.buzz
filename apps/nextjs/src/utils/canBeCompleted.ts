@@ -16,7 +16,7 @@ export default function canBeCompleted(
       task.lastCompleted &&
       task.lastCompleted > task.completionPeriodBegins);
 
-  const numChildTasks = task.childTasks?.length;
+  const numChildTasks = task.childTasks.length;
 
   const numCompletedChildTasks = getNumCompletedChildTasks(task);
 

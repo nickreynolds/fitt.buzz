@@ -1,10 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { Check, Trash2 } from "lucide-react";
-
 import { Button } from "@acme/ui/button";
-import { toast } from "@acme/ui/toast";
 
 import { api } from "~/trpc/react";
 

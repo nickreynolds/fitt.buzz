@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle, Circle, CircleArrowDown } from "lucide-react";
+import { CheckCircle, Circle } from "lucide-react";
 
 import type { RouterOutputs } from "@acme/api";
 

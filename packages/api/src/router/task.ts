@@ -160,7 +160,11 @@ export const taskRouter = {
       where: (tasks, { eq, and }) =>
         and(eq(tasks.creatorId, ctx.session.user.id)),
       with: {
-        childTasks: true,
+        childTasks: {
+          with: {
+            childTasks: true,
+          },
+        },
       },
     });
   }),

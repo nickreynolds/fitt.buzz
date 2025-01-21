@@ -5,8 +5,6 @@ import { Check } from "lucide-react-native";
 
 import type { RouterOutputs } from "@acme/api";
 
-import { api } from "~/utils/api";
-
 interface TaskHeaderProps {
   initialTask: RouterOutputs["task"]["getTask"];
   onComplete: () => void;

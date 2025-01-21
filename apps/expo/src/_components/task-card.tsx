@@ -1,7 +1,4 @@
-import { Pressable, Text, View } from "react-native";
-import { Link } from "expo-router";
-import { formatDistanceToNowStrict } from "date-fns";
-import { Check } from "lucide-react-native";
+import { View } from "react-native";
 
 import type { RouterOutputs } from "~/utils/api";
 import { TaskHeader } from "./task-header";

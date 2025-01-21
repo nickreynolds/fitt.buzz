@@ -1,4 +1,3 @@
-import { Alert } from "react-native";
 import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 import * as Browser from "expo-web-browser";

@@ -58,12 +58,6 @@ export function MyTasks() {
 
   return (
     <View className="relative h-full grow">
-      <View className="py-2">
-        <Text className="font-semibold italic text-primary">
-          Tap the check to complete a task
-        </Text>
-      </View>
-
       <Animated.FlatList
         data={tasks}
         // estimatedItemSize={20}

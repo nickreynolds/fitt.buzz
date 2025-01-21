@@ -1,5 +1,5 @@
 import { Text } from "react-native";
-import { Redirect, Stack, Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import { Home, Plus, SettingsIcon } from "lucide-react-native";
 import { useColorScheme } from "nativewind";
 

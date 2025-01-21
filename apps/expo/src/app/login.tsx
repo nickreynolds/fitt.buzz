@@ -1,4 +1,4 @@
-import { Button, Text, View } from "react-native";
+import { Button, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
 

@@ -3,8 +3,6 @@ import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "./root";
 import { appRouter } from "./root";
 import { createCallerFactory, createTRPCContext } from "./trpc";
-import canBeCompleted from "./utils/canBeCompleted";
-import getNumCompletedChildTasks from "./utils/getNumCompletedChildTasks";
 
 /**
  * Create a server-side caller for the tRPC API
@@ -31,11 +29,5 @@ type RouterInputs = inferRouterInputs<AppRouter>;
  **/
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 
-export {
-  canBeCompleted,
-  createTRPCContext,
-  appRouter,
-  createCaller,
-  getNumCompletedChildTasks,
-};
+export { createTRPCContext, appRouter, createCaller };
 export type { AppRouter, RouterInputs, RouterOutputs };

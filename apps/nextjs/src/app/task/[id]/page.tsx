@@ -31,7 +31,13 @@ export default async function TaskPage({ params }: { params: { id: string } }) {
             <div className="flex-1">
               <div className="mb-6 flex items-center justify-between">
                 <BackButton parentTaskId={task.parentTaskId} />
-                <TaskDetailsDialog id={task.id} />
+                <TaskDetailsDialog
+                  isRecurring={task.recurring}
+                  description={task.description}
+                  nextDue={task.nextDue}
+                  frequencyHours={task.frequencyHours}
+                  lastCompleted={task.lastCompleted}
+                />
               </div>
 
               <div className="space-y-6">

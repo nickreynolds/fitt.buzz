@@ -14,10 +14,20 @@ import {
 import { TaskDetails } from "./task-details";
 
 interface TaskDetailsDialogProps {
-  id: string;
+  isRecurring: boolean;
+  description: string | null;
+  nextDue: Date;
+  frequencyHours: number | null;
+  lastCompleted: Date | null;
 }
 
-export function TaskDetailsDialog({ id }: TaskDetailsDialogProps) {
+export function TaskDetailsDialog({
+  isRecurring,
+  description,
+  nextDue,
+  frequencyHours,
+  lastCompleted,
+}: TaskDetailsDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -36,7 +46,13 @@ export function TaskDetailsDialog({ id }: TaskDetailsDialogProps) {
           <DialogTitle>Task Details</DialogTitle>
         </DialogHeader>
 
-        <TaskDetails id={id} />
+        <TaskDetails
+          isRecurring={isRecurring}
+          description={description}
+          nextDue={nextDue}
+          frequencyHours={frequencyHours}
+          lastCompleted={lastCompleted}
+        />
       </DialogContent>
     </Dialog>
   );

@@ -35,7 +35,10 @@ export function SubtaskList({ childTasks, parentTaskId }: SubtaskListProps) {
                 // style={{ transitionDelay: `${delay}ms` }}
                 className={`motion-translate-x-in-[-500%]`}
               >
-                <TaskCard task={task} />
+                <TaskCard
+                  task={task as RouterOutputs["task"]["getTask"]}
+                  taskId={task.id}
+                />
               </div>
             </CSSTransition>
           );

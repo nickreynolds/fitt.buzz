@@ -7,6 +7,7 @@ import { TaskCard } from "./task-card";
 
 import "./transitions.css";
 
+import type { RouterOutputs } from "@acme/api";
 import { Button } from "@acme/ui/button";
 import { toast } from "@acme/ui/toast";
 
@@ -48,7 +49,10 @@ export function TaskList() {
         {tasks.map((task) => (
           <CSSTransition key={task.title} timeout={300} classNames="task">
             <div>
-              <TaskCard task={task} isRecurring={task.recurring} />
+              <TaskCard
+                task={task as RouterOutputs["task"]["getTask"]}
+                taskId={task.id}
+              />
             </div>
           </CSSTransition>
         ))}

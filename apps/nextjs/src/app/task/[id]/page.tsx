@@ -1,13 +1,17 @@
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
 
+import { canBeCompleted } from "@acme/api";
+
 import { Layout } from "~/app/_components/Layout";
 import BackButton from "~/app/_components/tasks/back-button";
+import { CompleteTaskButton } from "~/app/_components/tasks/complete-task-button";
 import { CreateSubtaskButton } from "~/app/_components/tasks/create-subtask-button";
 import { DeleteTaskButton } from "~/app/_components/tasks/delete-task-button";
 import { SubtaskList } from "~/app/_components/tasks/subtask-list";
 import { TaskDetails } from "~/app/_components/tasks/task-details";
 import { TaskDetailsDialog } from "~/app/_components/tasks/task-details-dialog";
+import TaskHeader from "~/app/_components/tasks/task-header";
 import { api, HydrateClient } from "~/trpc/server";
 
 export default async function TaskPage({ params }: { params: { id: string } }) {
@@ -31,9 +35,7 @@ export default async function TaskPage({ params }: { params: { id: string } }) {
               </div>
 
               <div className="space-y-6">
-                <div>
-                  <h1 className="text-2xl font-bold">{task.title}</h1>
-                </div>
+                <TaskHeader initialTask={task} taskId={task.id} />
 
                 <div>
                   <h2 className="mb-4 text-xl font-semibold">Subtasks</h2>

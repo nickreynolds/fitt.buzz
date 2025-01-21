@@ -61,24 +61,42 @@ export function CreateSubtaskDialogForm({
   const utils = api.useUtils();
   const createTask = api.task.createSubtask.useMutation({
     onMutate: (data) => {
+      const parentTask = utils.task.getTask.getData({ id: parentTaskId });
+      if (!parentTask) {
+        throw new Error("Parent task not found");
+      }
+
       console.log("on mutate. data: ", data);
-      // const completionPeriodBegins = data.frequencyHours
-      //   ? getCompletionPeriodBegins(data.nextDue, data.frequencyHours)
-      //   : null;
-      // console.log("onMutate data", data);
-      // const task = {
-      //   id: "1",
-      //   title: data.title,
-      //   description: data.description ?? "",
-      //   nextDue: data.nextDue,
-      //   lastCompleted: null,
-      //   recurring: data.recurring ?? false,
-      //   frequencyHours: data.frequencyHours ?? null,
-      //   completionPeriodBegins,
-      //   createdAt: new Date(),
-      //   updatedAt: new Date(),
-      //   creatorId: "1",
-      // };
+      const completionPeriodBegins = parentTask.frequencyHours
+        ? getCompletionPeriodBegins(
+            parentTask.nextDue,
+            parentTask.frequencyHours,
+          )
+        : null;
+      console.log("onMutate data", data);
+      const task = {
+        id: "1",
+        title: data.title,
+        description: data.description ?? "",
+        nextDue: parentTask.nextDue,
+        lastCompleted: null,
+        recurring: parentTask.recurring,
+        frequencyHours: parentTask.frequencyHours ?? null,
+        completionPeriodBegins,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        creatorId: "1",
+        parentTaskId: data.parentTaskId,
+        childTasks: [],
+      };
+
+      utils.task.getTask.setData(
+        { id: parentTaskId },
+        {
+          ...parentTask,
+          childTasks: [...parentTask.childTasks, task],
+        },
+      );
 
       // if (
       //   !data.recurring ||
@@ -89,8 +107,8 @@ export function CreateSubtaskDialogForm({
       //     utils.task.getAllMyActiveTasks.setData(undefined, [...tasks, task]);
       //   }
       // }
-      // form.reset();
-      // onOpenChange(false);
+      form.reset();
+      onOpenChange(false);
     },
     onSuccess: async () => {
       await Promise.all([

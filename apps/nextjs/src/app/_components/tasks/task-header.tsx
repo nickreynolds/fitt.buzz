@@ -8,6 +8,7 @@ import type { RouterOutputs } from "@acme/api";
 import { api } from "~/trpc/react";
 import canBeCompleted from "~/utils/canBeCompleted";
 import getNumCompletedChildTasks from "~/utils/getNumCompletedChildTasks";
+import isCompleted from "~/utils/isCompleted";
 import { CompleteTaskButton } from "./complete-task-button";
 
 export default function TaskHeader({
@@ -26,6 +27,8 @@ export default function TaskHeader({
   const canComplete = canBeCompleted(task ?? initialTask);
   const numChildTasks = (task ?? initialTask).childTasks.length;
   const numCompletedChildTasks = getNumCompletedChildTasks(task ?? initialTask);
+  console.log("numCompletedChildTasks: ", numCompletedChildTasks);
+  const isComplete = isCompleted(task ?? initialTask);
 
   const undoneTasks = Array(numChildTasks - numCompletedChildTasks).fill(1);
   const doneTasks = Array(numCompletedChildTasks).fill(1);
@@ -54,6 +57,7 @@ export default function TaskHeader({
           undoneTasks.map((_, i) => <Circle key={i} className="h-4 w-4" />)}
         {(numCompletedChildTasks < numChildTasks || !canComplete) &&
           doneTasks.map((_, i) => <CheckCircle key={i} className="h-4 w-4" />)}
+        {isComplete && <CheckCircle className="h-4 w-4" />}
       </div>
     </div>
   );

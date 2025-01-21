@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Trash2 } from "lucide-react";
+import { Check, Trash2 } from "lucide-react";
 
 import { Button } from "@acme/ui/button";
 import { toast } from "@acme/ui/toast";
@@ -35,9 +35,12 @@ export function CompleteTaskButton({
             }
             return t;
           });
-          parentTask.childTasks = updatedChildTasks;
-          console.log("parentTask after: ", parentTask);
-          utils.task.getTask.setData({ id: parentTaskId }, parentTask);
+          //   parentTask.childTasks = updatedChildTasks;
+          //   console.log("parentTask after: ", parentTask);
+          utils.task.getTask.setData(
+            { id: parentTaskId },
+            { ...parentTask, childTasks: updatedChildTasks },
+          );
         }
       }
 
@@ -65,11 +68,10 @@ export function CompleteTaskButton({
 
   return (
     <Button
-      variant="destructive"
+      variant="primary"
       onClick={() => completeTask.mutate({ id: taskId })}
-      className="flex items-center gap-2"
+      className="motion-preset-bounce flex items-center gap-2"
     >
-      <Trash2 className="h-4 w-4" />
       Complete Task
     </Button>
   );

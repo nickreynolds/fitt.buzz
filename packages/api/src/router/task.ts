@@ -179,7 +179,11 @@ export const taskRouter = {
           isNull(tasks.parentTaskId),
         ),
       with: {
-        childTasks: true,
+        childTasks: {
+          with: {
+            childTasks: true,
+          },
+        },
       },
     });
   }),

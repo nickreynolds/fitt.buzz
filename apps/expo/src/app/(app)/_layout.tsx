@@ -61,6 +61,7 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen name="login-redirect/index" options={{ href: null }} />
+      <Tabs.Screen name="task/[id]" options={{ href: null }} />
     </Tabs>
   );
 }

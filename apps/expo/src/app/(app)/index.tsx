@@ -71,7 +71,6 @@ export function MyTasks() {
         renderItem={(p) => (
           <TaskCard
             task={p.item}
-            isRecurring={p.item.recurring}
             onComplete={() => completeTaskMutation.mutate({ id: p.item.id })}
           />
         )}

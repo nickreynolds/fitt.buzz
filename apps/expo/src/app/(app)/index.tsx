@@ -40,21 +40,7 @@ function MobileAuth({ children }: PropsWithChildren<object>) {
 }
 
 export function MyTasks() {
-  const utils = api.useUtils();
-
   const { data: tasks } = api.task.getAllMyActiveTasks.useQuery();
-
-  const completeTaskMutation = api.task.completeTask.useMutation({
-    onMutate: (data) => {
-      const tasks = utils.task.getAllMyActiveTasks.getData();
-      if (tasks) {
-        const newTasks = tasks.filter((t) => t.id !== data.id);
-        console.log("newTasks", JSON.stringify(newTasks));
-        utils.task.getAllMyActiveTasks.setData(undefined, newTasks);
-      }
-    },
-    onSettled: async () => await utils.task.getAllMyActiveTasks.invalidate(),
-  });
 
   return (
     <View className="relative h-full grow">
@@ -62,12 +48,7 @@ export function MyTasks() {
         data={tasks}
         // estimatedItemSize={20}
         ItemSeparatorComponent={() => <View className="h-2" />}
-        renderItem={(p) => (
-          <TaskCard
-            task={p.item}
-            onComplete={() => completeTaskMutation.mutate({ id: p.item.id })}
-          />
-        )}
+        renderItem={(p) => <TaskCard task={p.item} />}
         contentContainerStyle={{ minHeight: "100%" }}
         itemLayoutAnimation={LinearTransition}
       />

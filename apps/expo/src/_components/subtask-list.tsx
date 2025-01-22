@@ -6,10 +6,13 @@ import type { RouterOutputs } from "@acme/api";
 import TaskCard from "./task-card";
 
 interface SubtaskListProps {
-  tasks: RouterOutputs["task"]["getTask"][];
+  tasks?: RouterOutputs["task"]["getTask"][];
 }
 
 export function SubtaskList({ tasks }: SubtaskListProps) {
+  if (!tasks) {
+    return null;
+  }
   if (tasks.length === 0) {
     return null;
   }

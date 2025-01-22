@@ -8,6 +8,30 @@ import { getCompletionPeriodBegins } from "@acme/utils";
 import { protectedProcedure } from "../trpc";
 import { bootstrapTasks } from "../utils/bootstrap";
 
+const baseTaskOutputSchema = z.object({
+  id: z.string().uuid(),
+  title: z.string(),
+  description: z.string().nullable(),
+  recurring: z.boolean(),
+  // Hours between occurrences
+  frequencyHours: z.number().nullable(),
+  lastCompleted: z.date().nullable(),
+  completionPeriodBegins: z.date().nullable(),
+  nextDue: z.date(),
+  createdAt: z.date(),
+  updatedAt: z.date().nullable(),
+  creatorId: z.string(),
+  parentTaskId: z.string().nullable(),
+});
+
+type TaskOutput = z.infer<typeof baseTaskOutputSchema> & {
+  childTasks?: TaskOutput[];
+};
+
+export const taskSchema: z.ZodType<TaskOutput> = baseTaskOutputSchema.extend({
+  childTasks: z.lazy(() => taskSchema.array().optional()),
+});
+
 export const taskRouter = {
   bootstrapTasks: protectedProcedure.mutation(async ({ ctx }) => {
     const tasksWithCreatorAndCompletionPeriod = bootstrapTasks.map((task) => {
@@ -143,8 +167,9 @@ export const taskRouter = {
     }),
   getTask: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .query(({ ctx, input }) => {
-      return ctx.db.query.Task.findFirst({
+    .output(taskSchema.optional())
+    .query(async ({ ctx, input }) => {
+      const task = await ctx.db.query.Task.findFirst({
         where: eq(Task.id, input.id),
         with: {
           childTasks: {
@@ -154,43 +179,53 @@ export const taskRouter = {
           },
         },
       });
+
+      if (!task) {
+        throw new Error("Task not found");
+      }
+
+      return task;
     }),
-  getAllMyTasks: protectedProcedure.query(({ ctx }) => {
-    return ctx.db.query.Task.findMany({
-      where: (tasks, { eq, and }) =>
-        and(eq(tasks.creatorId, ctx.session.user.id)),
-      with: {
-        childTasks: {
-          with: {
-            childTasks: true,
+  getAllMyTasks: protectedProcedure
+    .output(taskSchema.array())
+    .query(({ ctx }) => {
+      return ctx.db.query.Task.findMany({
+        where: (tasks, { eq, and }) =>
+          and(eq(tasks.creatorId, ctx.session.user.id)),
+        with: {
+          childTasks: {
+            with: {
+              childTasks: true,
+            },
           },
         },
-      },
-    });
-  }),
-  getAllMyActiveTasks: protectedProcedure.query(({ ctx }) => {
-    return ctx.db.query.Task.findMany({
-      where: (tasks, { eq, or, and, isNull }) =>
-        and(
-          eq(tasks.creatorId, ctx.session.user.id),
-          or(
-            and(eq(tasks.recurring, false), isNull(tasks.lastCompleted)),
-            and(
-              eq(tasks.recurring, true),
-              lte(tasks.completionPeriodBegins, new Date()),
+      });
+    }),
+  getAllMyActiveTasks: protectedProcedure
+    .output(taskSchema.array())
+    .query(({ ctx }) => {
+      return ctx.db.query.Task.findMany({
+        where: (tasks, { eq, or, and, isNull }) =>
+          and(
+            eq(tasks.creatorId, ctx.session.user.id),
+            or(
+              and(eq(tasks.recurring, false), isNull(tasks.lastCompleted)),
+              and(
+                eq(tasks.recurring, true),
+                lte(tasks.completionPeriodBegins, new Date()),
+              ),
             ),
+            isNull(tasks.parentTaskId),
           ),
-          isNull(tasks.parentTaskId),
-        ),
-      with: {
-        childTasks: {
-          with: {
-            childTasks: true,
+        with: {
+          childTasks: {
+            with: {
+              childTasks: true,
+            },
           },
         },
-      },
-    });
-  }),
+      });
+    }),
   deleteTask: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {

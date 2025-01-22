@@ -25,7 +25,7 @@ export function CompleteTaskButton({
         });
         if (parentTask) {
           console.log("parentTaskBefore: ", parentTask);
-          const updatedChildTasks = parentTask.childTasks.map((t) => {
+          const updatedChildTasks = parentTask.childTasks?.map((t) => {
             if (t.id === taskId) {
               return { ...t, lastCompleted: new Date() };
             }

@@ -24,12 +24,9 @@ export default function TaskHeader({
   if (!initialTask) {
     return <>F.</>;
   }
-  console.log("title: ", task?.title);
-  console.log("task", task);
   const canComplete = canBeCompleted(task ?? initialTask);
   const numChildTasks = (task ?? initialTask).childTasks.length;
   const numCompletedChildTasks = getNumCompletedChildTasks(task ?? initialTask);
-  console.log("numCompletedChildTasks: ", numCompletedChildTasks);
   const isComplete = isCompleted(task ?? initialTask);
 
   const undoneTasks = Array(numChildTasks - numCompletedChildTasks).fill(1);

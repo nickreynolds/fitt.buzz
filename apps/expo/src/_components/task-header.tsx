@@ -1,35 +1,38 @@
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Button, Pressable, Text, View } from "react-native";
 import { Link, router } from "expo-router";
-import { Check } from "lucide-react-native";
+import { Check, CheckCircle, Circle } from "lucide-react-native";
 
 import type { RouterOutputs } from "@acme/api";
+import {
+  canBeCompleted,
+  getNumCompletedChildTasks,
+  isCompleted,
+} from "@acme/api-utils";
+
+import { CompleteTaskButton } from "./complete-task-button";
+import Icon from "./icon";
 
 interface TaskHeaderProps {
   initialTask: RouterOutputs["task"]["getTask"];
-  onComplete: () => void;
   taskId: string;
 }
 
-export function TaskHeader({
-  initialTask,
-  taskId,
-  onComplete,
-}: TaskHeaderProps) {
+export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
   if (!initialTask) {
     return null;
   }
 
-  console.log("initialTask", JSON.stringify(initialTask, null, 2));
-
-  const completedSubtasks = initialTask.childTasks.filter(
-    (task) => task.lastCompleted,
-  ).length;
-  const totalSubtasks = initialTask.childTasks.length;
+  const canComplete = canBeCompleted(initialTask);
+  const numChildTasks = initialTask.childTasks.length;
+  const numCompletedChildTasks = getNumCompletedChildTasks(initialTask);
+  const isComplete = isCompleted(initialTask);
+  const undoneTasks = Array(numChildTasks - numCompletedChildTasks).fill(1);
+  const doneTasks = Array(numCompletedChildTasks).fill(1);
 
   return (
-    <View className="flex-row items-center justify-between">
-      <View className="flex-grow">
+    <View className="flex-col">
+      <View className="w-full flex-row items-center justify-between">
         <Link href={`/task/${taskId}`}>
           <Text
             className="text-2xl font-semibold text-primary"
@@ -41,15 +44,19 @@ export function TaskHeader({
             )}
           </Text>
         </Link>
-        {totalSubtasks > 0 && (
-          <Text className="mt-1 text-sm text-muted-foreground">
-            {completedSubtasks} of {totalSubtasks} subtasks completed
-          </Text>
-        )}
+        <View className="flex flex-row items-center gap-4">
+          {canComplete && <CompleteTaskButton task={initialTask} />}
+          {(numCompletedChildTasks < numChildTasks || !canComplete) &&
+            undoneTasks.map((_, i) => (
+              <Icon name="Circle" className="h-6 w-6 text-primary" />
+            ))}
+          {(numCompletedChildTasks < numChildTasks || !canComplete) &&
+            doneTasks.map((_, i) => (
+              <Icon name="Check" className="h-6 w-6 text-primary" />
+            ))}
+          {isComplete && <CheckCircle className="h-4 w-4" />}
+        </View>
       </View>
-      <Pressable onPress={onComplete}>
-        <Check className="h-6 w-6" stroke="#5B65E9" strokeWidth={2} />
-      </Pressable>
     </View>
   );
 }

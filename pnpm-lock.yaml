@@ -109,6 +109,9 @@ importers:
 
   apps/expo:
     dependencies:
+      '@acme/api-utils':
+        specifier: workspace:*
+        version: link:../../packages/api-utils
       '@acme/utils':
         specifier: workspace:*
         version: link:../../packages/utils

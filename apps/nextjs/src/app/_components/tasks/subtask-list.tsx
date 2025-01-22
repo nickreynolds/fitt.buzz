@@ -27,20 +27,25 @@ export function SubtaskList({ childTasks, parentTaskId }: SubtaskListProps) {
   return (
     <div className="flex w-full flex-col gap-4">
       <TransitionGroup component={null}>
-        {childTasks.map((task) => {
-          if (!task) return null;
-          // const delay = index * 500;
-          return (
-            <CSSTransition key={task.title} timeout={300} classNames="task">
-              <div
-                // style={{ transitionDelay: `${delay}ms` }}
-                className={`motion-translate-x-in-[-500%]`}
-              >
-                <TaskCard task={task} taskId={task.id} />
-              </div>
-            </CSSTransition>
-          );
-        })}
+        {childTasks
+          .sort(
+            (t1, t2) =>
+              (t1?.createdAt.getTime() ?? 0) - (t2?.createdAt.getTime() ?? 0),
+          )
+          .map((task) => {
+            if (!task) return null;
+            // const delay = index * 500;
+            return (
+              <CSSTransition key={task.title} timeout={300} classNames="task">
+                <div
+                  // style={{ transitionDelay: `${delay}ms` }}
+                  className={`motion-translate-x-in-[-500%]`}
+                >
+                  <TaskCard task={task} taskId={task.id} />
+                </div>
+              </CSSTransition>
+            );
+          })}
       </TransitionGroup>
     </div>
   );

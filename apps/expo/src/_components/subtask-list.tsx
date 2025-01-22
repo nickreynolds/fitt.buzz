@@ -19,7 +19,6 @@ export function SubtaskList({ tasks }: SubtaskListProps) {
 
   return (
     <View className="mt-4 space-y-2">
-      <Text className="text-lg font-semibold text-primary">Subtasks</Text>
       {tasks.map((task) => task && <TaskCard key={task.id} task={task} />)}
     </View>
   );

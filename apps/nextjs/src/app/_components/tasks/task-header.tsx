@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle, Circle } from "lucide-react";
+import { Check, CheckCircle, Circle } from "lucide-react";
 
 import type { RouterOutputs } from "@acme/api";
 import {
@@ -56,7 +56,7 @@ export default function TaskHeader({
           undoneTasks.map((_, i) => <Circle key={i} className="h-4 w-4" />)}
         {(numCompletedChildTasks < numChildTasks || !canComplete) &&
           doneTasks.map((_, i) => <CheckCircle key={i} className="h-4 w-4" />)}
-        {isComplete && <CheckCircle className="h-4 w-4" />}
+        {isComplete && <Check className="h-8 w-8 text-primary" />}
       </div>
     </div>
   );

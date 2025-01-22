@@ -1,7 +1,7 @@
 import React from "react";
-import { Button, Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { Link, router } from "expo-router";
-import { Check, CheckCircle, Circle } from "lucide-react-native";
+import { CheckCircle } from "lucide-react-native";
 
 import type { RouterOutputs } from "@acme/api";
 import {
@@ -24,7 +24,7 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
   }
 
   const canComplete = canBeCompleted(initialTask);
-  const numChildTasks = initialTask.childTasks.length;
+  const numChildTasks = initialTask.childTasks?.length ?? 0;
   const numCompletedChildTasks = getNumCompletedChildTasks(initialTask);
   const isComplete = isCompleted(initialTask);
   const undoneTasks = Array(numChildTasks - numCompletedChildTasks).fill(1);
@@ -47,12 +47,20 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
         <View className="flex flex-row items-center gap-4">
           {canComplete && <CompleteTaskButton task={initialTask} />}
           {(numCompletedChildTasks < numChildTasks || !canComplete) &&
-            undoneTasks.map((_, i) => (
-              <Icon name="Circle" className="h-6 w-6 text-primary" />
+            undoneTasks.map((t, i) => (
+              <Icon
+                name="Circle"
+                className="h-6 w-6 text-primary"
+                key={`${t}-${i}`}
+              />
             ))}
           {(numCompletedChildTasks < numChildTasks || !canComplete) &&
-            doneTasks.map((_, i) => (
-              <Icon name="Check" className="h-6 w-6 text-primary" />
+            doneTasks.map((t, i) => (
+              <Icon
+                name="Check"
+                className="h-6 w-6 text-primary"
+                key={`${t}-${i}`}
+              />
             ))}
           {isComplete && <CheckCircle className="h-4 w-4" />}
         </View>

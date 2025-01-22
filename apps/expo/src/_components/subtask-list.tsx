@@ -3,7 +3,6 @@ import { Text, View } from "react-native";
 
 import type { RouterOutputs } from "@acme/api";
 
-import { api } from "~/utils/api";
 import TaskCard from "./task-card";
 
 interface SubtaskListProps {

@@ -7,10 +7,9 @@ type RegularTask = RouterOutputs["task"]["getTask"];
 
 interface TaskCardProps {
   task: RegularTask;
-  onComplete: () => void;
 }
 
-export default function TaskCard({ task, onComplete }: TaskCardProps) {
+export default function TaskCard({ task }: TaskCardProps) {
   if (!task) {
     return null;
   }
@@ -18,7 +17,7 @@ export default function TaskCard({ task, onComplete }: TaskCardProps) {
   console.log("going to add link to task id: ", task.id);
   return (
     <View className="flex flex-row rounded-lg bg-muted p-4" key={task.title}>
-      <TaskHeader initialTask={task} taskId={task.id} onComplete={onComplete} />
+      <TaskHeader initialTask={task} taskId={task.id} />
     </View>
   );
 }

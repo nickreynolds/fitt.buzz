@@ -16,23 +16,18 @@ export function CompleteTaskButton({
 
   const completeTask = api.task.completeTask.useMutation({
     onMutate: () => {
-      console.log("on mutate.");
-
       if (parentTaskId) {
-        console.log("yes there is a parent task.");
         const parentTask = utils.task.getTask.getData({
           id: parentTaskId,
         });
         if (parentTask) {
-          console.log("parentTaskBefore: ", parentTask);
           const updatedChildTasks = parentTask.childTasks?.map((t) => {
             if (t.id === taskId) {
               return { ...t, lastCompleted: new Date() };
             }
             return t;
           });
-          //   parentTask.childTasks = updatedChildTasks;
-          //   console.log("parentTask after: ", parentTask);
+
           utils.task.getTask.setData(
             { id: parentTaskId },
             { ...parentTask, childTasks: updatedChildTasks },

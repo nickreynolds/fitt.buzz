@@ -254,6 +254,9 @@ importers:
       '@acme/api':
         specifier: workspace:*
         version: link:../../packages/api
+      '@acme/api-utils':
+        specifier: workspace:*
+        version: link:../../packages/api-utils
       '@acme/auth':
         specifier: workspace:*
         version: link:../../packages/auth
@@ -378,6 +381,31 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 3.23.8
+    devDependencies:
+      '@acme/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@acme/prettier-config':
+        specifier: workspace:*
+        version: link:../../tooling/prettier
+      '@acme/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
+      eslint:
+        specifier: 'catalog:'
+        version: 9.12.0(jiti@2.4.0)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.3.3
+      typescript:
+        specifier: 'catalog:'
+        version: 5.6.3
+
+  packages/api-utils:
+    dependencies:
+      '@acme/api':
+        specifier: workspace:*
+        version: link:../api
     devDependencies:
       '@acme/eslint-config':
         specifier: workspace:*

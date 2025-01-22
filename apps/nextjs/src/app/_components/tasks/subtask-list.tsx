@@ -10,7 +10,7 @@ import "./transitions.css";
 import type { RouterOutputs } from "@acme/api";
 
 interface SubtaskListProps {
-  childTasks: RouterOutputs["task"]["getAllMyActiveTasks"][number][];
+  childTasks: RouterOutputs["task"]["getTask"][];
   parentTaskId: string;
 }
 
@@ -18,7 +18,7 @@ export function SubtaskList({ childTasks, parentTaskId }: SubtaskListProps) {
   const { data: task } = api.task.getTask.useQuery({ id: parentTaskId });
 
   if (task) {
-    childTasks = task.childTasks;
+    childTasks = task.childTasks as RouterOutputs["task"]["getTask"][];
   }
   if (childTasks.length === 0) {
     return <div>No subtasks</div>;
@@ -28,6 +28,7 @@ export function SubtaskList({ childTasks, parentTaskId }: SubtaskListProps) {
     <div className="flex w-full flex-col gap-4">
       <TransitionGroup component={null}>
         {childTasks.map((task) => {
+          if (!task) return null;
           // const delay = index * 500;
           return (
             <CSSTransition key={task.title} timeout={300} classNames="task">
@@ -35,10 +36,7 @@ export function SubtaskList({ childTasks, parentTaskId }: SubtaskListProps) {
                 // style={{ transitionDelay: `${delay}ms` }}
                 className={`motion-translate-x-in-[-500%]`}
               >
-                <TaskCard
-                  task={task as RouterOutputs["task"]["getTask"]}
-                  taskId={task.id}
-                />
+                <TaskCard task={task} taskId={task.id} />
               </div>
             </CSSTransition>
           );

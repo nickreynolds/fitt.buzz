@@ -4,11 +4,13 @@ import Link from "next/link";
 import { CheckCircle, Circle } from "lucide-react";
 
 import type { RouterOutputs } from "@acme/api";
+import {
+  canBeCompleted,
+  getNumCompletedChildTasks,
+  isCompleted,
+} from "@acme/api-utils";
 
 import { api } from "~/trpc/react";
-import canBeCompleted from "~/utils/canBeCompleted";
-import getNumCompletedChildTasks from "~/utils/getNumCompletedChildTasks";
-import isCompleted from "~/utils/isCompleted";
 import { CompleteTaskButton } from "./complete-task-button";
 
 export default function TaskHeader({

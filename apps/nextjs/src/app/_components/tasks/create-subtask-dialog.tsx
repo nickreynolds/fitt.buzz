@@ -82,7 +82,9 @@ export function CreateSubtaskDialogForm({
         { id: parentTaskId },
         {
           ...parentTask,
-          childTasks: [...parentTask.childTasks, task],
+          childTasks: parentTask.childTasks
+            ? [...parentTask.childTasks, task]
+            : [task],
         },
       );
 

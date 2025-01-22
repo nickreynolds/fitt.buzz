@@ -25,7 +25,7 @@ export default function TaskHeader({
     return <>F.</>;
   }
   const canComplete = canBeCompleted(task ?? initialTask);
-  const numChildTasks = (task ?? initialTask).childTasks.length;
+  const numChildTasks = (task ?? initialTask).childTasks?.length ?? 0;
   const numCompletedChildTasks = getNumCompletedChildTasks(task ?? initialTask);
   const isComplete = isCompleted(task ?? initialTask);
 

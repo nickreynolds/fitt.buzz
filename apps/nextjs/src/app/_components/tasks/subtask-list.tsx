@@ -10,7 +10,7 @@ import "./transitions.css";
 import type { RouterOutputs } from "@acme/api";
 
 interface SubtaskListProps {
-  childTasks: RouterOutputs["task"]["getTask"][];
+  childTasks?: RouterOutputs["task"]["getTask"][];
   parentTaskId: string;
 }
 
@@ -20,7 +20,7 @@ export function SubtaskList({ childTasks, parentTaskId }: SubtaskListProps) {
   if (task) {
     childTasks = task.childTasks as RouterOutputs["task"]["getTask"][];
   }
-  if (childTasks.length === 0) {
+  if (!childTasks || childTasks.length === 0) {
     return <div>No subtasks</div>;
   }
 

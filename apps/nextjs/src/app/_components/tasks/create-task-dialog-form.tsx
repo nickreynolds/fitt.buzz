@@ -63,12 +63,14 @@ export function CreateTaskDialogForm({
       title: "",
       description: "",
       recurring: false,
-      nextDueString: new Date(
-        new Date().getTime() + 16 * 60 * 60 * 1000,
-      ).toISOString(),
+      nextDueString: new Date(new Date().getTime() + 16 * 60 * 60 * 1000)
+        .toISOString()
+        .substring(0, 19),
       frequencyHours: 24,
     },
   });
+
+  console.log("form", form);
 
   const utils = api.useUtils();
   const createTask = api.task.createTask.useMutation({
@@ -176,7 +178,7 @@ export function CreateTaskDialogForm({
                 control={form.control}
                 name="recurring"
                 render={() => (
-                  <FormItem>
+                  <FormItem className="flex flex-row items-center space-x-2">
                     <Checkbox
                       id="recurring"
                       checked={isRecurring}
@@ -184,7 +186,7 @@ export function CreateTaskDialogForm({
                         setIsRecurring(checked)
                       }
                     />
-                    <Label htmlFor="recurring">Recurring Task</Label>
+                    <FormLabel>Recurring</FormLabel>
                   </FormItem>
                 )}
               />

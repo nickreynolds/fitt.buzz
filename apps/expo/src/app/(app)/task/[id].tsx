@@ -20,7 +20,7 @@ export default function Index() {
       <Stack.Screen options={{ title: "Task", headerShown: false }} />
       <View className="h-full w-full bg-background p-4">
         <TaskHeader initialTask={task} taskId={id as string} />
-        <SubtaskList tasks={task.childTasks} />
+        <SubtaskList initialTask={task} tasks={task.childTasks} />
       </View>
     </SafeAreaView>
   );

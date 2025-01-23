@@ -1,6 +1,7 @@
 import type { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { v4 } from "uuid";
 
 import { CreateSubtaskSchema } from "@acme/db/schema";
 import { Button } from "@acme/ui/button";
@@ -35,7 +36,7 @@ export function CreateSubtaskDialogForm({
   onOpenChange,
   parentTaskId,
 }: CreateSubtaskDialogFormProps) {
-  const zodSchema = CreateSubtaskSchema.omit({ parentTaskId: true });
+  const zodSchema = CreateSubtaskSchema.omit({ parentTaskId: true, id: true });
 
   const form = useForm({
     resolver: zodResolver(zodSchema),
@@ -63,7 +64,7 @@ export function CreateSubtaskDialogForm({
         : null;
       console.log("onMutate data", data);
       const task = {
-        id: "1",
+        id: data.id,
         title: data.title,
         description: data.description,
         nextDue: parentTask.nextDue,
@@ -88,15 +89,6 @@ export function CreateSubtaskDialogForm({
         },
       );
 
-      // if (
-      //   !data.recurring ||
-      //   (completionPeriodBegins && completionPeriodBegins < new Date())
-      // ) {
-      //   const tasks = utils.task.getAllMyActiveTasks.getData();
-      //   if (tasks) {
-      //     utils.task.getAllMyActiveTasks.setData(undefined, [...tasks, task]);
-      //   }
-      // }
       form.reset();
       onOpenChange(false);
     },
@@ -110,6 +102,7 @@ export function CreateSubtaskDialogForm({
 
   function onSubmit(data: z.infer<typeof zodSchema>) {
     createTask.mutate({
+      id: v4(),
       parentTaskId,
       title: data.title,
       description: data.description,

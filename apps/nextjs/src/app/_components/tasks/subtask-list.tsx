@@ -1,7 +1,5 @@
 "use client";
 
-import { CSSTransition, TransitionGroup } from "react-transition-group";
-
 import { api } from "~/trpc/react";
 import { TaskCard } from "./task-card";
 
@@ -10,43 +8,39 @@ import "./transitions.css";
 import type { RouterOutputs } from "@acme/api";
 
 interface SubtaskListProps {
-  childTasks?: RouterOutputs["task"]["getTask"][];
+  initialTask: RouterOutputs["task"]["getTask"];
   parentTaskId: string;
 }
 
-export function SubtaskList({ childTasks, parentTaskId }: SubtaskListProps) {
-  const { data: task } = api.task.getTask.useQuery({ id: parentTaskId });
+export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
+  const { data: task } = api.task.getTask.useQuery(
+    { id: parentTaskId },
+    { initialData: initialTask },
+  );
 
-  if (task) {
-    childTasks = task.childTasks as RouterOutputs["task"]["getTask"][];
+  if (!task) {
+    return null;
   }
-  if (!childTasks || childTasks.length === 0) {
+  const tasks = task.childTasks;
+  if (!tasks || tasks.length === 0) {
     return <div>No subtasks</div>;
   }
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <TransitionGroup component={null}>
-        {childTasks
-          .sort(
-            (t1, t2) =>
-              (t1?.createdAt.getTime() ?? 0) - (t2?.createdAt.getTime() ?? 0),
-          )
-          .map((task) => {
-            if (!task) return null;
-            // const delay = index * 500;
-            return (
-              <CSSTransition key={task.title} timeout={300} classNames="task">
-                <div
-                  // style={{ transitionDelay: `${delay}ms` }}
-                  className={`motion-translate-x-in-[-500%]`}
-                >
-                  <TaskCard task={task} taskId={task.id} />
-                </div>
-              </CSSTransition>
-            );
-          })}
-      </TransitionGroup>
+      {tasks
+        .sort((t1, t2) => t1.createdAt.getTime() - t2.createdAt.getTime())
+        .map((task, index) => {
+          return (
+            <div
+              // @ts-expect-error: `--delay` is a custom property
+              style={{ "--delay": `${index * 100}ms` }}
+              className={`motion-translate-x-in-[-500%] motion-delay-[var(--delay,0)]`}
+            >
+              <TaskCard initialTask={task} taskId={task.id} />
+            </div>
+          );
+        })}
     </div>
   );
 }

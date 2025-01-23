@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { v4 } from "uuid";
 import { z } from "zod";
 
 import { CreateTaskSchema } from "@acme/db/schema";
@@ -21,7 +23,6 @@ import {
   FormMessage,
 } from "@acme/ui/form";
 import { Input } from "@acme/ui/input";
-import { Label } from "@acme/ui/label";
 import {
   Select,
   SelectContent,
@@ -36,6 +37,7 @@ import { api } from "~/trpc/react";
 
 const FREQUENCY_OPTIONS = [
   { value: "1", label: "Hourly" },
+  { value: "12", label: "Twice daily" },
   { value: "24", label: "Daily" },
   { value: "168", label: "Weekly" },
   { value: "336", label: "Bi-weekly" },
@@ -51,10 +53,11 @@ export function CreateTaskDialogForm({
   open,
   onOpenChange,
 }: CreateTaskDialogFormProps) {
+  const router = useRouter();
   const [isRecurring, setIsRecurring] = useState(false);
 
   const zodSchema = CreateTaskSchema.extend({ nextDueString: z.string() }).omit(
-    { nextDue: true },
+    { nextDue: true, id: true },
   );
 
   const form = useForm({
@@ -70,17 +73,18 @@ export function CreateTaskDialogForm({
     },
   });
 
-  console.log("form", form);
-
   const utils = api.useUtils();
   const createTask = api.task.createTask.useMutation({
     onMutate: (data) => {
+      console.log("on mutate. data: ", data);
+      if (!data.id) {
+        throw new Error("Task ID is required");
+      }
       const completionPeriodBegins = data.frequencyHours
         ? getCompletionPeriodBegins(data.nextDue, data.frequencyHours)
         : null;
-      console.log("onMutate data", data);
       const task = {
-        id: "1",
+        id: data.id || "1",
         title: data.title,
         description: data.description,
         nextDue: data.nextDue,
@@ -95,6 +99,8 @@ export function CreateTaskDialogForm({
         childTasks: [],
       };
 
+      utils.task.getTask.setData({ id: data.id }, task);
+
       if (
         !data.recurring ||
         (completionPeriodBegins && completionPeriodBegins < new Date())
@@ -107,13 +113,17 @@ export function CreateTaskDialogForm({
       form.reset();
       onOpenChange(false);
     },
-    onSuccess: async () => {
+    onSuccess: async (id) => {
+      console.log("got id: ", id);
       await Promise.all([utils.task.getAllMyActiveTasks.invalidate()]);
+      await utils.task.getTask.invalidate({ id });
+      router.push(`/task/${id}`);
     },
   });
 
   function onSubmit(data: z.infer<typeof zodSchema>) {
     createTask.mutate({
+      id: v4(),
       title: data.title,
       description: data.description,
       nextDue: new Date(data.nextDueString),

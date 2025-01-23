@@ -9,8 +9,6 @@ import { Button } from "@acme/ui/button";
 import { toast } from "@acme/ui/toast";
 
 export function TaskList() {
-  // const { data: tasks, isLoading: isLoadingRegular } =
-  //   api.task.getAllMyActiveTasks.useQuery();
   const [tasks] = api.task.getAllMyActiveTasks.useSuspenseQuery();
   const utils = api.useUtils();
   const bootstrap = api.task.bootstrapTasks.useMutation({
@@ -25,12 +23,6 @@ export function TaskList() {
       );
     },
   });
-
-  // const isLoading = isLoadingRegular;
-
-  // if (isLoading) {
-  //   return <div>Loading...</div>;
-  // }
 
   if (tasks.length === 0) {
     return (

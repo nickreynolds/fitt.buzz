@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { format } from "date-fns";
+import { v4 } from "uuid";
 
 import { api } from "~/utils/api";
 
@@ -69,6 +70,7 @@ export default function CreateTask() {
 
   const handleSubmit = () => {
     mutate({
+      id: v4(),
       title,
       description,
       nextDue: new Date(dueDate.toDateString() + " " + dueTime.toTimeString()),

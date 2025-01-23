@@ -73,8 +73,6 @@ export function CreateTaskDialogForm({
     },
   });
 
-  console.log("form", form);
-
   const utils = api.useUtils();
   const createTask = api.task.createTask.useMutation({
     onMutate: (data) => {

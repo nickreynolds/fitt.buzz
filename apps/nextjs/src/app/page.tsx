@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 
-import { HydrateClient } from "~/trpc/server";
+import { api, HydrateClient } from "~/trpc/server";
 import { Layout } from "./_components/Layout";
 import {
   CreateTaskForm,
@@ -8,7 +8,8 @@ import {
   TaskList,
 } from "./_components/tasks";
 
-export default function HomePage() {
+export default async function HomePage() {
+  await api.task.getAllMyActiveTasks.prefetch();
   return (
     <HydrateClient>
       <Layout>

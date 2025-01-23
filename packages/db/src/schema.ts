@@ -34,6 +34,7 @@ export const TaskRelations = relations(Task, ({ one, many }) => ({
 }));
 
 export const CreateTaskSchema = z.object({
+  id: z.string().uuid(),
   title: z.string().max(256),
   description: z.string().max(256),
   recurring: z.boolean(),
@@ -42,6 +43,7 @@ export const CreateTaskSchema = z.object({
 });
 
 export const CreateSubtaskSchema = z.object({
+  id: z.string().uuid(),
   title: z.string().max(256),
   description: z.string().max(256),
   parentTaskId: z.string().uuid(),

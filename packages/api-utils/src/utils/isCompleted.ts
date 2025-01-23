@@ -1,14 +1,16 @@
 import type { RouterOutputs } from "@acme/api";
 
 export default function isCompleted(
-  task: RouterOutputs["task"]["getAllMyActiveTasks"][number],
+  task: RouterOutputs["task"]["getTask"],
 ): boolean {
-  const alreadyCompleted =
-    (!task.recurring && task.lastCompleted && true) ??
-    (task.recurring &&
-      task.completionPeriodBegins &&
-      task.lastCompleted &&
-      task.lastCompleted > task.completionPeriodBegins);
-
-  return alreadyCompleted ?? false;
+  if (task?.recurring) {
+    return (
+      (task.completionPeriodBegins &&
+        task.lastCompleted &&
+        task.lastCompleted > task.completionPeriodBegins) ??
+      false
+    );
+  } else {
+    return !!task?.lastCompleted;
+  }
 }

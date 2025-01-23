@@ -45,7 +45,12 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
           </Text>
         </Link>
         <View className="flex flex-row items-center gap-4">
-          {canComplete && <CompleteTaskButton task={initialTask} />}
+          {canComplete && (
+            <CompleteTaskButton
+              taskId={initialTask.id}
+              parentTaskId={initialTask.parentTaskId}
+            />
+          )}
           {(numCompletedChildTasks < numChildTasks || !canComplete) &&
             undoneTasks.map((t, i) => (
               <Icon

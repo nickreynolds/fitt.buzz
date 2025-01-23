@@ -208,6 +208,9 @@ importers:
       superjson:
         specifier: 2.2.1
         version: 2.2.1
+      uuid:
+        specifier: ^11.0.5
+        version: 11.0.5
     devDependencies:
       '@acme/api':
         specifier: workspace:*
@@ -311,6 +314,9 @@ importers:
       superjson:
         specifier: 2.2.1
         version: 2.2.1
+      uuid:
+        specifier: ^11.0.5
+        version: 11.0.5
       zod:
         specifier: 'catalog:'
         version: 3.23.8
@@ -8511,6 +8517,10 @@ packages:
   utils-merge@1.0.1:
     resolution: {integrity: sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==}
     engines: {node: '>= 0.4.0'}
+
+  uuid@11.0.5:
+    resolution: {integrity: sha512-508e6IcKLrhxKdBbcA2b4KQZlLVp2+J5UwQ6F7Drckkc5N9ZJwFa4TgWtsww9UG8fGHbm6gbV19TdM5pQ4GaIA==}
+    hasBin: true
 
   uuid@7.0.3:
     resolution: {integrity: sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==}
@@ -17695,6 +17705,8 @@ snapshots:
       which-typed-array: 1.1.15
 
   utils-merge@1.0.1: {}
+
+  uuid@11.0.5: {}
 
   uuid@7.0.3: {}
 

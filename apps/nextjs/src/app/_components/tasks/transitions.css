@@ -28,3 +28,7 @@
     opacity 300ms ease-in,
     transform 300ms ease;
 }
+
+.task-list:nth-child(n) {
+  animation-delay: n * 500ms;
+}

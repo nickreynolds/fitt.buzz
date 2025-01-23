@@ -6,16 +6,15 @@ import { api } from "~/trpc/react";
 import TaskHeader from "./task-header";
 
 interface TaskCardProps {
-  task: RouterOutputs["task"]["getTask"];
+  initialTask: RouterOutputs["task"]["getTask"];
   taskId: string;
 }
 
-export function TaskCard({ task, taskId }: TaskCardProps) {
-  const { data: queryTask } = api.task.getTask.useQuery({ id: taskId });
-
-  if (queryTask) {
-    task = queryTask;
-  }
+export function TaskCard({ initialTask, taskId }: TaskCardProps) {
+  const { data: task } = api.task.getTask.useQuery(
+    { id: taskId },
+    { initialData: initialTask },
+  );
 
   if (!task) {
     return <>FAIL.</>;

@@ -1,6 +1,7 @@
 import type { RouterOutputs } from "@acme/api";
 
 import getNumCompletedChildTasks from "./getNumCompletedChildTasks";
+import isCompleted from "./isCompleted";
 
 export default function canBeCompleted(
   task: RouterOutputs["task"]["getAllMyActiveTasks"][number],
@@ -9,12 +10,7 @@ export default function canBeCompleted(
     !task.recurring ||
     (task.completionPeriodBegins && new Date() > task.completionPeriodBegins);
 
-  const alreadyCompleted =
-    (!task.recurring && task.lastCompleted) ??
-    (task.recurring &&
-      task.completionPeriodBegins &&
-      task.lastCompleted &&
-      task.lastCompleted > task.completionPeriodBegins);
+  const alreadyCompleted = isCompleted(task);
 
   const numChildTasks = task.childTasks?.length ?? 0;
 

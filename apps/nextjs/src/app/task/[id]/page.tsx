@@ -41,10 +41,7 @@ export default async function TaskPage({ params }: { params: { id: string } }) {
 
                 <div>
                   <h2 className="mb-4 text-xl font-semibold">Subtasks</h2>
-                  <SubtaskList
-                    childTasks={task.childTasks}
-                    parentTaskId={task.id}
-                  />
+                  <SubtaskList initialTask={task} parentTaskId={task.id} />
                   <CreateSubtaskButton taskId={task.id} />
                 </div>
 

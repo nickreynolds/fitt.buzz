@@ -57,20 +57,26 @@ export const taskRouter = {
   }),
   createTask: protectedProcedure
     .input(CreateTaskSchema)
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       if (input.frequencyHours && input.frequencyHours > 0) {
-        return ctx.db.insert(Task).values({
-          ...input,
-          creatorId: ctx.session.user.id,
-          completionPeriodBegins:
-            input.recurring && input.frequencyHours
-              ? getCompletionPeriodBegins(input.nextDue, input.frequencyHours)
-              : null,
-        });
+        const inserted = await ctx.db
+          .insert(Task)
+          .values({
+            ...input,
+            creatorId: ctx.session.user.id,
+            completionPeriodBegins:
+              input.recurring && input.frequencyHours
+                ? getCompletionPeriodBegins(input.nextDue, input.frequencyHours)
+                : null,
+          })
+          .returning();
+        return inserted[0]?.id;
       }
-      return ctx.db
+      const inserted = await ctx.db
         .insert(Task)
-        .values({ ...input, creatorId: ctx.session.user.id });
+        .values({ ...input, creatorId: ctx.session.user.id })
+        .returning();
+      return inserted[0]?.id;
     }),
   createSubtask: protectedProcedure
     .input(CreateSubtaskSchema)

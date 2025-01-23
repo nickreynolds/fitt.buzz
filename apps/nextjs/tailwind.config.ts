@@ -15,6 +15,15 @@ export default {
         sans: ["var(--font-geist-sans)", ...fontFamily.sans],
         mono: ["var(--font-geist-mono)", ...fontFamily.mono],
       },
+      keyframes: {
+        slideIn: {
+          "0%": { opacity: "0", transform: "translateX(-300%)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
+        },
+      },
+      animation: {
+        slideIn: "slideIn .33s ease-in-out forwards var(--delay, 0)",
+      },
     },
   },
 } satisfies Config;

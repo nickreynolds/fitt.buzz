@@ -97,6 +97,7 @@ export function CreateTaskDialogForm({
         creatorId: "1",
         parentTaskId: null,
         childTasks: [],
+        sortIndex: 0,
       };
 
       utils.task.getTask.setData({ id: data.id }, task);

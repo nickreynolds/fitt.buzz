@@ -62,6 +62,9 @@ export function CreateSubtaskDialogForm({
             parentTask.frequencyHours,
           )
         : null;
+
+      const numSiblingTasks = parentTask.childTasks?.length ?? 0;
+
       console.log("onMutate data", data);
       const task = {
         id: data.id,
@@ -77,6 +80,7 @@ export function CreateSubtaskDialogForm({
         creatorId: "1",
         parentTaskId: data.parentTaskId,
         childTasks: [],
+        sortIndex: numSiblingTasks,
       };
 
       utils.task.getTask.setData(
@@ -101,11 +105,18 @@ export function CreateSubtaskDialogForm({
   });
 
   function onSubmit(data: z.infer<typeof zodSchema>) {
+    const parentTask = utils.task.getTask.getData({ id: parentTaskId });
+    if (!parentTask) {
+      throw new Error("Parent task not found");
+    }
+
+    const numSiblingTasks = parentTask.childTasks?.length ?? 0;
     createTask.mutate({
       id: v4(),
       parentTaskId,
       title: data.title,
       description: data.description,
+      sortIndex: numSiblingTasks,
     });
   }
 

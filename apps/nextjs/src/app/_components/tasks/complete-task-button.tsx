@@ -49,11 +49,17 @@ export function CompleteTaskButton({
       utils.task.getAllMyActiveTasks.setData(undefined, updatedTasks);
     },
     onSettled: async () => {
+      const promises = [];
       if (parentTaskId) {
-        await utils.task.getTask.invalidate({ id: parentTaskId });
+        promises.push(utils.task.getTask.cancel({ id: parentTaskId }));
+        promises.push(utils.task.getTask.invalidate({ id: parentTaskId }));
       }
-      await utils.task.getTask.invalidate({ id: taskId });
-      await utils.task.getAllMyActiveTasks.invalidate();
+      promises.push(utils.task.getTask.cancel({ id: taskId }));
+      promises.push(utils.task.getTask.invalidate({ id: taskId }));
+      promises.push(utils.task.getAllMyActiveTasks.cancel());
+      promises.push(utils.task.getAllMyActiveTasks.invalidate());
+
+      await Promise.all(promises);
     },
   });
 

@@ -22,6 +22,7 @@ export const Task = pgTable("task", (t) => ({
     .notNull()
     .references(() => User.id),
   parentTaskId: t.uuid().references((): AnyPgColumn => Task.id),
+  sortIndex: t.integer().notNull().default(0),
 }));
 
 export const TaskRelations = relations(Task, ({ one, many }) => ({
@@ -47,6 +48,7 @@ export const CreateSubtaskSchema = z.object({
   title: z.string().max(256),
   description: z.string().max(256),
   parentTaskId: z.string().uuid(),
+  sortIndex: z.number().optional(),
 });
 
 export const User = pgTable("user", (t) => ({

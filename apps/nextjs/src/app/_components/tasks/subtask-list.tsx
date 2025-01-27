@@ -1,7 +1,6 @@
 "use client";
 
 import { api } from "~/trpc/react";
-import { TaskCard } from "./task-card";
 
 import "./transitions.css";
 

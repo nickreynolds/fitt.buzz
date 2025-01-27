@@ -39,6 +39,8 @@ export function DropIndicator({ edge, gap }: { edge: Edge; gap: string }) {
 
   const orientation = edgeToOrientationMap[edge];
 
+  const eStyle = edgeStyles[edge];
+
   return (
     <div
       style={
@@ -51,7 +53,7 @@ export function DropIndicator({ edge, gap }: { edge: Edge; gap: string }) {
           "--offset-terminal": `${offsetToAlignTerminalWithLine}px`,
         } as CSSProperties
       }
-      className={`pointer-events-none absolute z-10 box-border bg-blue-700 before:absolute before:h-[--terminal-size] before:w-[--terminal-size] before:rounded-full before:border-[length:--line-thickness] before:border-solid before:border-blue-700 before:content-[''] ${orientationStyles[orientation]} ${[edgeStyles[edge]]}`}
+      className={`pointer-events-none absolute z-10 box-border bg-blue-700 before:absolute before:h-[--terminal-size] before:w-[--terminal-size] before:rounded-full before:border-[length:--line-thickness] before:border-solid before:border-blue-700 before:content-[''] ${orientationStyles[orientation]} ${eStyle ?? ""} `}
     ></div>
   );
 }

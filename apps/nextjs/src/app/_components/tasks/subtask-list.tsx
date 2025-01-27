@@ -1,11 +1,12 @@
 "use client";
 
 import { api } from "~/trpc/react";
-import { TaskCard } from "./task-card";
 
 import "./transitions.css";
 
 import type { RouterOutputs } from "@acme/api";
+
+import { List } from "../drag-list/list";
 
 interface SubtaskListProps {
   initialTask: RouterOutputs["task"]["getTask"];
@@ -28,19 +29,7 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
 
   return (
     <div className="flex w-full flex-col gap-4">
-      {tasks
-        .sort((t1, t2) => t1.createdAt.getTime() - t2.createdAt.getTime())
-        .map((task, index) => {
-          return (
-            <div
-              // @ts-expect-error: `--delay` is a custom property
-              style={{ "--delay": `${index * 100}ms` }}
-              className={`motion-translate-x-in-[-500%] motion-delay-[var(--delay,0)]`}
-            >
-              <TaskCard initialTask={task} taskId={task.id} />
-            </div>
-          );
-        })}
+      <List tasks={tasks.sort((a, b) => a.sortIndex - b.sortIndex)} />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { eq, inArray, lte } from "@acme/db";
+import { eq, inArray, isNull, lte } from "@acme/db";
 import { CreateSubtaskSchema, CreateTaskSchema, Task } from "@acme/db/schema";
 import { getCompletionPeriodBegins } from "@acme/utils";
 
@@ -22,7 +22,15 @@ const baseTaskOutputSchema = z.object({
   updatedAt: z.date().nullable(),
   creatorId: z.string(),
   parentTaskId: z.string().nullable(),
+  sortIndex: z.number(),
 });
+
+const reorderTaskSchema = z
+  .object({
+    id: z.string().uuid(),
+    sortIndex: z.number(),
+  })
+  .array();
 
 type TaskOutput = z.infer<typeof baseTaskOutputSchema> & {
   childTasks?: TaskOutput[];
@@ -196,8 +204,15 @@ export const taskRouter = {
     .output(taskSchema.array())
     .query(({ ctx }) => {
       return ctx.db.query.Task.findMany({
-        where: (tasks, { eq, and }) =>
-          and(eq(tasks.creatorId, ctx.session.user.id)),
+        where: (tasks, { eq, and, or }) =>
+          and(
+            eq(tasks.creatorId, ctx.session.user.id),
+            isNull(tasks.parentTaskId),
+            or(
+              eq(tasks.recurring, true),
+              and(eq(tasks.recurring, false), isNull(tasks.lastCompleted)),
+            ),
+          ),
         with: {
           childTasks: {
             with: {
@@ -247,5 +262,55 @@ export const taskRouter = {
         return await ctx.db.delete(Task).where(eq(Task.id, input.id));
       }
       throw new Error("Task not found");
+    }),
+  reorderTasks: protectedProcedure
+    .input(reorderTaskSchema)
+    .mutation(async ({ ctx, input }) => {
+      console.log("reorder 1.");
+      const tasks = await ctx.db.query.Task.findMany({
+        where: inArray(
+          Task.id,
+          input.map((task) => task.id),
+        ),
+      });
+
+      console.log("reorder 2.");
+      for (const task of tasks) {
+        if (task.creatorId !== ctx.session.user.id) {
+          throw new Error("You are not the owner of this task");
+        }
+      }
+
+      for (const task of input) {
+        await ctx.db
+          .update(Task)
+          .set({ sortIndex: task.sortIndex })
+          .where(eq(Task.id, task.id));
+      }
+
+      // TODO: write a single query to do this (below code should basically work but has a column type error)
+
+      // console.log("reorder 3.");
+      // const sqlChunks: SQL[] = [];
+      // const ids: string[] = [];
+
+      // sqlChunks.push(sql`(case`);
+
+      // for (const m of input) {
+      //   sqlChunks.push(sql`when ${Task.id} = ${m.id} then ${m.sortIndex}`);
+      //   ids.push(m.id);
+      // }
+
+      // sqlChunks.push(sql`end)`);
+
+      // console.log("reorder 4.");
+      // const finalSql: SQL = sql.join(sqlChunks, sql.raw(" "));
+
+      // await ctx.db
+      //   .update(Task)
+      //   .set({ sortIndex: finalSql })
+      //   .where(inArray(Task.id, ids));
+
+      // console.log("reorder 5.");
     }),
 } satisfies TRPCRouterRecord;

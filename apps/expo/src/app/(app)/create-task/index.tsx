@@ -28,25 +28,23 @@ export default function CreateTask() {
 
   const utils = api.useUtils();
   const { mutate, error } = api.task.createTask.useMutation({
-    onMutate: () => {
+    onMutate: (data) => {
       if (!isRecurring) {
-        const nextDue = new Date(
-          dueDate.toDateString() + " " + dueTime.toTimeString(),
-        );
         const task = {
-          id: "temp",
+          id: data.id,
           creatorId: "temp",
-          title,
-          description,
-          nextDue,
-          recurring: false,
-          frequencyHours: null,
+          title: data.title,
+          description: data.description,
+          nextDue: data.nextDue,
+          recurring: data.recurring,
+          frequencyHours: data.frequencyHours ?? null,
           completionPeriodBegins: null,
           lastCompleted: null,
           createdAt: new Date(),
           updatedAt: new Date(),
           parentTaskId: null,
           childTasks: [],
+          sortIndex: 0,
         };
 
         const tasks = utils.task.getAllMyActiveTasks.getData();

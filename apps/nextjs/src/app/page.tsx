@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 
 import { api, HydrateClient } from "~/trpc/server";
+// import ListExample from "./_components/drag-list/example";
+// import { List } from "./_components/drag-list/list";
 import { Layout } from "./_components/Layout";
 import {
   CreateTaskForm,

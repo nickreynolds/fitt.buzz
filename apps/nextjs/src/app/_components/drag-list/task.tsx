@@ -140,7 +140,7 @@ export function Task({ task }: { task: RouterOutputs["task"]["getTask"] }) {
           // Adding data-attribute as a way to query for this for our post drop flash
           data-task-id={task?.id}
           ref={ref}
-          className={`flex flex-row items-center rounded border border-solid bg-background p-2 pl-0 text-sm hover:cursor-grab hover:bg-slate-100 ${stateStyles[state.type] ?? ""}`}
+          className={`flex flex-row items-center rounded border border-solid bg-background text-sm hover:cursor-grab ${stateStyles[state.type] ?? ""}`}
         >
           <TaskCard initialTask={task} taskId={task?.id ?? ""} />
         </div>

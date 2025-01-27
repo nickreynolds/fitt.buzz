@@ -267,6 +267,7 @@ export const taskRouter = {
   reorderTasks: protectedProcedure
     .input(reorderTaskSchema)
     .mutation(async ({ ctx, input }) => {
+      console.log("reorder 1.");
       const tasks = await ctx.db.query.Task.findMany({
         where: inArray(
           Task.id,
@@ -274,29 +275,43 @@ export const taskRouter = {
         ),
       });
 
+      console.log("reorder 2.");
       for (const task of tasks) {
         if (task.creatorId !== ctx.session.user.id) {
           throw new Error("You are not the owner of this task");
         }
       }
 
-      const sqlChunks: SQL[] = [];
-      const ids: string[] = [];
-
-      sqlChunks.push(sql`(case`);
-
-      for (const m of input) {
-        sqlChunks.push(sql`when ${Task.id} = ${m.id} then ${m.sortIndex}`);
-        ids.push(m.id);
+      for (const task of input) {
+        await ctx.db
+          .update(Task)
+          .set({ sortIndex: task.sortIndex })
+          .where(eq(Task.id, task.id));
       }
 
-      sqlChunks.push(sql`end)`);
+      // TODO: write a single query to do this (below code should basically work but has a column type error)
 
-      const finalSql: SQL = sql.join(sqlChunks, sql.raw(" "));
+      // console.log("reorder 3.");
+      // const sqlChunks: SQL[] = [];
+      // const ids: string[] = [];
 
-      await ctx.db
-        .update(Task)
-        .set({ sortIndex: finalSql })
-        .where(inArray(Task.id, ids));
+      // sqlChunks.push(sql`(case`);
+
+      // for (const m of input) {
+      //   sqlChunks.push(sql`when ${Task.id} = ${m.id} then ${m.sortIndex}`);
+      //   ids.push(m.id);
+      // }
+
+      // sqlChunks.push(sql`end)`);
+
+      // console.log("reorder 4.");
+      // const finalSql: SQL = sql.join(sqlChunks, sql.raw(" "));
+
+      // await ctx.db
+      //   .update(Task)
+      //   .set({ sortIndex: finalSql })
+      //   .where(inArray(Task.id, ids));
+
+      // console.log("reorder 5.");
     }),
 } satisfies TRPCRouterRecord;

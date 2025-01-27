@@ -30,7 +30,7 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <List tasks={tasks} />
+      <List tasks={tasks.sort((a, b) => a.sortIndex - b.sortIndex)} />
     </div>
   );
 }

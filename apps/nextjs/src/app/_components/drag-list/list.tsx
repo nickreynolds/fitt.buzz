@@ -9,6 +9,7 @@ import { flushSync } from "react-dom";
 
 import type { RouterOutputs } from "@acme/api";
 
+import { api } from "~/trpc/react";
 // import { TaskCard } from "../tasks";
 // import type { TTask } from "./task-data";
 import { Task } from "./task";
@@ -17,6 +18,8 @@ import { isTaskData } from "./task-data";
 export function List({ tasks }: { tasks: RouterOutputs["task"]["getTask"][] }) {
   const [stateTasks, setTasks] =
     useState<RouterOutputs["task"]["getTask"][]>(tasks);
+
+  const mutateTaskOrder = api.task.reorderTasks.useMutation();
 
   useEffect(() => {
     return monitorForElements({
@@ -85,9 +88,18 @@ export function List({ tasks }: { tasks: RouterOutputs["task"]["getTask"][] }) {
         }
 
         console.log("tasks: ", tasks);
+
+        const taskOrder: { id: string; sortIndex: number }[] = [];
+        tasks.forEach((task, index) => {
+          if (task?.id && task.sortIndex !== index) {
+            taskOrder.push({ id: task.id, sortIndex: index });
+          }
+        });
+        console.log("taskOrder: ", taskOrder);
+        mutateTaskOrder.mutate(taskOrder);
       },
     });
-  }, [stateTasks]);
+  }, [stateTasks, mutateTaskOrder]);
 
   return (
     <>

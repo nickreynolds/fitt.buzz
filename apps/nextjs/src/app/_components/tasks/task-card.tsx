@@ -21,7 +21,10 @@ export function TaskCard({ initialTask, taskId }: TaskCardProps) {
   }
 
   return (
-    <div className="flex w-full flex-row rounded-lg bg-muted p-4">
+    <div
+      data-task-id={task.id}
+      className="flex w-full flex-row rounded-lg bg-muted p-4"
+    >
       <div className="flex-grow">
         <TaskHeader initialTask={task} taskId={task.id} />
         <p className="mt-2 text-sm">{task.description}</p>

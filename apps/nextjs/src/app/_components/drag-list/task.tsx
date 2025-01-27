@@ -12,16 +12,13 @@ import {
 } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { pointerOutsideOfPreview } from "@atlaskit/pragmatic-drag-and-drop/element/pointer-outside-of-preview";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
-import { GripVertical } from "lucide-react";
 import { createPortal } from "react-dom";
 import invariant from "tiny-invariant";
 
 import type { RouterOutputs } from "@acme/api";
 
-import type { TTask } from "./task-data";
 import { TaskCard } from "../tasks";
 import { DropIndicator } from "./drop-indicator";
-import { Status } from "./status";
 import { getTaskData, isTaskData } from "./task-data";
 
 type TaskState =
@@ -140,7 +137,7 @@ export function Task({ task }: { task: RouterOutputs["task"]["getTask"] }) {
           // Adding data-attribute as a way to query for this for our post drop flash
           data-task-id={task?.id}
           ref={ref}
-          className={`flex flex-row items-center rounded border border-solid bg-background text-sm hover:cursor-grab ${stateStyles[state.type] ?? ""}`}
+          className={`flex flex-row rounded-lg bg-muted p-4 hover:cursor-grab ${stateStyles[state.type] ?? ""}`}
         >
           <TaskCard initialTask={task} taskId={task?.id ?? ""} />
         </div>

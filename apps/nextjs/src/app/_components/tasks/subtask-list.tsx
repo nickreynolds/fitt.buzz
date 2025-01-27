@@ -7,6 +7,8 @@ import "./transitions.css";
 
 import type { RouterOutputs } from "@acme/api";
 
+import { List } from "../drag-list/list";
+
 interface SubtaskListProps {
   initialTask: RouterOutputs["task"]["getTask"];
   parentTaskId: string;
@@ -28,19 +30,7 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
 
   return (
     <div className="flex w-full flex-col gap-4">
-      {tasks
-        .sort((t1, t2) => t1.sortIndex - t2.sortIndex)
-        .map((task, index) => {
-          return (
-            <div
-              // @ts-expect-error: `--delay` is a custom property
-              style={{ "--delay": `${index * 100}ms` }}
-              className={`motion-translate-x-in-[-500%] motion-delay-[var(--delay,0)]`}
-            >
-              <TaskCard initialTask={task} taskId={task.id} />
-            </div>
-          );
-        })}
+      <List tasks={tasks} />
     </div>
   );
 }

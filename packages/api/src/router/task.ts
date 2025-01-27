@@ -1,8 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import type { SQL } from "@acme/db";
-import { eq, inArray, isNull, lte, sql } from "@acme/db";
+import { eq, inArray, isNull, lte } from "@acme/db";
 import { CreateSubtaskSchema, CreateTaskSchema, Task } from "@acme/db/schema";
 import { getCompletionPeriodBegins } from "@acme/utils";
 

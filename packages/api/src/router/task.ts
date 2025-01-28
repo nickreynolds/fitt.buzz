@@ -28,6 +28,8 @@ const baseTaskOutputSchema = z.object({
     TaskCompletionTypes.WeightReps,
     TaskCompletionTypes.Time,
   ]),
+  isSet: z.boolean(),
+  numSets: z.number(),
 });
 
 const reorderTaskSchema = z
@@ -265,6 +267,44 @@ export const taskRouter = {
           throw new Error("You are not the owner of this task");
         }
         return await ctx.db.delete(Task).where(eq(Task.id, input.id));
+      }
+      throw new Error("Task not found");
+    }),
+  setIsSet: protectedProcedure
+    .input(z.object({ id: z.string().uuid(), isSet: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      // First try to find and delete a regular task
+      const task = await ctx.db.query.Task.findFirst({
+        where: eq(Task.id, input.id),
+      });
+
+      if (task) {
+        if (task.creatorId !== ctx.session.user.id) {
+          throw new Error("You are not the owner of this task");
+        }
+        return await ctx.db
+          .update(Task)
+          .set({ isSet: input.isSet })
+          .where(eq(Task.id, input.id));
+      }
+      throw new Error("Task not found");
+    }),
+  setNumSets: protectedProcedure
+    .input(z.object({ id: z.string().uuid(), numSets: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      // First try to find and delete a regular task
+      const task = await ctx.db.query.Task.findFirst({
+        where: eq(Task.id, input.id),
+      });
+
+      if (task) {
+        if (task.creatorId !== ctx.session.user.id) {
+          throw new Error("You are not the owner of this task");
+        }
+        return await ctx.db
+          .update(Task)
+          .set({ numSets: input.numSets })
+          .where(eq(Task.id, input.id));
       }
       throw new Error("Task not found");
     }),

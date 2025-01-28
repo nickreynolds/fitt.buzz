@@ -36,6 +36,8 @@ export const Task = pgTable("task", (t) => ({
     .references(() => User.id),
   parentTaskId: t.uuid().references((): AnyPgColumn => Task.id),
   sortIndex: t.integer().notNull().default(0),
+  isSet: t.boolean().notNull().default(false),
+  numSets: t.integer().notNull().default(1),
   completionDataType: completionDataTypeEnum()
     .notNull()
     .default(TaskCompletionTypes.Boolean),
@@ -73,6 +75,7 @@ export const CreateSubtaskSchema = z.object({
     TaskCompletionTypes.WeightReps,
     TaskCompletionTypes.Time,
   ]),
+  isSet: z.boolean(),
 });
 
 export const User = pgTable("user", (t) => ({

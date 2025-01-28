@@ -21,7 +21,7 @@ import {
 } from "@acme/ui/form";
 import { Input } from "@acme/ui/input";
 import { Textarea } from "@acme/ui/textarea";
-import { getCompletionPeriodBegins } from "@acme/utils";
+import { getCompletionPeriodBegins, TaskCompletionTypes } from "@acme/utils";
 
 import { api } from "~/trpc/react";
 
@@ -44,6 +44,7 @@ export function CreateSubtaskDialogForm({
       title: "",
       description: "",
       parentTaskId,
+      completionDataType: TaskCompletionTypes.Boolean,
     },
   });
 
@@ -81,6 +82,13 @@ export function CreateSubtaskDialogForm({
         parentTaskId: data.parentTaskId,
         childTasks: [],
         sortIndex: numSiblingTasks,
+        // horrible
+        completionDataType:
+          data.completionDataType === TaskCompletionTypes.Boolean
+            ? TaskCompletionTypes.Boolean
+            : data.completionDataType === TaskCompletionTypes.WeightReps
+              ? TaskCompletionTypes.WeightReps
+              : TaskCompletionTypes.Time,
       };
 
       utils.task.getTask.setData(
@@ -117,6 +125,12 @@ export function CreateSubtaskDialogForm({
       title: data.title,
       description: data.description,
       sortIndex: numSiblingTasks,
+      completionDataType:
+        data.completionDataType === TaskCompletionTypes.Boolean
+          ? TaskCompletionTypes.Boolean
+          : data.completionDataType === TaskCompletionTypes.WeightReps
+            ? TaskCompletionTypes.WeightReps
+            : TaskCompletionTypes.Time,
     });
   }
 
@@ -137,6 +151,28 @@ export function CreateSubtaskDialogForm({
                   <FormLabel>Title</FormLabel>
                   <FormControl>
                     <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="completionDataType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Completion Type</FormLabel>
+                  <FormControl>
+                    <select {...field}>
+                      <option value={TaskCompletionTypes.Boolean}>
+                        Boolean
+                      </option>
+                      <option value={TaskCompletionTypes.WeightReps}>
+                        Weight & Reps
+                      </option>
+                      <option value={TaskCompletionTypes.Time}>Time</option>
+                    </select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

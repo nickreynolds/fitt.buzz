@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { eq, inArray, isNull, lte } from "@acme/db";
 import { CreateSubtaskSchema, CreateTaskSchema, Task } from "@acme/db/schema";
-import { getCompletionPeriodBegins } from "@acme/utils";
+import { getCompletionPeriodBegins, TaskCompletionTypes } from "@acme/utils";
 
 import { protectedProcedure } from "../trpc";
 import { bootstrapTasks } from "../utils/bootstrap";
@@ -23,6 +23,11 @@ const baseTaskOutputSchema = z.object({
   creatorId: z.string(),
   parentTaskId: z.string().nullable(),
   sortIndex: z.number(),
+  completionDataType: z.enum([
+    TaskCompletionTypes.Boolean,
+    TaskCompletionTypes.WeightReps,
+    TaskCompletionTypes.Time,
+  ]),
 });
 
 const reorderTaskSchema = z

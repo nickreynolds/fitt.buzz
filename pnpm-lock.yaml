@@ -498,6 +498,9 @@ importers:
 
   packages/db:
     dependencies:
+      '@acme/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@vercel/postgres':
         specifier: ^0.10.0
         version: 0.10.0(utf-8-validate@6.0.4)

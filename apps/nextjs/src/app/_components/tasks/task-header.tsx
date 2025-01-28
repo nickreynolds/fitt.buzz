@@ -20,7 +20,6 @@ export default function TaskHeader({
   initialTask: RouterOutputs["task"]["getTask"];
   taskId: string;
 }) {
-  console.log("TASK HEADER initialTask", initialTask);
   const { data: task } = api.task.getTask.useQuery(
     { id: taskId },
     { initialData: initialTask },

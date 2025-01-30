@@ -15,7 +15,18 @@ export function CompleteTaskButton({
   const utils = api.useUtils();
 
   const completeTask = api.task.completeTask.useMutation({
-    onMutate: () => {
+    onMutate: async () => {
+      // prevent any in-flight updates from overwriting this optimistic update
+      // we'll get the updated data eventually
+      const promises = [];
+      if (parentTaskId) {
+        promises.push(utils.task.getTask.cancel({ id: parentTaskId }));
+      }
+      promises.push(utils.task.getTask.cancel({ id: taskId }));
+      promises.push(utils.task.getAllMyActiveTasks.cancel());
+
+      await Promise.all(promises);
+
       if (parentTaskId) {
         const parentTask = utils.task.getTask.getData({
           id: parentTaskId,
@@ -51,12 +62,9 @@ export function CompleteTaskButton({
     onSettled: async () => {
       const promises = [];
       if (parentTaskId) {
-        promises.push(utils.task.getTask.cancel({ id: parentTaskId }));
         promises.push(utils.task.getTask.invalidate({ id: parentTaskId }));
       }
-      promises.push(utils.task.getTask.cancel({ id: taskId }));
       promises.push(utils.task.getTask.invalidate({ id: taskId }));
-      promises.push(utils.task.getAllMyActiveTasks.cancel());
       promises.push(utils.task.getAllMyActiveTasks.invalidate());
 
       await Promise.all(promises);

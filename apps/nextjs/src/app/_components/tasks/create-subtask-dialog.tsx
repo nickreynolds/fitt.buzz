@@ -93,6 +93,8 @@ export function CreateSubtaskDialogForm({
             : data.completionDataType === TaskCompletionTypes.WeightReps
               ? TaskCompletionTypes.WeightReps
               : TaskCompletionTypes.Time,
+        isSet: false,
+        numSets: 1,
       };
 
       utils.task.getTask.setData(

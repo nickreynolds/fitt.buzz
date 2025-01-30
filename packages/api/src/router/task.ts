@@ -358,4 +358,29 @@ export const taskRouter = {
 
       // console.log("reorder 5.");
     }),
+  updateTaskTitle: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        title: z.string().min(1).max(256),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const task = await ctx.db.query.Task.findFirst({
+        where: eq(Task.id, input.id),
+      });
+
+      if (!task) {
+        throw new Error("Task not found");
+      }
+
+      if (task.creatorId !== ctx.session.user.id) {
+        throw new Error("You are not the owner of this task");
+      }
+
+      return await ctx.db
+        .update(Task)
+        .set({ title: input.title })
+        .where(eq(Task.id, input.id));
+    }),
 } satisfies TRPCRouterRecord;

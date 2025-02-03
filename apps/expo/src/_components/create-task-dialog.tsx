@@ -14,6 +14,8 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { format } from "date-fns";
 import { v4 } from "uuid";
 
+import { TaskCompletionTypes } from "@acme/utils";
+
 import { api } from "~/utils/api";
 
 interface CreateTaskDialogProps {
@@ -53,6 +55,9 @@ export function CreateTaskDialog({ isOpen, onClose }: CreateTaskDialogProps) {
           parentTaskId: null,
           childTasks: [],
           sortIndex: 0,
+          isSet: false,
+          numSets: 0,
+          completionDataType: TaskCompletionTypes.Boolean,
         };
 
         const tasks = utils.task.getAllMyActiveTasks.getData();

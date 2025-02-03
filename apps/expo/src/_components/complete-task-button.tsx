@@ -15,6 +15,15 @@ export function CompleteTaskButton({
 
   const completeTask = api.task.completeTask.useMutation({
     onMutate: () => {
+      // prevent any in-flight updates from overwriting this optimistic update
+      // we'll get the updated data eventually
+      const promises = [];
+      if (parentTaskId) {
+        promises.push(utils.task.getTask.cancel({ id: parentTaskId }));
+      }
+      promises.push(utils.task.getTask.cancel({ id: taskId }));
+      promises.push(utils.task.getAllMyActiveTasks.cancel());
+
       if (parentTaskId) {
         const parentTask = utils.task.getTask.getData({
           id: parentTaskId,

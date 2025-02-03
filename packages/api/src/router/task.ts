@@ -2,8 +2,13 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
 import { eq, inArray, isNull, lte } from "@acme/db";
-import { CreateSubtaskSchema, CreateTaskSchema, Task } from "@acme/db/schema";
-import { getCompletionPeriodBegins } from "@acme/utils";
+import {
+  CreateSubtaskSchema,
+  CreateTaskSchema,
+  Task,
+  TaskCompletion,
+} from "@acme/db/schema";
+import { getCompletionPeriodBegins, TaskCompletionTypes } from "@acme/utils";
 
 import { protectedProcedure } from "../trpc";
 import { bootstrapTasks } from "../utils/bootstrap";
@@ -23,6 +28,13 @@ const baseTaskOutputSchema = z.object({
   creatorId: z.string(),
   parentTaskId: z.string().nullable(),
   sortIndex: z.number(),
+  completionDataType: z.enum([
+    TaskCompletionTypes.Boolean,
+    TaskCompletionTypes.WeightReps,
+    TaskCompletionTypes.Time,
+  ]),
+  isSet: z.boolean(),
+  numSets: z.number(),
 });
 
 const reorderTaskSchema = z
@@ -107,6 +119,47 @@ export const taskRouter = {
         creatorId: ctx.session.user.id,
       });
     }),
+  completeWeightRepsTask: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        weight: z.number(),
+        weightUnit: z.string(),
+        reps: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const task = await ctx.db.query.Task.findFirst({
+        where: eq(Task.id, input.id),
+        with: {
+          childTasks: true,
+        },
+      });
+
+      if (task) {
+        if (task.creatorId !== ctx.session.user.id) {
+          throw new Error("You are not the owner of this task");
+        }
+
+        if (task.completionDataType !== TaskCompletionTypes.WeightReps) {
+          throw new Error("Task is not of type WeightReps");
+        }
+
+        const res = await ctx.db.insert(TaskCompletion).values({
+          taskId: task.id,
+          completionDataType: TaskCompletionTypes.WeightReps,
+          completionData: {
+            weight: input.weight,
+            weightUnit: input.weightUnit,
+            reps: input.reps,
+          },
+          nextDue: task.nextDue,
+        });
+
+        return res;
+      }
+      throw new Error("Task not found");
+    }),
   completeTask: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
@@ -120,6 +173,10 @@ export const taskRouter = {
       if (task) {
         if (task.creatorId !== ctx.session.user.id) {
           throw new Error("You are not the owner of this task");
+        }
+
+        if (task.completionDataType !== TaskCompletionTypes.Boolean) {
+          throw new Error("Task is not of type WeightReps");
         }
 
         // if task has children, check that all children are completed.
@@ -263,6 +320,44 @@ export const taskRouter = {
       }
       throw new Error("Task not found");
     }),
+  setIsSet: protectedProcedure
+    .input(z.object({ id: z.string().uuid(), isSet: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      // First try to find and delete a regular task
+      const task = await ctx.db.query.Task.findFirst({
+        where: eq(Task.id, input.id),
+      });
+
+      if (task) {
+        if (task.creatorId !== ctx.session.user.id) {
+          throw new Error("You are not the owner of this task");
+        }
+        return await ctx.db
+          .update(Task)
+          .set({ isSet: input.isSet })
+          .where(eq(Task.id, input.id));
+      }
+      throw new Error("Task not found");
+    }),
+  setNumSets: protectedProcedure
+    .input(z.object({ id: z.string().uuid(), numSets: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      // First try to find and delete a regular task
+      const task = await ctx.db.query.Task.findFirst({
+        where: eq(Task.id, input.id),
+      });
+
+      if (task) {
+        if (task.creatorId !== ctx.session.user.id) {
+          throw new Error("You are not the owner of this task");
+        }
+        return await ctx.db
+          .update(Task)
+          .set({ numSets: input.numSets })
+          .where(eq(Task.id, input.id));
+      }
+      throw new Error("Task not found");
+    }),
   reorderTasks: protectedProcedure
     .input(reorderTaskSchema)
     .mutation(async ({ ctx, input }) => {
@@ -312,5 +407,30 @@ export const taskRouter = {
       //   .where(inArray(Task.id, ids));
 
       // console.log("reorder 5.");
+    }),
+  updateTaskTitle: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        title: z.string().min(1).max(256),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const task = await ctx.db.query.Task.findFirst({
+        where: eq(Task.id, input.id),
+      });
+
+      if (!task) {
+        throw new Error("Task not found");
+      }
+
+      if (task.creatorId !== ctx.session.user.id) {
+        throw new Error("You are not the owner of this task");
+      }
+
+      return await ctx.db
+        .update(Task)
+        .set({ title: input.title })
+        .where(eq(Task.id, input.id));
     }),
 } satisfies TRPCRouterRecord;

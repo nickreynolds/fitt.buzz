@@ -8,7 +8,6 @@ export default function getNumCompletedChildTasks(
   }
   let count = 0;
   for (const childTask of task.childTasks) {
-    console.log("iterate over child task.");
     if (
       task.recurring &&
       childTask.lastCompleted &&
@@ -22,14 +21,5 @@ export default function getNumCompletedChildTasks(
       count++;
     }
   }
-  console.log("2 numCompletedChildTasks: ", count);
   return count;
-  // return task.childTasks.filter(
-  //   (childTask) =>
-  //     (task.recurring &&
-  //       childTask.lastCompleted &&
-  //       task.completionPeriodBegins &&
-  //       childTask.lastCompleted > task.completionPeriodBegins) ??
-  //     (!task.recurring && childTask.lastCompleted),
-  // ).length;
 }

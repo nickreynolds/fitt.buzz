@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from "@acme/ui/select";
 import { Textarea } from "@acme/ui/textarea";
-import { getCompletionPeriodBegins } from "@acme/utils";
+import { getCompletionPeriodBegins, TaskCompletionTypes } from "@acme/utils";
 
 import { api } from "~/trpc/react";
 
@@ -98,6 +98,9 @@ export function CreateTaskDialogForm({
         parentTaskId: null,
         childTasks: [],
         sortIndex: 0,
+        completionDataType: TaskCompletionTypes.Boolean,
+        isSet: false,
+        numSets: 1,
       };
 
       utils.task.getTask.setData({ id: data.id }, task);

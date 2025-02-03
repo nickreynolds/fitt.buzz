@@ -1,7 +1,20 @@
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { pgTable, primaryKey } from "drizzle-orm/pg-core";
+import { pgEnum, pgTable, primaryKey } from "drizzle-orm/pg-core";
 import { z } from "zod";
+
+import { TaskCompletionConditions, TaskCompletionTypes } from "@acme/utils";
+
+export const completionDataTypeEnum = pgEnum("completion_type", [
+  TaskCompletionTypes.Boolean,
+  TaskCompletionTypes.WeightReps,
+  TaskCompletionTypes.Time,
+]);
+
+export const completionConditionsEnum = pgEnum("completion_conditions", [
+  TaskCompletionConditions.AllSubtasks,
+  TaskCompletionConditions.AnySubtask,
+]);
 
 export const Task = pgTable("task", (t) => ({
   id: t.uuid().notNull().primaryKey().defaultRandom(),
@@ -23,6 +36,25 @@ export const Task = pgTable("task", (t) => ({
     .references(() => User.id),
   parentTaskId: t.uuid().references((): AnyPgColumn => Task.id),
   sortIndex: t.integer().notNull().default(0),
+  isSet: t.boolean().notNull().default(false),
+  numSets: t.integer().notNull().default(1),
+  completionDataType: completionDataTypeEnum()
+    .notNull()
+    .default(TaskCompletionTypes.Boolean),
+  completionConditions: completionConditionsEnum()
+    .notNull()
+    .default(TaskCompletionConditions.AllSubtasks),
+}));
+
+export const TaskCompletion = pgTable("task_completion", (t) => ({
+  id: t.uuid().notNull().primaryKey().defaultRandom(),
+  taskId: t
+    .uuid()
+    .notNull()
+    .references(() => Task.id),
+  nextDue: t.timestamp({ mode: "date", withTimezone: true }).notNull(),
+  completionDataType: completionDataTypeEnum().notNull(),
+  completionData: t.jsonb(),
 }));
 
 export const TaskRelations = relations(Task, ({ one, many }) => ({
@@ -49,6 +81,12 @@ export const CreateSubtaskSchema = z.object({
   description: z.string().max(256),
   parentTaskId: z.string().uuid(),
   sortIndex: z.number().optional(),
+  completionDataType: z.enum([
+    TaskCompletionTypes.Boolean,
+    TaskCompletionTypes.WeightReps,
+    TaskCompletionTypes.Time,
+  ]),
+  isSet: z.boolean(),
 });
 
 export const User = pgTable("user", (t) => ({

@@ -1,9 +1,11 @@
 import type { z } from "zod";
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { v4 } from "uuid";
 
 import { CreateSubtaskSchema } from "@acme/db/schema";
+import { Checkbox } from "@acme/ui";
 import { Button } from "@acme/ui/button";
 import {
   Dialog,
@@ -21,7 +23,7 @@ import {
 } from "@acme/ui/form";
 import { Input } from "@acme/ui/input";
 import { Textarea } from "@acme/ui/textarea";
-import { getCompletionPeriodBegins } from "@acme/utils";
+import { getCompletionPeriodBegins, TaskCompletionTypes } from "@acme/utils";
 
 import { api } from "~/trpc/react";
 
@@ -37,6 +39,7 @@ export function CreateSubtaskDialogForm({
   parentTaskId,
 }: CreateSubtaskDialogFormProps) {
   const zodSchema = CreateSubtaskSchema.omit({ parentTaskId: true, id: true });
+  const [isSet, setIsSet] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(zodSchema),
@@ -44,6 +47,8 @@ export function CreateSubtaskDialogForm({
       title: "",
       description: "",
       parentTaskId,
+      completionDataType: TaskCompletionTypes.Boolean,
+      isSet: false,
     },
   });
 
@@ -81,6 +86,15 @@ export function CreateSubtaskDialogForm({
         parentTaskId: data.parentTaskId,
         childTasks: [],
         sortIndex: numSiblingTasks,
+        // horrible
+        completionDataType:
+          data.completionDataType === TaskCompletionTypes.Boolean
+            ? TaskCompletionTypes.Boolean
+            : data.completionDataType === TaskCompletionTypes.WeightReps
+              ? TaskCompletionTypes.WeightReps
+              : TaskCompletionTypes.Time,
+        isSet: false,
+        numSets: 1,
       };
 
       utils.task.getTask.setData(
@@ -117,6 +131,13 @@ export function CreateSubtaskDialogForm({
       title: data.title,
       description: data.description,
       sortIndex: numSiblingTasks,
+      completionDataType:
+        data.completionDataType === TaskCompletionTypes.Boolean
+          ? TaskCompletionTypes.Boolean
+          : data.completionDataType === TaskCompletionTypes.WeightReps
+            ? TaskCompletionTypes.WeightReps
+            : TaskCompletionTypes.Time,
+      isSet,
     });
   }
 
@@ -142,6 +163,45 @@ export function CreateSubtaskDialogForm({
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="isSet"
+              render={() => (
+                <FormItem className="flex flex-row items-center space-x-2">
+                  <Checkbox
+                    id="recurring"
+                    checked={isSet}
+                    onCheckedChange={(checked: boolean) => setIsSet(checked)}
+                  />
+                  <FormLabel>Make this a set?</FormLabel>
+                </FormItem>
+              )}
+            />
+
+            {!isSet && (
+              <FormField
+                control={form.control}
+                name="completionDataType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Completion Type</FormLabel>
+                    <FormControl>
+                      <select {...field}>
+                        <option value={TaskCompletionTypes.Boolean}>
+                          Boolean
+                        </option>
+                        <option value={TaskCompletionTypes.WeightReps}>
+                          Weight & Reps
+                        </option>
+                        <option value={TaskCompletionTypes.Time}>Time</option>
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}

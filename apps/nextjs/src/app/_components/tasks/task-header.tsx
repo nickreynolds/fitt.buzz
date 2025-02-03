@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Check, CheckCircle, Circle, Pencil } from "lucide-react";
 
 import type { RouterOutputs } from "@acme/api";
@@ -11,7 +11,6 @@ import {
   getNumCompletedChildTasks,
   isCompleted,
 } from "@acme/api-utils";
-import { Button } from "@acme/ui/button";
 import { Input } from "@acme/ui/input";
 
 import { api } from "~/trpc/react";

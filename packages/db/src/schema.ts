@@ -46,6 +46,17 @@ export const Task = pgTable("task", (t) => ({
     .default(TaskCompletionConditions.AllSubtasks),
 }));
 
+export const TaskCompletion = pgTable("task_completion", (t) => ({
+  id: t.uuid().notNull().primaryKey().defaultRandom(),
+  taskId: t
+    .uuid()
+    .notNull()
+    .references(() => Task.id),
+  nextDue: t.timestamp({ mode: "date", withTimezone: true }).notNull(),
+  completionDataType: completionDataTypeEnum().notNull(),
+  completionData: t.jsonb(),
+}));
+
 export const TaskRelations = relations(Task, ({ one, many }) => ({
   parentTask: one(Task, {
     fields: [Task.parentTaskId],

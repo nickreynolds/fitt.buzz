@@ -12,9 +12,11 @@ import {
   isCompleted,
 } from "@acme/api-utils";
 import { Input } from "@acme/ui/input";
+import { TaskCompletionTypes } from "@acme/utils";
 
 import { api } from "~/trpc/react";
 import { CompleteTaskButton } from "./complete-task-button";
+import { CompleteWeightRepsTaskButton } from "./complete-weights-reps-task-button";
 
 interface TaskHeaderProps {
   initialTask: RouterOutputs["task"]["getTask"];
@@ -61,6 +63,22 @@ export default function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
 
   const undoneTasks = Array(numChildTasks - numCompletedChildTasks).fill(1);
   const doneTasks = Array(numCompletedChildTasks).fill(1);
+
+  const numSets = task.numSets || 0;
+  const finishedSets = Array.from(
+    task.childTaskCompletionDataMap?.values() ?? [],
+  );
+  const minDoneSets =
+    finishedSets.length > 0
+      ? Math.min(...finishedSets.map((sets) => sets.length))
+      : 0;
+  console.log("numSets: ", numSets);
+  console.log("minDoneSets: ", minDoneSets);
+
+  const undoneSets = Array(numSets - minDoneSets).fill(1);
+  const doneSets = Array(numSets - undoneSets.length).fill(1);
+
+  console.log("tasK", task);
 
   return (
     <div className="flex flex-row items-center justify-between">
@@ -121,15 +139,31 @@ export default function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
         )}
       </div>
       <div className="flex flex-row items-center gap-4">
-        {canComplete && (
-          <CompleteTaskButton
+        {task.completionDataType === TaskCompletionTypes.WeightReps && (
+          <CompleteWeightRepsTaskButton
             taskId={task.id}
             parentTaskId={task.parentTaskId}
           />
         )}
-        {(numCompletedChildTasks < numChildTasks || !canComplete) &&
+        {task.completionDataType === TaskCompletionTypes.Boolean &&
+          canComplete && (
+            <CompleteTaskButton
+              taskId={task.id}
+              parentTaskId={task.parentTaskId}
+            />
+          )}
+        {numSets > 1 &&
+          (minDoneSets < numSets || !canComplete) &&
+          undoneSets.map((_, i) => <Circle key={i} className="h-4 w-4" />)}
+        {numSets > 1 &&
+          (minDoneSets < numSets || !canComplete) &&
+          doneSets.map((_, i) => <CheckCircle key={i} className="h-4 w-4" />)}
+        {isComplete && <Check className="h-8 w-8 text-primary" />}
+        {numSets <= 1 &&
+          (numCompletedChildTasks < numChildTasks || !canComplete) &&
           undoneTasks.map((_, i) => <Circle key={i} className="h-4 w-4" />)}
-        {(numCompletedChildTasks < numChildTasks || !canComplete) &&
+        {numSets <= 1 &&
+          (numCompletedChildTasks < numChildTasks || !canComplete) &&
           doneTasks.map((_, i) => <CheckCircle key={i} className="h-4 w-4" />)}
         {isComplete && <Check className="h-8 w-8 text-primary" />}
       </div>

@@ -1,7 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { eq, inArray, isNull, lte } from "@acme/db";
+import { and, eq, inArray, isNull, lte } from "@acme/db";
 import {
   CreateSubtaskSchema,
   CreateTaskSchema,
@@ -35,6 +35,8 @@ const baseTaskOutputSchema = z.object({
   ]),
   isSet: z.boolean(),
   numSets: z.number(),
+  taskCompletionData: z.array(z.string()).optional(),
+  childTaskCompletionDataMap: z.map(z.string(), z.array(z.string())).optional(),
 });
 
 const reorderTaskSchema = z
@@ -181,17 +183,34 @@ export const taskRouter = {
 
         // if task has children, check that all children are completed.
         if (task.childTasks.length > 0) {
-          for (const childTask of task.childTasks) {
-            if (!childTask.lastCompleted) {
-              throw new Error("Cannot complete task with incomplete subtasks");
+          if (task.isSet) {
+            for (const childTask of task.childTasks) {
+              const childTaskCompletions =
+                await ctx.db.query.TaskCompletion.findMany({
+                  where: and(
+                    eq(TaskCompletion.taskId, childTask.id),
+                    eq(TaskCompletion.nextDue, task.nextDue),
+                  ),
+                });
+              if (childTaskCompletions.length < task.numSets) {
+                throw new Error("Cannot complete task with incomplete sets");
+              }
             }
-            if (
-              task.completionPeriodBegins &&
-              childTask.lastCompleted < task.completionPeriodBegins
-            ) {
-              throw new Error(
-                "Cannot complete task with subtasks completed before completionPeriodBegins",
-              );
+          } else {
+            for (const childTask of task.childTasks) {
+              if (!childTask.lastCompleted) {
+                throw new Error(
+                  "Cannot complete task with incomplete subtasks",
+                );
+              }
+              if (
+                task.completionPeriodBegins &&
+                childTask.lastCompleted < task.completionPeriodBegins
+              ) {
+                throw new Error(
+                  "Cannot complete task with subtasks completed before completionPeriodBegins",
+                );
+              }
             }
           }
         }
@@ -255,7 +274,33 @@ export const taskRouter = {
         throw new Error("Task not found");
       }
 
-      return task;
+      const taskCompletionDataPoints =
+        await ctx.db.query.TaskCompletion.findMany({
+          where: and(
+            eq(TaskCompletion.taskId, input.id),
+            eq(TaskCompletion.nextDue, task.nextDue),
+          ),
+        });
+      const taskCompletionData = taskCompletionDataPoints.map((point) =>
+        JSON.stringify(point.completionData),
+      );
+
+      const childTaskCompletionDataMap = new Map<string, string[]>();
+      for (const child of task.childTasks) {
+        const childTaskCompletionDataPoints =
+          await ctx.db.query.TaskCompletion.findMany({
+            where: and(
+              eq(TaskCompletion.taskId, child.id),
+              eq(TaskCompletion.nextDue, task.nextDue),
+            ),
+          });
+        const childTaskCompletionData = childTaskCompletionDataPoints.map(
+          (point) => JSON.stringify(point.completionData),
+        );
+        childTaskCompletionDataMap.set(child.id, childTaskCompletionData);
+      }
+
+      return { ...task, taskCompletionData, childTaskCompletionDataMap };
     }),
   getAllMyTasks: protectedProcedure
     .output(taskSchema.array())

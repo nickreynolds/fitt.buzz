@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 
@@ -51,6 +52,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <TRPCReactProvider>
+            <ReactQueryDevtools initialIsOpen={true} />
             <AuthShowcase>{props.children}</AuthShowcase>
           </TRPCReactProvider>
           <Toaster />

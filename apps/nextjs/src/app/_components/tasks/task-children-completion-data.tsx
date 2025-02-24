@@ -58,27 +58,28 @@ export function TaskChildrenCompletionData({
     { initialData: initialTask },
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let data1: any[] = [];
-
-  if (task) {
-    task.childTasks?.forEach((childTask) => {
-      const completionData = task.childTaskCompletionDataMap?.get(childTask.id);
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      const parsedData = completionData?.map((data) => JSON.parse(data));
-      if (parsedData) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        data1 = [...data1, parsedData];
-      }
-    });
-    console.log("data: ", data1);
-  }
-
-  data1 = data1.flat();
   const data = React.useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let data1: any[] = [];
+
+    if (task) {
+      task.childTasks?.forEach((childTask) => {
+        const completionData = task.childTaskCompletionDataMap?.get(
+          childTask.id,
+        );
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        const parsedData = completionData?.map((data) => JSON.parse(data));
+        if (parsedData) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          data1 = [...data1, parsedData];
+        }
+      });
+      console.log("data: ", data1);
+    }
+    data1 = data1.flat();
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return Array.isArray(data1) ? data1 : [];
-  }, [data1]);
+  }, [task]);
 
   const table = useReactTable({
     data: data as TaskCompletionInfo[],

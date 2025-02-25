@@ -19,7 +19,8 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@acme/api": "workspace:*"
+    "@acme/api": "workspace:*",
+    "@acme/utils": "workspace:*"
   },
   "devDependencies": {
     "@acme/eslint-config": "workspace:*",

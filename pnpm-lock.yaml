@@ -433,6 +433,9 @@ importers:
       '@acme/api':
         specifier: workspace:*
         version: link:../api
+      '@acme/utils':
+        specifier: workspace:*
+        version: link:../utils
     devDependencies:
       '@acme/eslint-config':
         specifier: workspace:*

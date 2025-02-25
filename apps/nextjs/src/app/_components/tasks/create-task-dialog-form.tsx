@@ -101,6 +101,7 @@ export function CreateTaskDialogForm({
         completionDataType: TaskCompletionTypes.Boolean,
         isSet: false,
         numSets: 1,
+        numCompletedSets: 0,
       };
 
       utils.task.getTask.setData({ id: data.id }, task);

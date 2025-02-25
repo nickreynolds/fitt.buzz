@@ -5,6 +5,7 @@ import BackButton from "~/app/_components/tasks/back-button";
 import { CreateSubtaskButton } from "~/app/_components/tasks/create-subtask-button";
 import { DeleteTaskButton } from "~/app/_components/tasks/delete-task-button";
 import { SubtaskList } from "~/app/_components/tasks/subtask-list";
+import { TaskChildrenCompletionData } from "~/app/_components/tasks/task-children-completion-data";
 import { TaskDetails } from "~/app/_components/tasks/task-details";
 import { TaskDetailsDialog } from "~/app/_components/tasks/task-details-dialog";
 import TaskHeader from "~/app/_components/tasks/task-header";
@@ -38,6 +39,11 @@ export default async function TaskPage({ params }: { params: { id: string } }) {
 
               <div className="space-y-6">
                 <TaskHeader initialTask={task} taskId={task.id} />
+
+                <TaskChildrenCompletionData
+                  initialTask={task}
+                  taskId={task.id}
+                />
 
                 <div>
                   <h2 className="mb-4 text-xl font-semibold">Subtasks</h2>

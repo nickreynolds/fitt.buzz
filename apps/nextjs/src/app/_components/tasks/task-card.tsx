@@ -23,12 +23,6 @@ export function TaskCard({ initialTask, taskId }: TaskCardProps) {
   return (
     <div className="flex-grow">
       <TaskHeader initialTask={task} taskId={task.id} />
-      <p className="mt-2 text-sm">{task.description}</p>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Due Date: {task.nextDue.toISOString()}
-        <br />
-        CompletionPeriodBegins: {task.completionPeriodBegins?.toISOString()}
-      </p>
     </div>
   );
 }

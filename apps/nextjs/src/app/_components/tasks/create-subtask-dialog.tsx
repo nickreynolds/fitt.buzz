@@ -95,6 +95,7 @@ export function CreateSubtaskDialogForm({
               : TaskCompletionTypes.Time,
         isSet: false,
         numSets: 1,
+        numCompletedSets: 0,
       };
 
       utils.task.getTask.setData(

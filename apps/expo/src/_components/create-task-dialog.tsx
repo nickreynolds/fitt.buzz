@@ -57,6 +57,7 @@ export function CreateTaskDialog({ isOpen, onClose }: CreateTaskDialogProps) {
           sortIndex: 0,
           isSet: false,
           numSets: 0,
+          numCompletedSets: 0,
           completionDataType: TaskCompletionTypes.Boolean,
         };
 

@@ -16,6 +16,17 @@ export default function canBeCompleted(
 
   const numCompletedChildTasks = getNumCompletedChildTasks(task);
 
+  if (task.isSet) {
+    const numSets = task.numSets;
+    for (const child of task.childTasks ?? []) {
+      if (task.childTaskCompletionDataMap?.get(child.id)?.length !== numSets) {
+        return false;
+      }
+    }
+
+    return (!alreadyCompleted && inCompletionPeriod) ?? false;
+  }
+
   const canBeCompleted =
     inCompletionPeriod &&
     numCompletedChildTasks === numChildTasks &&

@@ -49,6 +49,7 @@ export default function CreateTask() {
           sortIndex: 0,
           isSet: false,
           numSets: 0,
+          numCompletedSets: 0,
           completionDataType: TaskCompletionTypes.Boolean,
         };
 

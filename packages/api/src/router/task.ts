@@ -1,7 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { eq, inArray, isNull, lte } from "@acme/db";
+import { and, eq, inArray, isNull, lte } from "@acme/db";
 import {
   CreateSubtaskSchema,
   CreateTaskSchema,
@@ -35,6 +35,9 @@ const baseTaskOutputSchema = z.object({
   ]),
   isSet: z.boolean(),
   numSets: z.number(),
+  numCompletedSets: z.number(),
+  taskCompletionData: z.array(z.string()).optional(),
+  childTaskCompletionDataMap: z.map(z.string(), z.array(z.string())).optional(),
 });
 
 const reorderTaskSchema = z
@@ -145,20 +148,108 @@ export const taskRouter = {
           throw new Error("Task is not of type WeightReps");
         }
 
-        const res = await ctx.db.insert(TaskCompletion).values({
-          taskId: task.id,
-          completionDataType: TaskCompletionTypes.WeightReps,
-          completionData: {
-            weight: input.weight,
-            weightUnit: input.weightUnit,
-            reps: input.reps,
-          },
-          nextDue: task.nextDue,
+        const res = await ctx.db.transaction(async (trx) => {
+          if (task.parentTaskId) {
+            let completeParentSet = true;
+            const parentTask = await ctx.db.query.Task.findFirst({
+              where: eq(Task.id, task.parentTaskId),
+              with: {
+                childTasks: true,
+              },
+            });
+            if (!parentTask) {
+              throw new Error("Parent task specified but not found");
+            }
+            console.log("task.nextDue: ", task.nextDue);
+            if (parentTask.isSet) {
+              const allChildrenCompletionData = await ctx.db
+                .select()
+                .from(TaskCompletion)
+                .where(
+                  and(
+                    inArray(
+                      TaskCompletion.taskId,
+                      parentTask.childTasks.map((child) => child.id),
+                    ),
+                    eq(TaskCompletion.nextDue, task.nextDue),
+                  ),
+                );
+
+              console.log(
+                "allChildrenCompletionData",
+                allChildrenCompletionData,
+              );
+
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const groupedChildrenCompletionData = new Map<string, any[]>();
+
+              for (const g of allChildrenCompletionData) {
+                const existing = groupedChildrenCompletionData.get(g.taskId);
+                if (existing) {
+                  existing.push(g);
+                } else {
+                  groupedChildrenCompletionData.set(g.taskId, [g]);
+                }
+              }
+
+              const allOtherChildrenCompletionNum = [];
+              for (const [
+                childId,
+                completionData,
+              ] of groupedChildrenCompletionData) {
+                if (childId === task.id) {
+                  if (completionData.length >= parentTask.numSets) {
+                    throw new Error("Cannot complete more sets");
+                  }
+                } else {
+                  allOtherChildrenCompletionNum.push(completionData.length);
+                  if (
+                    completionData.length <
+                    (groupedChildrenCompletionData.get(task.id)?.length ?? 0)
+                  ) {
+                    throw new Error(
+                      "Cannot complete more sets. Other subtasks need to be completed first",
+                    );
+                  }
+                }
+              }
+              for (const num of allOtherChildrenCompletionNum) {
+                if (
+                  num !=
+                  (groupedChildrenCompletionData.get(task.id)?.length ?? 0) + 1
+                ) {
+                  completeParentSet = false;
+                }
+              }
+            }
+
+            if (completeParentSet) {
+              const completedParentSets = parentTask.numCompletedSets;
+              await trx
+                .update(Task)
+                .set({ numCompletedSets: completedParentSets + 1 })
+                .where(eq(Task.id, task.parentTaskId));
+            }
+          }
+
+          const res = await trx.insert(TaskCompletion).values({
+            taskId: task.id,
+            completionDataType: TaskCompletionTypes.WeightReps,
+            completionData: {
+              weight: input.weight,
+              weightUnit: input.weightUnit,
+              reps: input.reps,
+            },
+            nextDue: task.nextDue,
+          });
+
+          return res;
         });
 
         return res;
+      } else {
+        throw new Error("Task not found");
       }
-      throw new Error("Task not found");
     }),
   completeTask: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
@@ -181,22 +272,56 @@ export const taskRouter = {
 
         // if task has children, check that all children are completed.
         if (task.childTasks.length > 0) {
-          for (const childTask of task.childTasks) {
-            if (!childTask.lastCompleted) {
-              throw new Error("Cannot complete task with incomplete subtasks");
+          if (task.isSet) {
+            for (const childTask of task.childTasks) {
+              const childTaskCompletions =
+                await ctx.db.query.TaskCompletion.findMany({
+                  where: and(
+                    eq(TaskCompletion.taskId, childTask.id),
+                    eq(TaskCompletion.nextDue, task.nextDue),
+                  ),
+                });
+              if (childTaskCompletions.length < task.numSets) {
+                throw new Error("Cannot complete task with incomplete sets");
+              }
             }
-            if (
-              task.completionPeriodBegins &&
-              childTask.lastCompleted < task.completionPeriodBegins
-            ) {
-              throw new Error(
-                "Cannot complete task with subtasks completed before completionPeriodBegins",
-              );
+          } else {
+            for (const childTask of task.childTasks) {
+              if (!childTask.lastCompleted) {
+                throw new Error(
+                  "Cannot complete task with incomplete subtasks",
+                );
+              }
+              if (
+                task.completionPeriodBegins &&
+                childTask.lastCompleted < task.completionPeriodBegins
+              ) {
+                throw new Error(
+                  "Cannot complete task with subtasks completed before completionPeriodBegins",
+                );
+              }
             }
           }
         }
 
-        const childrenIDs = task.childTasks.map((child) => child.id);
+        const allChildrenIDs = [];
+
+        let nextChildren = task.childTasks.map((child) => child.id);
+
+        while (nextChildren.length > 0) {
+          allChildrenIDs.push(...nextChildren);
+
+          const fullChildren = await ctx.db.query.Task.findMany({
+            where: inArray(Task.id, nextChildren),
+            with: {
+              childTasks: true,
+            },
+          });
+
+          nextChildren = fullChildren
+            .map((child) => child.childTasks.map((c) => c.id))
+            .flat();
+        }
 
         if (!task.parentTaskId && task.recurring) {
           if (!task.frequencyHours) {
@@ -222,10 +347,18 @@ export const taskRouter = {
               ),
               nextDue: new Date(dueDate),
             })
-            .where(inArray(Task.id, [input.id, ...childrenIDs]));
+            .where(inArray(Task.id, [input.id, ...allChildrenIDs]));
           console.log("res", res);
           return res;
         } else {
+          if (task.parentTaskId) {
+            const parentTask = await ctx.db.query.Task.findFirst({
+              where: eq(Task.id, task.parentTaskId),
+            });
+            if (parentTask?.isSet) {
+              // do same as in weights/reps
+            }
+          }
           const res = await ctx.db
             .update(Task)
             .set({ lastCompleted: new Date() })
@@ -255,7 +388,33 @@ export const taskRouter = {
         throw new Error("Task not found");
       }
 
-      return task;
+      const taskCompletionDataPoints =
+        await ctx.db.query.TaskCompletion.findMany({
+          where: and(
+            eq(TaskCompletion.taskId, input.id),
+            eq(TaskCompletion.nextDue, task.nextDue),
+          ),
+        });
+      const taskCompletionData = taskCompletionDataPoints.map((point) =>
+        JSON.stringify(point.completionData),
+      );
+
+      const childTaskCompletionDataMap = new Map<string, string[]>();
+      for (const child of task.childTasks) {
+        const childTaskCompletionDataPoints =
+          await ctx.db.query.TaskCompletion.findMany({
+            where: and(
+              eq(TaskCompletion.taskId, child.id),
+              eq(TaskCompletion.nextDue, task.nextDue),
+            ),
+          });
+        const childTaskCompletionData = childTaskCompletionDataPoints.map(
+          (point) => JSON.stringify(point.completionData),
+        );
+        childTaskCompletionDataMap.set(child.id, childTaskCompletionData);
+      }
+
+      return { ...task, taskCompletionData, childTaskCompletionDataMap };
     }),
   getAllMyTasks: protectedProcedure
     .output(taskSchema.array())

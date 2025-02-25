@@ -38,6 +38,7 @@ export const Task = pgTable("task", (t) => ({
   sortIndex: t.integer().notNull().default(0),
   isSet: t.boolean().notNull().default(false),
   numSets: t.integer().notNull().default(1),
+  numCompletedSets: t.integer().notNull().default(0),
   completionDataType: completionDataTypeEnum()
     .notNull()
     .default(TaskCompletionTypes.Boolean),

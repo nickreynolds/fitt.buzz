@@ -35,6 +35,7 @@ const baseTaskOutputSchema = z.object({
   ]),
   isSet: z.boolean(),
   numSets: z.number(),
+  numCompletedSets: z.number(),
   taskCompletionData: z.array(z.string()).optional(),
   childTaskCompletionDataMap: z.map(z.string(), z.array(z.string())).optional(),
 });
@@ -159,6 +160,7 @@ export const taskRouter = {
             if (!parentTask) {
               throw new Error("Parent task specified but not found");
             }
+            console.log("task.nextDue: ", task.nextDue);
             if (parentTask.isSet) {
               const allChildrenCompletionData = await ctx.db
                 .select()
@@ -172,6 +174,11 @@ export const taskRouter = {
                     eq(TaskCompletion.nextDue, task.nextDue),
                   ),
                 );
+
+              console.log(
+                "allChildrenCompletionData",
+                allChildrenCompletionData,
+              );
 
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const groupedChildrenCompletionData = new Map<string, any[]>();
@@ -217,7 +224,7 @@ export const taskRouter = {
             }
 
             if (completeParentSet) {
-              const completedParentSets = parentTask.numCompletedSets as number;
+              const completedParentSets = parentTask.numCompletedSets;
               await trx
                 .update(Task)
                 .set({ numCompletedSets: completedParentSets + 1 })
@@ -298,6 +305,24 @@ export const taskRouter = {
         }
 
         const childrenIDs = task.childTasks.map((child) => child.id);
+        const allChildrenIDs = [];
+
+        let nextChildren = task.childTasks.map((child) => child.id);
+
+        while (nextChildren.length > 0) {
+          allChildrenIDs.push(...nextChildren);
+
+          const fullChildren = await ctx.db.query.Task.findMany({
+            where: inArray(Task.id, nextChildren),
+            with: {
+              childTasks: true,
+            },
+          });
+
+          nextChildren = fullChildren
+            .map((child) => child.childTasks.map((c) => c.id))
+            .flat();
+        }
 
         if (!task.parentTaskId && task.recurring) {
           if (!task.frequencyHours) {
@@ -323,7 +348,7 @@ export const taskRouter = {
               ),
               nextDue: new Date(dueDate),
             })
-            .where(inArray(Task.id, [input.id, ...childrenIDs]));
+            .where(inArray(Task.id, [input.id, ...allChildrenIDs]));
           console.log("res", res);
           return res;
         } else {
@@ -332,6 +357,7 @@ export const taskRouter = {
               where: eq(Task.id, task.parentTaskId),
             });
             if (parentTask?.isSet) {
+              // do same as in weights/reps
             }
           }
           const res = await ctx.db

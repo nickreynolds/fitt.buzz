@@ -1,5 +1,7 @@
 "use client";
 
+import React from "react";
+
 import { Button } from "@acme/ui/button";
 
 import { api } from "~/trpc/react";
@@ -14,8 +16,11 @@ export function CompleteWeightRepsTaskButton({
   //   const router = useRouter();
   const utils = api.useUtils();
 
+  const [weight, setWeight] = React.useState(0);
+  const [reps, setReps] = React.useState(0);
+
   const completeTask = api.task.completeWeightRepsTask.useMutation({
-    onMutate: async () => {
+    onMutate: async (data) => {
       // prevent any in-flight updates from overwriting this optimistic update
       // we'll get the updated data eventually
 
@@ -54,7 +59,11 @@ export function CompleteWeightRepsTaskButton({
           );
           existingChildTaskCompletionDataMap?.set(taskId, [
             ...existingChildTaskCompletionData,
-            JSON.stringify({ weight: 10, reps: 10, weightUnit: "lbs" }),
+            JSON.stringify({
+              weight: data.weight,
+              reps: data.reps,
+              weightUnit: "lbs",
+            }),
           ]);
           console.log(
             "existingChildTaskCompletionDataMap 2",
@@ -114,15 +123,23 @@ export function CompleteWeightRepsTaskButton({
 
   return (
     <div className="flex flex-row">
-      <input type="number" />
-      <input type="number" />
+      <input
+        type="number"
+        value={weight}
+        onChange={(e) => setWeight(parseInt(e.target.value))}
+      />
+      <input
+        type="number"
+        value={reps}
+        onChange={(e) => setReps(parseInt(e.target.value))}
+      />
       <Button
         variant="primary"
         onClick={() =>
           completeTask.mutate({
             id: taskId,
-            weight: 10,
-            reps: 0,
+            weight: weight,
+            reps: reps,
             weightUnit: "lbs",
           })
         }

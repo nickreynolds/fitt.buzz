@@ -17,20 +17,6 @@ export function TaskDetails({
 }: TaskDetailsProps) {
   return (
     <div className="space-y-4">
-      <div>
-        <h3 className="text-sm font-medium">Description</h3>
-        <p className="mt-1 text-muted-foreground">
-          {description ?? "No description provided"}
-        </p>
-      </div>
-
-      <div>
-        <h3 className="text-sm font-medium">Due Date</h3>
-        <p className="mt-1 text-muted-foreground">
-          {format(nextDue, "PPP 'at' p")}
-        </p>
-      </div>
-
       {isRecurring && (
         <>
           <div>

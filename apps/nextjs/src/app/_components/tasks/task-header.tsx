@@ -65,18 +65,15 @@ export default function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
   const doneTasks = Array(numCompletedChildTasks).fill(1);
 
   const numSets = task.numSets || 0;
-  const finishedSets = Array.from(
-    task.childTaskCompletionDataMap?.values() ?? [],
-  );
-  const minDoneSets =
-    finishedSets.length > 0
-      ? Math.min(...finishedSets.map((sets) => sets.length))
-      : 0;
-  console.log("numSets: ", numSets);
-  console.log("minDoneSets: ", minDoneSets);
+  const finishedSets = task.numCompletedSets;
 
-  const undoneSets = Array(numSets - minDoneSets).fill(1);
-  const doneSets = Array(numSets - undoneSets.length).fill(1);
+  console.log("numSets: ", numSets);
+  console.log("finishedSets: ", finishedSets);
+
+  const undoneSets = Array(task.numSets - task.numCompletedSets).fill(1);
+  const doneSets = Array(task.numCompletedSets).fill(1);
+
+  console.log("doneSets: ", doneSets);
 
   console.log("tasK", task);
 
@@ -152,13 +149,20 @@ export default function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
               parentTaskId={task.parentTaskId}
             />
           )}
-        {numSets > 1 &&
-          (minDoneSets < numSets || !canComplete) &&
-          undoneSets.map((_, i) => <Circle key={i} className="h-4 w-4" />)}
-        {numSets > 1 &&
-          (minDoneSets < numSets || !canComplete) &&
-          doneSets.map((_, i) => <CheckCircle key={i} className="h-4 w-4" />)}
-        {isComplete && <Check className="h-8 w-8 text-primary" />}
+        {numSets > 1 && (
+          <div className="flex flex-row items-center gap-2">
+            {undoneSets.map((_, i) => (
+              <Circle key={i} className="h-4 w-4" />
+            ))}
+          </div>
+        )}
+        {numSets > 1 && (
+          <div className="flex flex-row items-center gap-2">
+            {doneSets.map((_, i) => (
+              <CheckCircle key={i} className="h-4 w-4" />
+            ))}
+          </div>
+        )}
         {numSets <= 1 &&
           (numCompletedChildTasks < numChildTasks || !canComplete) &&
           undoneTasks.map((_, i) => <Circle key={i} className="h-4 w-4" />)}

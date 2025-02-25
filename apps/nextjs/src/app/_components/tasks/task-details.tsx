@@ -10,8 +10,6 @@ interface TaskDetailsProps {
 
 export function TaskDetails({
   isRecurring,
-  description,
-  nextDue,
   frequencyHours,
   lastCompleted,
 }: TaskDetailsProps) {

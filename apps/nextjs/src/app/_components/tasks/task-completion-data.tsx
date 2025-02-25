@@ -13,9 +13,6 @@ import {
 } from "@tanstack/react-table";
 
 import type { RouterOutputs } from "@acme/api";
-import { Button } from "@acme/ui/button";
-
-import { List } from "../drag-list/list";
 
 interface SubtaskListProps {
   initialTask: RouterOutputs["task"]["getTask"];

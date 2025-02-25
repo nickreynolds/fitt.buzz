@@ -19,10 +19,6 @@ export default async function TaskPage({ params }: { params: { id: string } }) {
     notFound();
   }
 
-  const childTaskCompletionDataMap = task.childTaskCompletionDataMap;
-  const childTaskCompletionData =
-    childTaskCompletionDataMap && Array.from(childTaskCompletionDataMap);
-
   return (
     <HydrateClient>
       <Layout>

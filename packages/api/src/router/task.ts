@@ -304,7 +304,6 @@ export const taskRouter = {
           }
         }
 
-        const childrenIDs = task.childTasks.map((child) => child.id);
         const allChildrenIDs = [];
 
         let nextChildren = task.childTasks.map((child) => child.id);

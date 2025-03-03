@@ -66,6 +66,8 @@ export default async function TaskPage({ params }: { params: { id: string } }) {
                 nextDue={task.nextDue}
                 frequencyHours={task.frequencyHours}
                 lastCompleted={task.lastCompleted}
+                initialTask={task}
+                taskId={task.id}
               />
             </div>
           </div>

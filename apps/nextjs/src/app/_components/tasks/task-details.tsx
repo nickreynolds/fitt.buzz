@@ -1,17 +1,25 @@
 import { format } from "date-fns";
 
+import type { RouterOutputs } from "@acme/api";
+
+import { TaskChildrenPrevCompletionData } from "./task-children-prev-completion-data";
+
 interface TaskDetailsProps {
   isRecurring: boolean;
   description: string | null;
   nextDue: Date;
   frequencyHours: number | null;
   lastCompleted: Date | null;
+  initialTask: RouterOutputs["task"]["getTask"];
+  taskId: string;
 }
 
 export function TaskDetails({
   isRecurring,
   frequencyHours,
   lastCompleted,
+  initialTask,
+  taskId,
 }: TaskDetailsProps) {
   return (
     <div className="space-y-4">
@@ -37,6 +45,10 @@ export function TaskDetails({
               <p className="mt-1 text-muted-foreground">
                 {format(lastCompleted, "PPP 'at' p")}
               </p>
+              <TaskChildrenPrevCompletionData
+                initialTask={initialTask}
+                taskId={taskId}
+              />
             </div>
           )}
         </>

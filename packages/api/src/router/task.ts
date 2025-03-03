@@ -1,7 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { and, eq, inArray, isNull, lte } from "@acme/db";
+import { and, desc, eq, inArray, isNull, lte } from "@acme/db";
 import {
   CreateSubtaskSchema,
   CreateTaskSchema,
@@ -38,6 +38,10 @@ const baseTaskOutputSchema = z.object({
   numCompletedSets: z.number(),
   taskCompletionData: z.array(z.string()).optional(),
   childTaskCompletionDataMap: z.map(z.string(), z.array(z.string())).optional(),
+  prevTaskCompletionData: z.array(z.string()).optional(),
+  prevChildTaskCompletionDataMap: z
+    .map(z.string(), z.array(z.string()))
+    .optional(),
 });
 
 const reorderTaskSchema = z
@@ -415,7 +419,77 @@ export const taskRouter = {
         childTaskCompletionDataMap.set(child.id, childTaskCompletionData);
       }
 
-      return { ...task, taskCompletionData, childTaskCompletionDataMap };
+      const prevTaskCompletionNextDue = (
+        await ctx.db.query.TaskCompletion.findFirst({
+          where: and(
+            eq(TaskCompletion.taskId, input.id),
+            lte(TaskCompletion.nextDue, task.nextDue),
+          ),
+          orderBy: [desc(TaskCompletion.nextDue)],
+        })
+      )?.nextDue;
+
+      console.log("prevTaskCompletionNextDue: ", prevTaskCompletionNextDue);
+
+      let prevTaskCompletionData: string[] = [];
+      const prevChildTaskCompletionDataMap = new Map<string, string[]>();
+      if (prevTaskCompletionNextDue) {
+        const prevTaskCompletionDataPoints =
+          await ctx.db.query.TaskCompletion.findMany({
+            where: and(
+              eq(TaskCompletion.taskId, input.id),
+              eq(TaskCompletion.nextDue, prevTaskCompletionNextDue),
+            ),
+          });
+        console.log(
+          "prevTaskCompletionDataPoints: ",
+          prevTaskCompletionDataPoints,
+        );
+        prevTaskCompletionData = prevTaskCompletionDataPoints.map((point) =>
+          JSON.stringify(point.completionData),
+        );
+      }
+
+      for (const child of task.childTasks) {
+        const prevChildTaskCompletionNextDue = (
+          await ctx.db.query.TaskCompletion.findFirst({
+            where: and(
+              eq(TaskCompletion.taskId, child.id),
+              lte(TaskCompletion.nextDue, child.nextDue),
+            ),
+            orderBy: [desc(TaskCompletion.nextDue)],
+          })
+        )?.nextDue;
+        console.log(
+          "prevChildTaskCompletionNextDue: ",
+          prevChildTaskCompletionNextDue,
+        );
+        if (prevChildTaskCompletionNextDue) {
+          const prevChildTaskCompletionDataPoints =
+            await ctx.db.query.TaskCompletion.findMany({
+              where: and(
+                eq(TaskCompletion.taskId, child.id),
+                eq(TaskCompletion.nextDue, prevChildTaskCompletionNextDue),
+              ),
+            });
+          const prevChildTaskCompletionData =
+            prevChildTaskCompletionDataPoints.map((point) =>
+              JSON.stringify(point.completionData),
+            );
+          prevChildTaskCompletionDataMap.set(
+            child.id,
+            prevChildTaskCompletionData,
+          );
+        }
+      }
+
+      return {
+        ...task,
+        taskCompletionData,
+        childTaskCompletionDataMap,
+        prevTaskCompletionData,
+        prevChildTaskCompletionDataMap,
+      };
     }),
   getAllMyTasks: protectedProcedure
     .output(taskSchema.array())

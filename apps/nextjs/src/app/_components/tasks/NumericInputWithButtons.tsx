@@ -30,7 +30,7 @@ export const NumericInputWithButtons: React.FC<
         type="number"
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="border-b border-t border-gray-300 px-2 py-1 text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        className="max-w-24 border-b border-t border-gray-300 px-2 py-1 text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
         step="0.25"
       />
       <button

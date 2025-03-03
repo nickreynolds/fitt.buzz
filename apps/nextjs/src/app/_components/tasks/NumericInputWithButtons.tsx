@@ -3,18 +3,19 @@ import React from "react";
 interface NumericInputWithButtonsProps {
   value: number;
   onChange: (value: number) => void;
+  increment: number;
   className?: string;
 }
 
 export const NumericInputWithButtons: React.FC<
   NumericInputWithButtonsProps
-> = ({ value, onChange, className }) => {
+> = ({ value, onChange, increment, className }) => {
   const handleIncrement = () => {
-    onChange(value + 1);
+    onChange(value + increment);
   };
 
   const handleDecrement = () => {
-    onChange(value - 1);
+    onChange(value - increment);
   };
 
   return (
@@ -31,7 +32,7 @@ export const NumericInputWithButtons: React.FC<
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
         className="max-w-24 border-b border-t border-gray-300 px-2 py-1 text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-        step="0.25"
+        step={increment}
       />
       <button
         type="button"

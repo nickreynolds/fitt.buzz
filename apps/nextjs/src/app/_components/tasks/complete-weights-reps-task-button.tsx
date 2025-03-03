@@ -111,8 +111,12 @@ export function CompleteWeightRepsTaskButton({
 
   return (
     <div className="flex flex-row">
-      <NumericInputWithButtons value={weight} onChange={setWeight} />
-      <NumericInputWithButtons value={reps} onChange={setReps} />
+      <NumericInputWithButtons
+        value={weight}
+        onChange={setWeight}
+        increment={2.5}
+      />
+      <NumericInputWithButtons value={reps} onChange={setReps} increment={1} />
       <Button
         variant="primary"
         onClick={() =>

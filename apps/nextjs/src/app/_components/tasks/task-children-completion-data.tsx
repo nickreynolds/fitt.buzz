@@ -37,11 +37,21 @@ const columns = [
 
   columnHelper.accessor("weight", {
     header: () => "Weight",
-    cell: (info) => info.renderValue(),
+    cell: (info) => (
+      <div>
+        <span className="text-primary">{info.renderValue()}</span> lbs
+      </div>
+    ),
     footer: (info) => info.column.id,
   }),
   columnHelper.accessor("reps", {
     header: () => "Reps",
+    cell: (info) => (
+      <div>
+        {" "}
+        for <span className="text-primary">{info.renderValue()}</span> reps
+      </div>
+    ),
     footer: (info) => info.column.id,
   }),
 ];
@@ -96,22 +106,6 @@ export function TaskChildrenCompletionData({
   return (
     <div className="p-2">
       <table>
-        <thead>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <th key={header.id}>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
         <tbody>
           {table.getRowModel().rows.map((row) => (
             <tr key={row.id}>
@@ -123,22 +117,6 @@ export function TaskChildrenCompletionData({
             </tr>
           ))}
         </tbody>
-        <tfoot>
-          {table.getFooterGroups().map((footerGroup) => (
-            <tr key={footerGroup.id}>
-              {footerGroup.headers.map((header) => (
-                <th key={header.id}>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.footer,
-                        header.getContext(),
-                      )}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </tfoot>
       </table>
       <div className="h-4" />
     </div>

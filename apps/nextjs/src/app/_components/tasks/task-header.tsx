@@ -149,20 +149,10 @@ export default function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
               parentTaskId={task.parentTaskId}
             />
           )}
-        {numSets > 1 && (
-          <div className="flex flex-row items-center gap-2">
-            {undoneSets.map((_, i) => (
-              <Circle key={i} className="h-4 w-4" />
-            ))}
-          </div>
-        )}
-        {numSets > 1 && (
-          <div className="flex flex-row items-center gap-2">
-            {doneSets.map((_, i) => (
-              <CheckCircle key={i} className="h-4 w-4" />
-            ))}
-          </div>
-        )}
+        {numSets > 1 &&
+          undoneSets.map((_, i) => <Circle key={i} className="h-4 w-4" />)}
+        {numSets > 1 &&
+          doneSets.map((_, i) => <CheckCircle key={i} className="h-4 w-4" />)}
         {numSets <= 1 &&
           (numCompletedChildTasks < numChildTasks || !canComplete) &&
           undoneTasks.map((_, i) => <Circle key={i} className="h-4 w-4" />)}

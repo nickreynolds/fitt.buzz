@@ -129,7 +129,7 @@ export function CompleteWeightRepsTaskButton({
         }
         className="motion-preset-bounce flex items-center gap-2"
       >
-        Complete Task
+        Complete
       </Button>
     </div>
   );

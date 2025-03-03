@@ -84,7 +84,7 @@ export function CompleteTaskButton({
       onClick={() => completeTask.mutate({ id: taskId })}
       className="motion-preset-bounce flex items-center gap-2"
     >
-      Complete Task
+      Complete
     </Button>
   );
 }

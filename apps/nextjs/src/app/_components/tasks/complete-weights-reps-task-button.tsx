@@ -127,11 +127,13 @@ export function CompleteWeightRepsTaskButton({
         type="number"
         value={weight}
         onChange={(e) => setWeight(parseInt(e.target.value))}
+        className="w-14"
       />
       <input
         type="number"
         value={reps}
         onChange={(e) => setReps(parseInt(e.target.value))}
+        className="w-12"
       />
       <Button
         variant="primary"

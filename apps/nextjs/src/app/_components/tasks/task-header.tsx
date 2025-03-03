@@ -78,7 +78,7 @@ export default function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
   console.log("tasK", task);
 
   return (
-    <div className="flex flex-row items-center justify-between">
+    <div className="flex flex-col justify-between">
       <div className="flex-grow">
         {isEditing && isTaskPage ? (
           <div className="flex items-center gap-2">
@@ -135,7 +135,7 @@ export default function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
           </Link>
         )}
       </div>
-      <div className="flex flex-row items-center gap-4">
+      <div className="flex flex-row items-center gap-4 self-end">
         {task.completionDataType === TaskCompletionTypes.WeightReps && (
           <CompleteWeightRepsTaskButton
             taskId={task.id}

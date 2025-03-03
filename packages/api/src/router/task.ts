@@ -346,6 +346,7 @@ export const taskRouter = {
                 task.frequencyHours,
               ),
               nextDue: new Date(dueDate),
+              numCompletedSets: 0,
             })
             .where(inArray(Task.id, [input.id, ...allChildrenIDs]));
           console.log("res", res);

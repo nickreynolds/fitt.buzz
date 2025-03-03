@@ -22,6 +22,10 @@ export function List({ tasks }: { tasks: RouterOutputs["task"]["getTask"][] }) {
   const mutateTaskOrder = api.task.reorderTasks.useMutation();
 
   useEffect(() => {
+    setTasks(tasks);
+  }, [tasks]);
+
+  useEffect(() => {
     return monitorForElements({
       canMonitor({ source }) {
         console.log("source: ", source);

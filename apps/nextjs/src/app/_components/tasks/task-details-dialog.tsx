@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Info } from "lucide-react";
 
+import type { RouterOutputs } from "@acme/api";
 import { Button } from "@acme/ui/button";
 import {
   Dialog,
@@ -19,6 +20,8 @@ interface TaskDetailsDialogProps {
   nextDue: Date;
   frequencyHours: number | null;
   lastCompleted: Date | null;
+  initialTask: RouterOutputs["task"]["getTask"];
+  taskId: string;
 }
 
 export function TaskDetailsDialog({
@@ -27,6 +30,8 @@ export function TaskDetailsDialog({
   nextDue,
   frequencyHours,
   lastCompleted,
+  initialTask,
+  taskId,
 }: TaskDetailsDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -52,6 +57,8 @@ export function TaskDetailsDialog({
           nextDue={nextDue}
           frequencyHours={frequencyHours}
           lastCompleted={lastCompleted}
+          initialTask={initialTask}
+          taskId={taskId}
         />
       </DialogContent>
     </Dialog>

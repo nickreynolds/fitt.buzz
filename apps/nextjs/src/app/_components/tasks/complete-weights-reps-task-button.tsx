@@ -5,6 +5,7 @@ import React from "react";
 import { Button } from "@acme/ui/button";
 
 import { api } from "~/trpc/react";
+import { NumericInputWithButtons } from "./NumericInputWithButtons";
 
 export function CompleteWeightRepsTaskButton({
   taskId,
@@ -13,7 +14,6 @@ export function CompleteWeightRepsTaskButton({
   taskId: string;
   parentTaskId: string | null;
 }) {
-  //   const router = useRouter();
   const utils = api.useUtils();
 
   const [weight, setWeight] = React.useState(0);
@@ -21,9 +21,6 @@ export function CompleteWeightRepsTaskButton({
 
   const completeTask = api.task.completeWeightRepsTask.useMutation({
     onMutate: async (data) => {
-      // prevent any in-flight updates from overwriting this optimistic update
-      // we'll get the updated data eventually
-
       const task = utils.task.getTask.getData({ id: taskId });
       const existingTaskCompletionData = task?.taskCompletionData ?? [];
 
@@ -53,10 +50,6 @@ export function CompleteWeightRepsTaskButton({
           const existingChildTaskCompletionData =
             existingChildTaskCompletionDataMap?.get(taskId) ?? [];
 
-          console.log(
-            "existingChildTaskCompletionDataMap 1",
-            existingChildTaskCompletionDataMap,
-          );
           existingChildTaskCompletionDataMap?.set(taskId, [
             ...existingChildTaskCompletionData,
             JSON.stringify({
@@ -65,10 +58,6 @@ export function CompleteWeightRepsTaskButton({
               weightUnit: "lbs",
             }),
           ]);
-          console.log(
-            "existingChildTaskCompletionDataMap 2",
-            existingChildTaskCompletionDataMap,
-          );
 
           utils.task.getTask.setData(
             { id: parentTaskId },
@@ -97,7 +86,6 @@ export function CompleteWeightRepsTaskButton({
         );
       }
 
-      // remove regular task if found
       const tasks = utils.task.getAllMyActiveTasks.getData();
       const updatedTasks = tasks?.filter((t) => t.id !== taskId);
       utils.task.getAllMyActiveTasks.setData(undefined, updatedTasks);
@@ -123,16 +111,12 @@ export function CompleteWeightRepsTaskButton({
 
   return (
     <div className="flex flex-row">
-      <input
-        type="number"
+      <NumericInputWithButtons
         value={weight}
-        onChange={(e) => setWeight(parseInt(e.target.value))}
+        onChange={setWeight}
+        increment={2.5}
       />
-      <input
-        type="number"
-        value={reps}
-        onChange={(e) => setReps(parseInt(e.target.value))}
-      />
+      <NumericInputWithButtons value={reps} onChange={setReps} increment={1} />
       <Button
         variant="primary"
         onClick={() =>
@@ -145,7 +129,7 @@ export function CompleteWeightRepsTaskButton({
         }
         className="motion-preset-bounce flex items-center gap-2"
       >
-        Complete Task
+        Complete
       </Button>
     </div>
   );

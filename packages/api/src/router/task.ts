@@ -441,10 +441,7 @@ export const taskRouter = {
               eq(TaskCompletion.nextDue, prevTaskCompletionNextDue),
             ),
           });
-        console.log(
-          "prevTaskCompletionDataPoints: ",
-          prevTaskCompletionDataPoints,
-        );
+
         prevTaskCompletionData = prevTaskCompletionDataPoints.map((point) =>
           JSON.stringify(point.completionData),
         );
@@ -460,10 +457,7 @@ export const taskRouter = {
             orderBy: [desc(TaskCompletion.nextDue)],
           })
         )?.nextDue;
-        console.log(
-          "prevChildTaskCompletionNextDue: ",
-          prevChildTaskCompletionNextDue,
-        );
+
         if (prevChildTaskCompletionNextDue) {
           const prevChildTaskCompletionDataPoints =
             await ctx.db.query.TaskCompletion.findMany({

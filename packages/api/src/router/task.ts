@@ -1,7 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { and, desc, eq, inArray, isNull, lte, sql } from "@acme/db";
+import { and, desc, eq, inArray, isNull, lte, or, sql } from "@acme/db";
 import {
   CreateSubtaskSchema,
   CreateTaskSchema,
@@ -396,29 +396,29 @@ export const taskRouter = {
         throw new Error("Task not found");
       }
 
-      const taskCompletionDataPoints =
+      const allTaskCompletionDataPoints =
         await ctx.db.query.TaskCompletion.findMany({
           where: and(
-            eq(TaskCompletion.taskId, input.id),
+            or(
+              eq(TaskCompletion.taskId, input.id),
+              inArray(
+                TaskCompletion.taskId,
+                task.childTasks.map((child) => child.id),
+              ),
+            ),
             eq(TaskCompletion.nextDue, task.nextDue),
           ),
         });
-      const taskCompletionData = taskCompletionDataPoints.map((point) =>
-        JSON.stringify(point.completionData),
-      );
+
+      const taskCompletionData = allTaskCompletionDataPoints
+        .filter((point) => point.taskId === input.id)
+        .map((point) => JSON.stringify(point.completionData));
 
       const childTaskCompletionDataMap = new Map<string, string[]>();
       for (const child of task.childTasks) {
-        const childTaskCompletionDataPoints =
-          await ctx.db.query.TaskCompletion.findMany({
-            where: and(
-              eq(TaskCompletion.taskId, child.id),
-              eq(TaskCompletion.nextDue, task.nextDue),
-            ),
-          });
-        const childTaskCompletionData = childTaskCompletionDataPoints.map(
-          (point) => JSON.stringify(point.completionData),
-        );
+        const childTaskCompletionData = allTaskCompletionDataPoints
+          .filter((point) => point.taskId === child.id)
+          .map((point) => JSON.stringify(point.completionData));
         childTaskCompletionDataMap.set(child.id, childTaskCompletionData);
       }
 
@@ -435,51 +435,34 @@ export const taskRouter = {
               })
             )?.nextDue;
 
-      console.log("prevTaskCompletionNextDue: ", prevTaskCompletionNextDue);
-
       let prevTaskCompletionData: string[] = [];
-      const prevChildTaskCompletionDataMap = new Map<string, string[]>();
+      let prevChildTaskCompletionDataMap = new Map<string, string[]>();
+
       if (prevTaskCompletionNextDue) {
-        const prevTaskCompletionDataPoints =
+        const allPrevTaskCompletionDataPoints =
           await ctx.db.query.TaskCompletion.findMany({
             where: and(
-              eq(TaskCompletion.taskId, input.id),
+              or(
+                eq(TaskCompletion.taskId, input.id),
+                inArray(
+                  TaskCompletion.taskId,
+                  task.childTasks.map((child) => child.id),
+                ),
+              ),
               eq(TaskCompletion.nextDue, prevTaskCompletionNextDue),
             ),
           });
 
-        prevTaskCompletionData = prevTaskCompletionDataPoints.map((point) =>
-          JSON.stringify(point.completionData),
-        );
-      }
+        prevTaskCompletionData = allPrevTaskCompletionDataPoints
+          .filter((point) => point.taskId === input.id)
+          .map((point) => JSON.stringify(point.completionData));
 
-      for (const child of task.childTasks) {
-        // const prevChildTaskCompletionNextDue = (
-        //   await ctx.db.query.TaskCompletion.findFirst({
-        //     where: and(
-        //       eq(TaskCompletion.taskId, child.id),
-        //       lte(TaskCompletion.nextDue, child.nextDue),
-        //     ),
-        //     orderBy: [desc(TaskCompletion.nextDue)],
-        //   })
-        // )?.nextDue;
-
-        if (prevTaskCompletionNextDue) {
-          const prevChildTaskCompletionDataPoints =
-            await ctx.db.query.TaskCompletion.findMany({
-              where: and(
-                eq(TaskCompletion.taskId, child.id),
-                eq(TaskCompletion.nextDue, prevTaskCompletionNextDue),
-              ),
-            });
-          const prevChildTaskCompletionData =
-            prevChildTaskCompletionDataPoints.map((point) =>
-              JSON.stringify(point.completionData),
-            );
-          prevChildTaskCompletionDataMap.set(
-            child.id,
-            prevChildTaskCompletionData,
-          );
+        prevChildTaskCompletionDataMap = new Map<string, string[]>();
+        for (const child of task.childTasks) {
+          const childTaskCompletionData = allPrevTaskCompletionDataPoints
+            .filter((point) => point.taskId === child.id)
+            .map((point) => JSON.stringify(point.completionData));
+          prevChildTaskCompletionDataMap.set(child.id, childTaskCompletionData);
         }
       }
 

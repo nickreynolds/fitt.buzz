@@ -1,7 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { and, desc, eq, inArray, isNull, lte } from "@acme/db";
+import { and, desc, eq, inArray, isNull, lte, sql } from "@acme/db";
 import {
   CreateSubtaskSchema,
   CreateTaskSchema,
@@ -341,6 +341,8 @@ export const taskRouter = {
             dueDate += task.frequencyHours * 60 * 60 * 1000;
           }
 
+          const prevDue = task.nextDue;
+
           const res = await ctx.db
             .update(Task)
             .set({
@@ -351,6 +353,7 @@ export const taskRouter = {
               ),
               nextDue: new Date(dueDate),
               numCompletedSets: 0,
+              prevDues: sql`array_append(${Task.prevDues}, ${prevDue})`,
             })
             .where(inArray(Task.id, [input.id, ...allChildrenIDs]));
           console.log("res", res);
@@ -419,15 +422,18 @@ export const taskRouter = {
         childTaskCompletionDataMap.set(child.id, childTaskCompletionData);
       }
 
-      const prevTaskCompletionNextDue = (
-        await ctx.db.query.TaskCompletion.findFirst({
-          where: and(
-            eq(TaskCompletion.taskId, input.id),
-            lte(TaskCompletion.nextDue, task.nextDue),
-          ),
-          orderBy: [desc(TaskCompletion.nextDue)],
-        })
-      )?.nextDue;
+      const prevTaskCompletionNextDue =
+        task.prevDues && (task.prevDues as Date[]).length > 0
+          ? (task.prevDues as Date[])[(task.prevDues as Date[]).length - 1]
+          : (
+              await ctx.db.query.TaskCompletion.findFirst({
+                where: and(
+                  eq(TaskCompletion.taskId, input.id),
+                  lte(TaskCompletion.nextDue, task.nextDue),
+                ),
+                orderBy: [desc(TaskCompletion.nextDue)],
+              })
+            )?.nextDue;
 
       console.log("prevTaskCompletionNextDue: ", prevTaskCompletionNextDue);
 
@@ -448,22 +454,22 @@ export const taskRouter = {
       }
 
       for (const child of task.childTasks) {
-        const prevChildTaskCompletionNextDue = (
-          await ctx.db.query.TaskCompletion.findFirst({
-            where: and(
-              eq(TaskCompletion.taskId, child.id),
-              lte(TaskCompletion.nextDue, child.nextDue),
-            ),
-            orderBy: [desc(TaskCompletion.nextDue)],
-          })
-        )?.nextDue;
+        // const prevChildTaskCompletionNextDue = (
+        //   await ctx.db.query.TaskCompletion.findFirst({
+        //     where: and(
+        //       eq(TaskCompletion.taskId, child.id),
+        //       lte(TaskCompletion.nextDue, child.nextDue),
+        //     ),
+        //     orderBy: [desc(TaskCompletion.nextDue)],
+        //   })
+        // )?.nextDue;
 
-        if (prevChildTaskCompletionNextDue) {
+        if (prevTaskCompletionNextDue) {
           const prevChildTaskCompletionDataPoints =
             await ctx.db.query.TaskCompletion.findMany({
               where: and(
                 eq(TaskCompletion.taskId, child.id),
-                eq(TaskCompletion.nextDue, prevChildTaskCompletionNextDue),
+                eq(TaskCompletion.nextDue, prevTaskCompletionNextDue),
               ),
             });
           const prevChildTaskCompletionData =

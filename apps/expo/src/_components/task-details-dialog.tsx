@@ -1,7 +1,6 @@
 import React from "react";
 import { Text, TouchableOpacity } from "react-native";
 import * as DialogPrimitive from "@rn-primitives/dialog";
-import { Info } from "lucide-react-native";
 
 import type { RouterOutputs } from "@acme/api";
 
@@ -34,7 +33,9 @@ export function TaskDetailsDialog({
 
       <DialogPrimitive.Portal>
         <DialogPrimitive.Content className="bg-background">
-          <DialogPrimitive.Title>Task Details</DialogPrimitive.Title>
+          <DialogPrimitive.Title>
+            <Text>Task Details</Text>
+          </DialogPrimitive.Title>
 
           <TaskDetails
             initialTask={initialTask}

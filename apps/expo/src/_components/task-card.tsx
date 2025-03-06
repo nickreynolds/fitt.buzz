@@ -14,7 +14,6 @@ export default function TaskCard({ task }: TaskCardProps) {
     return null;
   }
 
-  console.log("going to add link to task id: ", task.id);
   return (
     <View className="flex flex-row rounded-lg bg-muted p-4">
       <TaskHeader initialTask={task} taskId={task.id} />

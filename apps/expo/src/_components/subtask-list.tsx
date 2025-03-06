@@ -1,5 +1,5 @@
 import React from "react";
-import { View } from "react-native";
+import { Text, View } from "react-native";
 
 import type { RouterOutputs } from "@acme/api";
 
@@ -23,7 +23,11 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
 
   const tasks = task.childTasks;
   if (!tasks || tasks.length === 0) {
-    return <View>No subtasks</View>;
+    return (
+      <View>
+        <Text>No subtasks</Text>
+      </View>
+    );
   }
 
   return (

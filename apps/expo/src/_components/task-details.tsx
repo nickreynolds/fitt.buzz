@@ -1,5 +1,6 @@
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
+import * as SwitchPrimitive from "@rn-primitives/switch";
 import { format } from "date-fns";
 import { Trash2 } from "lucide-react-native";
 
@@ -35,6 +36,21 @@ export function TaskDetails({
     },
   });
 
+  const updateIsSet = api.task.updateIsSet.useMutation({
+    onMutate: ({ isSet }) => {
+      const previousTask = utils.task.getTask.getData({ id: taskId });
+      if (previousTask) {
+        utils.task.getTask.setData(
+          { id: taskId },
+          { ...previousTask, isSet, numSets: isSet ? 1 : 0 },
+        );
+      }
+    },
+    onSettled: async () => {
+      await utils.task.getTask.invalidate({ id: taskId });
+    },
+  });
+
   return (
     <View className="space-y-4">
       <View>
@@ -44,8 +60,25 @@ export function TaskDetails({
         </Text>
       </View>
 
+      <View className="flex-row items-center justify-between">
+        <View>
+          <Text className="text-sm font-medium">Set-based Task</Text>
+          <Text className="text-sm text-muted-foreground">
+            Enable if this task should be completed in sets
+          </Text>
+        </View>
+        <SwitchPrimitive.Root
+          checked={initialTask?.isSet ? true : false}
+          onCheckedChange={(checked) =>
+            updateIsSet.mutate({ id: taskId, isSet: checked })
+          }
+        >
+          <SwitchPrimitive.Thumb className="h-6 w-6 bg-white" />
+        </SwitchPrimitive.Root>
+      </View>
+
       <View>
-        <Text className="text-sm font-medium">Due Date</Text>
+        <Text className="text-sm font-medium text-primary">Due Date</Text>
         <Text className="mt-1 text-muted-foreground">
           {format(initialTask?.nextDue ?? new Date(), "PPP 'at' p")}
         </Text>
@@ -54,7 +87,7 @@ export function TaskDetails({
       {initialTask?.recurring && (
         <>
           <View>
-            <Text className="text-sm font-medium">Frequency</Text>
+            <Text className="text-sm font-medium text-primary">Frequency</Text>
             <Text className="mt-1 text-muted-foreground">
               Every{" "}
               {initialTask.frequencyHours === 24
@@ -69,7 +102,9 @@ export function TaskDetails({
 
           {initialTask.lastCompleted && (
             <View>
-              <Text className="text-sm font-medium">Last Completed</Text>
+              <Text className="text-sm font-medium text-primary">
+                Last Completed
+              </Text>
               <Text className="mt-1 text-muted-foreground">
                 {format(initialTask.lastCompleted, "PPP 'at' p")}
               </Text>
@@ -78,7 +113,7 @@ export function TaskDetails({
 
           {initialTask.completionPeriodBegins && (
             <View>
-              <Text className="text-sm font-medium">
+              <Text className="text-sm font-medium text-primary">
                 Completion Window Opens
               </Text>
               <Text className="mt-1 text-muted-foreground">

@@ -52,10 +52,6 @@ export default async function TaskPage({ params }: { params: { id: string } }) {
                   <SubtaskList initialTask={task} parentTaskId={task.id} />
                   <CreateSubtaskButton taskId={task.id} />
                 </div>
-
-                <div className="flex gap-2">
-                  <DeleteTaskButton taskId={task.id} />
-                </div>
               </div>
             </div>
 

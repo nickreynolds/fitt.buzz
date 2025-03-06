@@ -423,8 +423,8 @@ export const taskRouter = {
       }
 
       const prevTaskCompletionNextDue =
-        task.prevDues && (task.prevDues as Date[]).length > 0
-          ? (task.prevDues as Date[])[(task.prevDues as Date[]).length - 1]
+        task.prevDues && task.prevDues.length > 0
+          ? task.prevDues[task.prevDues.length - 1]
           : (
               await ctx.db.query.TaskCompletion.findFirst({
                 where: and(

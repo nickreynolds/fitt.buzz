@@ -20,6 +20,8 @@
     "@bacons/text-decoder": "^0.0.0",
     "@expo/metro-config": "^0.18.11",
     "@react-native-community/datetimepicker": "8.0.1",
+    "@rn-primitives/dialog": "^1.1.0",
+    "@rn-primitives/portal": "^1.1.0",
     "@shopify/flash-list": "1.7.1",
     "@tanstack/react-query": "catalog:",
     "@trpc/client": "catalog:",

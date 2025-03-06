@@ -49,14 +49,14 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
         <Icon
           name="Circle"
           className="h-6 w-6 text-foreground"
-          key={`${t}-${i}`}
+          key={`${taskId}-circle-${t}-${i}`}
         />
       ));
       const completedElements = completedSets.map((t, i) => (
         <Icon
           name="Check"
           className="h-6 w-6 text-foreground"
-          key={`${t}-${i}`}
+          key={`${taskId}-check-${t}-${i}`}
         />
       ));
       return [...incompleteElements, ...completedElements];
@@ -67,7 +67,7 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
         <Icon
           name="Circle"
           className="h-6 w-6 text-foreground"
-          key={`${t}-${i}`}
+          key={`${taskId}-circle-${t}-${i}`}
         />
       ));
 
@@ -75,7 +75,7 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
         <Icon
           name="Check"
           className="h-6 w-6 text-foreground"
-          key={`${t}-${i}`}
+          key={`${taskId}-check-${t}-${i}`}
         />
       ));
       return [...incompleteTaskElements, ...completedTaskElements];

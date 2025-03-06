@@ -26,6 +26,10 @@ export const Task = pgTable("task", (t) => ({
   lastCompleted: t.timestamp({ mode: "date", withTimezone: true }),
   completionPeriodBegins: t.timestamp({ mode: "date", withTimezone: true }),
   nextDue: t.timestamp({ mode: "date", withTimezone: true }).notNull(),
+  prevDues: t
+    .timestamp({ mode: "date", withTimezone: true })
+    .array()
+    .default([]),
   createdAt: t.timestamp().notNull().defaultNow(),
   updatedAt: t
     .timestamp({ mode: "date", withTimezone: true })

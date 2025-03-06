@@ -1,7 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 
-import { and, desc, eq, inArray, isNull, lte } from "@acme/db";
+import { and, desc, eq, inArray, isNull, lte, or, sql } from "@acme/db";
 import {
   CreateSubtaskSchema,
   CreateTaskSchema,
@@ -341,6 +341,8 @@ export const taskRouter = {
             dueDate += task.frequencyHours * 60 * 60 * 1000;
           }
 
+          const prevDue = task.nextDue;
+
           const res = await ctx.db
             .update(Task)
             .set({
@@ -351,6 +353,7 @@ export const taskRouter = {
               ),
               nextDue: new Date(dueDate),
               numCompletedSets: 0,
+              prevDues: sql`array_append(${Task.prevDues}, ${prevDue})`,
             })
             .where(inArray(Task.id, [input.id, ...allChildrenIDs]));
           console.log("res", res);
@@ -393,87 +396,73 @@ export const taskRouter = {
         throw new Error("Task not found");
       }
 
-      const taskCompletionDataPoints =
+      const allTaskCompletionDataPoints =
         await ctx.db.query.TaskCompletion.findMany({
           where: and(
-            eq(TaskCompletion.taskId, input.id),
+            or(
+              eq(TaskCompletion.taskId, input.id),
+              inArray(
+                TaskCompletion.taskId,
+                task.childTasks.map((child) => child.id),
+              ),
+            ),
             eq(TaskCompletion.nextDue, task.nextDue),
           ),
         });
-      const taskCompletionData = taskCompletionDataPoints.map((point) =>
-        JSON.stringify(point.completionData),
-      );
+
+      const taskCompletionData = allTaskCompletionDataPoints
+        .filter((point) => point.taskId === input.id)
+        .map((point) => JSON.stringify(point.completionData));
 
       const childTaskCompletionDataMap = new Map<string, string[]>();
       for (const child of task.childTasks) {
-        const childTaskCompletionDataPoints =
-          await ctx.db.query.TaskCompletion.findMany({
-            where: and(
-              eq(TaskCompletion.taskId, child.id),
-              eq(TaskCompletion.nextDue, task.nextDue),
-            ),
-          });
-        const childTaskCompletionData = childTaskCompletionDataPoints.map(
-          (point) => JSON.stringify(point.completionData),
-        );
+        const childTaskCompletionData = allTaskCompletionDataPoints
+          .filter((point) => point.taskId === child.id)
+          .map((point) => JSON.stringify(point.completionData));
         childTaskCompletionDataMap.set(child.id, childTaskCompletionData);
       }
 
-      const prevTaskCompletionNextDue = (
-        await ctx.db.query.TaskCompletion.findFirst({
-          where: and(
-            eq(TaskCompletion.taskId, input.id),
-            lte(TaskCompletion.nextDue, task.nextDue),
-          ),
-          orderBy: [desc(TaskCompletion.nextDue)],
-        })
-      )?.nextDue;
-
-      console.log("prevTaskCompletionNextDue: ", prevTaskCompletionNextDue);
+      const prevTaskCompletionNextDue =
+        task.prevDues && task.prevDues.length > 0
+          ? task.prevDues[task.prevDues.length - 1]
+          : (
+              await ctx.db.query.TaskCompletion.findFirst({
+                where: and(
+                  eq(TaskCompletion.taskId, input.id),
+                  lte(TaskCompletion.nextDue, task.nextDue),
+                ),
+                orderBy: [desc(TaskCompletion.nextDue)],
+              })
+            )?.nextDue;
 
       let prevTaskCompletionData: string[] = [];
-      const prevChildTaskCompletionDataMap = new Map<string, string[]>();
+      let prevChildTaskCompletionDataMap = new Map<string, string[]>();
+
       if (prevTaskCompletionNextDue) {
-        const prevTaskCompletionDataPoints =
+        const allPrevTaskCompletionDataPoints =
           await ctx.db.query.TaskCompletion.findMany({
             where: and(
-              eq(TaskCompletion.taskId, input.id),
+              or(
+                eq(TaskCompletion.taskId, input.id),
+                inArray(
+                  TaskCompletion.taskId,
+                  task.childTasks.map((child) => child.id),
+                ),
+              ),
               eq(TaskCompletion.nextDue, prevTaskCompletionNextDue),
             ),
           });
 
-        prevTaskCompletionData = prevTaskCompletionDataPoints.map((point) =>
-          JSON.stringify(point.completionData),
-        );
-      }
+        prevTaskCompletionData = allPrevTaskCompletionDataPoints
+          .filter((point) => point.taskId === input.id)
+          .map((point) => JSON.stringify(point.completionData));
 
-      for (const child of task.childTasks) {
-        const prevChildTaskCompletionNextDue = (
-          await ctx.db.query.TaskCompletion.findFirst({
-            where: and(
-              eq(TaskCompletion.taskId, child.id),
-              lte(TaskCompletion.nextDue, child.nextDue),
-            ),
-            orderBy: [desc(TaskCompletion.nextDue)],
-          })
-        )?.nextDue;
-
-        if (prevChildTaskCompletionNextDue) {
-          const prevChildTaskCompletionDataPoints =
-            await ctx.db.query.TaskCompletion.findMany({
-              where: and(
-                eq(TaskCompletion.taskId, child.id),
-                eq(TaskCompletion.nextDue, prevChildTaskCompletionNextDue),
-              ),
-            });
-          const prevChildTaskCompletionData =
-            prevChildTaskCompletionDataPoints.map((point) =>
-              JSON.stringify(point.completionData),
-            );
-          prevChildTaskCompletionDataMap.set(
-            child.id,
-            prevChildTaskCompletionData,
-          );
+        prevChildTaskCompletionDataMap = new Map<string, string[]>();
+        for (const child of task.childTasks) {
+          const childTaskCompletionData = allPrevTaskCompletionDataPoints
+            .filter((point) => point.taskId === child.id)
+            .map((point) => JSON.stringify(point.completionData));
+          prevChildTaskCompletionDataMap.set(child.id, childTaskCompletionData);
         }
       }
 

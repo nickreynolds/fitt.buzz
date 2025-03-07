@@ -9,8 +9,10 @@ import {
   getNumCompletedChildTasks,
   isCompleted,
 } from "@acme/api-utils";
+import { TaskCompletionTypes } from "@acme/utils";
 
 import { CompleteTaskButton } from "./complete-task-button";
+import { CompleteWeightRepsTaskButton } from "./complete-weight-reps-task-button";
 import Icon from "./icon";
 
 interface TaskHeaderProps {
@@ -34,6 +36,14 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
 
   const status = () => {
     if (canComplete) {
+      if (initialTask.completionDataType === TaskCompletionTypes.WeightReps) {
+        return (
+          <CompleteWeightRepsTaskButton
+            taskId={initialTask.id}
+            parentTaskId={initialTask.parentTaskId}
+          />
+        );
+      }
       return (
         <CompleteTaskButton
           taskId={initialTask.id}

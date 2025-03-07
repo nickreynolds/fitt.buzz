@@ -32,18 +32,20 @@ export function TaskDetailsDialog({
       </DialogPrimitive.Trigger>
 
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Content className="bg-background">
-          <DialogPrimitive.Title>
-            <Text>Task Details</Text>
-          </DialogPrimitive.Title>
+        <DialogPrimitive.Overlay className="absolute inset-0 bottom-16 left-16 right-16 top-16 z-50 bg-black/50 p-4">
+          <DialogPrimitive.Content className="bg-background">
+            <DialogPrimitive.Title>
+              <Text>Task Details</Text>
+            </DialogPrimitive.Title>
 
-          <TaskDetails
-            initialTask={initialTask}
-            taskId={taskId}
-            // onClose={() => console.log("close")}
-            // onClose={() => onOpenChange(false)}
-          />
-        </DialogPrimitive.Content>
+            <TaskDetails
+              initialTask={initialTask}
+              taskId={taskId}
+              // onClose={() => console.log("close")}
+              // onClose={() => onOpenChange(false)}
+            />
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Overlay>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
   );

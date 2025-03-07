@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { TextInput, TouchableOpacity, View } from "react-native";
+import { Text, TextInput, TouchableOpacity, View } from "react-native";
 // import { Picker } from "@react-native-picker/picker";
 import { Dumbbell } from "lucide-react-native";
 
@@ -23,21 +23,92 @@ export function CompleteWeightRepsTaskButton({
   const utils = api.useUtils();
 
   const completeTask = api.task.completeWeightRepsTask.useMutation({
-    onMutate: () => {
-      const tasks = utils.task.getAllMyActiveTasks.getData();
-      if (!parentTaskId) {
-        const updatedTasks = tasks?.filter((t) => t.id !== taskId);
-        utils.task.getAllMyActiveTasks.setData(undefined, updatedTasks);
+    onMutate: async (data) => {
+      const task = utils.task.getTask.getData({ id: taskId });
+      const existingTaskCompletionData = task?.taskCompletionData ?? [];
+
+      const promises = [];
+      if (parentTaskId) {
+        promises.push(utils.task.getTask.cancel({ id: parentTaskId }));
       }
+      promises.push(utils.task.getTask.cancel({ id: taskId }));
+      promises.push(utils.task.getAllMyActiveTasks.cancel());
+
+      await Promise.all(promises);
+
+      if (parentTaskId) {
+        const parentTask = utils.task.getTask.getData({
+          id: parentTaskId,
+        });
+        if (parentTask) {
+          const updatedChildTasks = parentTask.childTasks?.map((t) => {
+            if (t.id === taskId) {
+              return { ...t, lastCompleted: new Date() };
+            }
+            return t;
+          });
+
+          const existingChildTaskCompletionDataMap =
+            parentTask.childTaskCompletionDataMap;
+          const existingChildTaskCompletionData =
+            existingChildTaskCompletionDataMap?.get(taskId) ?? [];
+
+          existingChildTaskCompletionDataMap?.set(taskId, [
+            ...existingChildTaskCompletionData,
+            JSON.stringify({
+              weight: data.weight,
+              reps: data.reps,
+              weightUnit: "lbs",
+            }),
+          ]);
+
+          utils.task.getTask.setData(
+            { id: parentTaskId },
+            {
+              ...parentTask,
+              childTasks: updatedChildTasks,
+              childTaskCompletionDataMap: existingChildTaskCompletionDataMap,
+            },
+          );
+        }
+      }
+
+      if (task) {
+        utils.task.getTask.setData(
+          { id: taskId },
+          {
+            ...task,
+            lastCompleted: new Date(),
+            taskCompletionData: [
+              JSON.stringify([
+                ...existingTaskCompletionData,
+                { weight: 10, reps: 10, weightUnit: "lbs" },
+              ]),
+            ],
+          },
+        );
+      }
+
+      const tasks = utils.task.getAllMyActiveTasks.getData();
+      const updatedTasks = tasks?.filter((t) => t.id !== taskId);
+      utils.task.getAllMyActiveTasks.setData(undefined, updatedTasks);
     },
     onSettled: async () => {
-      await Promise.all([
-        utils.task.getAllMyActiveTasks.invalidate(),
-        utils.task.getTask.invalidate({ id: taskId }),
-        parentTaskId
-          ? utils.task.getTask.invalidate({ id: parentTaskId })
-          : Promise.resolve(),
-      ]);
+      const promises = [];
+      if (parentTaskId) {
+        promises.push(utils.task.getTask.cancel({ id: parentTaskId }));
+      }
+      promises.push(utils.task.getTask.cancel({ id: taskId }));
+      promises.push(utils.task.getAllMyActiveTasks.cancel());
+
+      const promises2 = [];
+      if (parentTaskId) {
+        promises2.push(utils.task.getTask.invalidate({ id: parentTaskId }));
+      }
+      promises2.push(utils.task.getTask.invalidate({ id: taskId }));
+      promises2.push(utils.task.getAllMyActiveTasks.invalidate());
+
+      await Promise.all(promises2);
     },
   });
 
@@ -45,13 +116,14 @@ export function CompleteWeightRepsTaskButton({
     <View className="flex-row items-center gap-2">
       <View className="w-20">
         <TextInput
-          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm text-primary"
           keyboardType="numeric"
           value={weight}
           onChangeText={setWeight}
           placeholder="Weight"
         />
       </View>
+      <Text className="text-foreground">lbs</Text>
       {/* 
       <View className="w-20">
         <Picker
@@ -66,13 +138,14 @@ export function CompleteWeightRepsTaskButton({
 
       <View className="w-16">
         <TextInput
-          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm text-primary"
           keyboardType="numeric"
           value={reps}
           onChangeText={setReps}
           placeholder="Reps"
         />
       </View>
+      <Text className="text-foreground">reps</Text>
 
       <TouchableOpacity
         className="rounded-lg bg-primary p-2 text-foreground"

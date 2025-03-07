@@ -35,50 +35,48 @@ export function TaskCompletionTable({ task }: TaskCompletionTableProps) {
   };
 
   return (
-    <View className="mt-4">
-      <ScrollView horizontal>
-        <View>
-          {/* Main task row */}
-          {task.taskCompletionData && task.taskCompletionData.length > 0 && (
-            <View className="flex-row border-b border-border">
-              <View className="w-32 p-2">
-                <Text className="text-sm">{task.title}</Text>
+    <View className="mt-4 min-w-full">
+      <View>
+        {/* Main task row */}
+        {task.taskCompletionData && task.taskCompletionData.length > 0 && (
+          <View className="flex-row border-b border-border">
+            <View className="w-32 p-2">
+              <Text className="text-sm">{task.title}</Text>
+            </View>
+            {task.taskCompletionData.map((data, i) => (
+              <View key={i} className="w-24 p-2">
+                <Text className="text-sm">{renderCompletionData(data)}</Text>
               </View>
-              {task.taskCompletionData.map((data, i) => (
-                <View key={i} className="w-24 p-2">
-                  <Text className="text-sm">{renderCompletionData(data)}</Text>
+            ))}
+          </View>
+        )}
+
+        {/* Child task rows */}
+        {task.childTasks?.map((childTask) => {
+          const completionData = task.childTaskCompletionDataMap?.get(
+            childTask.id,
+          );
+          if (!completionData?.length) return null;
+
+          return (
+            <View
+              key={childTask.id}
+              className="flex-col border-b border-border"
+            >
+              {completionData.map((data, i) => (
+                <View key={i} className="w-24 flex-row p-2">
+                  <Text className="text-sm text-foreground">
+                    {childTask.title}{" "}
+                  </Text>
+                  <Text className="text-sm text-primary">
+                    {renderCompletionData(data)}
+                  </Text>
                 </View>
               ))}
             </View>
-          )}
-
-          {/* Child task rows */}
-          {task.childTasks?.map((childTask) => {
-            const completionData = task.childTaskCompletionDataMap?.get(
-              childTask.id,
-            );
-            if (!completionData?.length) return null;
-
-            return (
-              <View
-                key={childTask.id}
-                className="flex-col border-b border-border"
-              >
-                {completionData.map((data, i) => (
-                  <View key={i} className="w-24 flex-row p-2">
-                    <Text className="text-sm text-foreground">
-                      {childTask.title}{" "}
-                    </Text>
-                    <Text className="text-sm text-primary">
-                      {renderCompletionData(data)}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            );
-          })}
-        </View>
-      </ScrollView>
+          );
+        })}
+      </View>
     </View>
   );
 }

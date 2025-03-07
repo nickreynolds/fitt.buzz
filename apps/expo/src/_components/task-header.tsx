@@ -102,10 +102,10 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
 
   return (
     <View className="flex-col">
-      <View className="w-full flex-row items-center justify-between">
-        <Link href={`/task/${taskId}`}>
+      <View className="min-w-full flex-col">
+        <Link href={`/task/${taskId}`} className="w-full">
           <Text
-            className="text-2xl font-semibold text-primary"
+            className="w-full text-2xl font-semibold text-primary"
             onPress={() => router.push(`/task/${taskId}`)}
           >
             {initialTask.title}
@@ -114,7 +114,9 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
             )}
           </Text>
         </Link>
-        <View className="flex flex-row items-center gap-4">{status()}</View>
+        <View className="flex flex-row items-center gap-4 self-end">
+          {status()}
+        </View>
       </View>
     </View>
   );

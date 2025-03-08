@@ -24,11 +24,11 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
 
   const [listData, setListData] = React.useState<
     RouterOutputs["task"]["getTask"][]
-  >(task?.childTasks.sort((a, b) => a.sortIndex - b.sortIndex) ?? []);
+  >(task?.childTasks?.sort((a, b) => a.sortIndex - b.sortIndex) ?? []);
 
   React.useEffect(() => {
     setListData(
-      task?.childTasks.sort((a, b) => a.sortIndex - b.sortIndex) ?? [],
+      task?.childTasks?.sort((a, b) => a.sortIndex - b.sortIndex) ?? [],
     );
   }, [task]);
 
@@ -104,12 +104,12 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
       <DraggableFlatList
         data={listData}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item?.id ?? ""}
         onDragEnd={({ data }) => {
           setListData(data);
           const taskOrder: { id: string; sortIndex: number }[] = [];
           data.forEach((task, index) => {
-            if (task.id && task.sortIndex !== index) {
+            if (task?.id && task.sortIndex !== index) {
               taskOrder.push({ id: task.id, sortIndex: index });
             }
           });

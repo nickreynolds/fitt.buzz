@@ -1,7 +1,6 @@
 import React from "react";
 import { Text, View } from "react-native";
 import { Link, router } from "expo-router";
-import { CheckCircle } from "lucide-react-native";
 
 import type { RouterOutputs } from "@acme/api";
 import {

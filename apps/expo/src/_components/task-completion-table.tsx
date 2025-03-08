@@ -1,8 +1,7 @@
 import React from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 import type { RouterOutputs } from "@acme/api";
-import { TaskCompletionTypes } from "@acme/utils";
 
 interface TaskCompletionTableProps {
   task: RouterOutputs["task"]["getTask"];

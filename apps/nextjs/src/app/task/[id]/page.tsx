@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { Layout } from "~/app/_components/Layout";
 import BackButton from "~/app/_components/tasks/back-button";
 import { CreateSubtaskButton } from "~/app/_components/tasks/create-subtask-button";
-import { DeleteTaskButton } from "~/app/_components/tasks/delete-task-button";
 import { SubtaskList } from "~/app/_components/tasks/subtask-list";
 import { TaskChildrenCompletionData } from "~/app/_components/tasks/task-children-completion-data";
 import { TaskDetails } from "~/app/_components/tasks/task-details";

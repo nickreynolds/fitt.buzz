@@ -1,5 +1,9 @@
 import React from "react";
 import { Text, View } from "react-native";
+import DraggableFlatList, {
+  ScaleDecorator,
+} from "react-native-draggable-flatlist";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 import type { RouterOutputs } from "@acme/api";
 
@@ -12,10 +16,21 @@ interface SubtaskListProps {
 }
 
 export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
+  const utils = api.useUtils();
   const { data: task } = api.task.getTask.useQuery(
     { id: parentTaskId },
     { initialData: initialTask },
   );
+
+  const [listData, setListData] = React.useState<
+    RouterOutputs["task"]["getTask"][]
+  >(task?.childTasks?.sort((a, b) => a.sortIndex - b.sortIndex) ?? []);
+
+  React.useEffect(() => {
+    setListData(
+      task?.childTasks?.sort((a, b) => a.sortIndex - b.sortIndex) ?? [],
+    );
+  }, [task]);
 
   if (!task) {
     return null;
@@ -30,11 +45,77 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
     );
   }
 
+  const renderItem = ({
+    item,
+    drag,
+    isActive,
+  }: {
+    item: RouterOutputs["task"]["getTask"];
+    drag: () => void;
+    isActive: boolean;
+  }) => {
+    return (
+      <ScaleDecorator>
+        <TouchableOpacity onLongPress={drag} activeOpacity={0.8}>
+          <View
+            className={`flex flex-row rounded-lg ${isActive ? "bg-secondary" : "bg-muted"}`}
+          >
+            <TaskCard key={item?.id} task={item} />
+          </View>
+        </TouchableOpacity>
+      </ScaleDecorator>
+    );
+  };
+
+  const mutateTaskOrder = api.task.reorderTasks.useMutation({
+    onMutate: (data) => {
+      const oldChildTasks = utils.task.getTask.getData({ id: parentTaskId });
+      const dataMapping = new Map<string, number>();
+      for (const order of data) {
+        dataMapping.set(order.id, order.sortIndex);
+      }
+
+      const newChildTasks = oldChildTasks?.childTasks?.map((t) => {
+        return {
+          ...t,
+          sortIndex: dataMapping.get(t.id) ?? t.sortIndex,
+        };
+      });
+
+      const sortedChildTasks = newChildTasks?.sort(
+        (a, b) => a.sortIndex - b.sortIndex,
+      );
+
+      utils.task.getTask.setData(
+        { id: parentTaskId },
+        {
+          ...task,
+          childTasks: sortedChildTasks,
+        },
+      );
+    },
+    onSettled: async () => {
+      await utils.task.getTask.invalidate({ id: parentTaskId });
+    },
+  });
+
   return (
     <View className="mt-4 space-y-2">
-      {tasks.map((t) => {
-        return <TaskCard key={t.id} task={t} />;
-      })}
+      <DraggableFlatList
+        data={listData}
+        renderItem={renderItem}
+        keyExtractor={(item) => item?.id ?? ""}
+        onDragEnd={({ data }) => {
+          setListData(data);
+          const taskOrder: { id: string; sortIndex: number }[] = [];
+          data.forEach((task, index) => {
+            if (task?.id && task.sortIndex !== index) {
+              taskOrder.push({ id: task.id, sortIndex: index });
+            }
+          });
+          mutateTaskOrder.mutate(taskOrder);
+        }}
+      />
     </View>
   );
 }

@@ -81,6 +81,8 @@ export function CompleteTaskButton({
 
       if (parentTaskId) {
         router.push(`/task/${parentTaskId}`);
+      } else {
+        router.push("/");
       }
     },
   });

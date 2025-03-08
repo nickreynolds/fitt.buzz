@@ -1,5 +1,5 @@
 import { Text, TouchableOpacity } from "react-native";
-import { useRouter } from "next/navigation";
+import { router } from "expo-router";
 
 import { api } from "~/utils/api";
 
@@ -12,7 +12,6 @@ export function CompleteTaskButton({
   taskId,
   parentTaskId,
 }: CompleteTaskButtonProps) {
-  const router = useRouter();
   const utils = api.useUtils();
 
   const completeTask = api.task.completeTask.useMutation({
@@ -77,6 +76,8 @@ export function CompleteTaskButton({
 
       if (parentTaskId) {
         router.push(`/task/${parentTaskId}`);
+      } else {
+        router.push("/");
       }
     },
   });

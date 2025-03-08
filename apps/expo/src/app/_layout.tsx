@@ -2,6 +2,7 @@ import "@bacons/text-decoder/install";
 
 import { Slot } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { PortalHost } from "@rn-primitives/portal";
 
 import { TRPCProvider } from "~/utils/api";
 
@@ -14,6 +15,7 @@ export default function RootLayout() {
     <TRPCProvider>
       <Slot />
       <StatusBar />
+      <PortalHost />
     </TRPCProvider>
   );
 }

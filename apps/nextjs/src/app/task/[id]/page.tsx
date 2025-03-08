@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { Layout } from "~/app/_components/Layout";
 import BackButton from "~/app/_components/tasks/back-button";
 import { CreateSubtaskButton } from "~/app/_components/tasks/create-subtask-button";
-import { DeleteTaskButton } from "~/app/_components/tasks/delete-task-button";
 import { SubtaskList } from "~/app/_components/tasks/subtask-list";
 import { TaskChildrenCompletionData } from "~/app/_components/tasks/task-children-completion-data";
 import { TaskDetails } from "~/app/_components/tasks/task-details";
@@ -51,10 +50,6 @@ export default async function TaskPage({ params }: { params: { id: string } }) {
                   <h2 className="mb-4 text-xl font-semibold">Subtasks</h2>
                   <SubtaskList initialTask={task} parentTaskId={task.id} />
                   <CreateSubtaskButton taskId={task.id} />
-                </div>
-
-                <div className="flex gap-2">
-                  <DeleteTaskButton taskId={task.id} />
                 </div>
               </div>
             </div>

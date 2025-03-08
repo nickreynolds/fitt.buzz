@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 import { Button } from "@acme/ui/button";
 
 import { api } from "~/trpc/react";
@@ -11,6 +13,7 @@ export function CompleteTaskButton({
   taskId: string;
   parentTaskId: string | null;
 }) {
+  const router = useRouter();
   //   const router = useRouter();
   const utils = api.useUtils();
 
@@ -75,6 +78,12 @@ export function CompleteTaskButton({
       promises2.push(utils.task.getAllMyActiveTasks.invalidate());
 
       await Promise.all(promises2);
+
+      if (parentTaskId) {
+        router.push(`/task/${parentTaskId}`);
+      } else {
+        router.push("/");
+      }
     },
   });
 

@@ -1,23 +1,26 @@
-"use client";
+import React, { useState } from "react";
+import { Text, TextInput, TouchableOpacity, View } from "react-native";
+// import { Picker } from "@react-native-picker/picker";
+import { Dumbbell } from "lucide-react-native";
 
-import React from "react";
+// import type { RouterOutputs } from "@acme/api";
+// import { Button } from "@acme/ui/button";
 
-import { Button } from "@acme/ui/button";
+import { api } from "~/utils/api";
 
-import { api } from "~/trpc/react";
-import { NumericInputWithButtons } from "./NumericInputWithButtons";
+interface CompleteWeightRepsTaskButtonProps {
+  taskId: string;
+  parentTaskId: string | null;
+}
 
 export function CompleteWeightRepsTaskButton({
   taskId,
   parentTaskId,
-}: {
-  taskId: string;
-  parentTaskId: string | null;
-}) {
+}: CompleteWeightRepsTaskButtonProps) {
+  const [weight, setWeight] = useState("0");
+  const [reps, setReps] = useState("0");
+  // const [weightUnit, setWeightUnit] = useState("lbs");
   const utils = api.useUtils();
-
-  const [weight, setWeight] = React.useState(0);
-  const [reps, setReps] = React.useState(0);
 
   const completeTask = api.task.completeWeightRepsTask.useMutation({
     onMutate: async (data) => {
@@ -113,27 +116,57 @@ export function CompleteWeightRepsTaskButton({
   });
 
   return (
-    <div className="flex flex-row">
-      <NumericInputWithButtons
-        value={weight}
-        onChange={setWeight}
-        increment={2.5}
-      />
-      <NumericInputWithButtons value={reps} onChange={setReps} increment={1} />
-      <Button
-        variant="primary"
-        onClick={() =>
-          completeTask.mutate({
-            id: taskId,
-            weight: weight,
-            reps: reps,
-            weightUnit: "lbs",
-          })
-        }
-        className="motion-preset-bounce flex items-center gap-2"
+    <View className="flex-row items-center gap-2">
+      <View className="w-20">
+        <TextInput
+          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm text-primary"
+          keyboardType="numeric"
+          value={weight}
+          onChangeText={setWeight}
+          placeholder="Weight"
+        />
+      </View>
+      <Text className="text-foreground">lbs</Text>
+      {/* 
+      <View className="w-20">
+        <Picker
+          selectedValue={weightUnit}
+          onValueChange={setWeightUnit}
+          className="h-10 rounded-md border border-input bg-background"
+        >
+          <Picker.Item label="lbs" value="lbs" />
+          <Picker.Item label="kg" value="kg" />
+        </Picker>
+      </View> */}
+
+      <View className="w-16">
+        <TextInput
+          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm text-primary"
+          keyboardType="numeric"
+          value={reps}
+          onChangeText={setReps}
+          placeholder="Reps"
+        />
+      </View>
+      <Text className="text-foreground">reps</Text>
+
+      <TouchableOpacity
+        className="rounded-lg bg-primary p-2 text-foreground"
+        onPress={() => {
+          const weightNum = parseFloat(weight);
+          const repsNum = parseInt(reps, 10);
+          if (!isNaN(weightNum) && !isNaN(repsNum)) {
+            completeTask.mutate({
+              id: taskId,
+              weight: weightNum,
+              weightUnit: "lbs",
+              reps: repsNum,
+            });
+          }
+        }}
       >
-        Complete
-      </Button>
-    </div>
+        <Dumbbell size={20} color="currentColor" />
+      </TouchableOpacity>
+    </View>
   );
 }

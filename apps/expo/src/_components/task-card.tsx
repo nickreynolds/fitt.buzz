@@ -15,7 +15,7 @@ export default function TaskCard({ task }: TaskCardProps) {
   }
 
   return (
-    <View className="flex flex-row rounded-lg bg-muted p-4">
+    <View className="flex flex-row rounded-lg p-4">
       <TaskHeader initialTask={task} taskId={task.id} />
     </View>
   );

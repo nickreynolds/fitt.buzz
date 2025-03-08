@@ -22,6 +22,16 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
     { initialData: initialTask },
   );
 
+  const [listData, setListData] = React.useState<
+    RouterOutputs["task"]["getTask"][]
+  >(task?.childTasks.sort((a, b) => a.sortIndex - b.sortIndex) ?? []);
+
+  React.useEffect(() => {
+    setListData(
+      task?.childTasks.sort((a, b) => a.sortIndex - b.sortIndex) ?? [],
+    );
+  }, [task]);
+
   if (!task) {
     return null;
   }
@@ -46,8 +56,12 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
   }) => {
     return (
       <ScaleDecorator>
-        <TouchableOpacity onLongPress={drag}>
-          <TaskCard key={item?.id} task={item} />
+        <TouchableOpacity onLongPress={drag} activeOpacity={0.8}>
+          <View
+            className={`flex flex-row rounded-lg ${isActive ? "bg-secondary" : "bg-muted"}`}
+          >
+            <TaskCard key={item?.id} task={item} />
+          </View>
         </TouchableOpacity>
       </ScaleDecorator>
     );
@@ -81,28 +95,21 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
       );
     },
     onSettled: async () => {
-      // await utils.task.getTask.refetch({ id: parentTaskId });
+      await utils.task.getTask.invalidate({ id: parentTaskId });
     },
   });
 
   return (
     <View className="mt-4 space-y-2">
       <DraggableFlatList
-        data={tasks.sort((a, b) => a.sortIndex - b.sortIndex)}
+        data={listData}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         onDragEnd={({ data }) => {
-          // console.log("f: ", JSON.stringify(data, null, 2));
+          setListData(data);
           const taskOrder: { id: string; sortIndex: number }[] = [];
           data.forEach((task, index) => {
             if (task.id && task.sortIndex !== index) {
-              // utils.task.getTask.setData(
-              //   { id: task.id },
-              //   {
-              //     ...task,
-              //     sortIndex: index,
-              //   },
-              // );
               taskOrder.push({ id: task.id, sortIndex: index });
             }
           });

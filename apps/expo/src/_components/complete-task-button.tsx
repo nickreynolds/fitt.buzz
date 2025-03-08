@@ -1,4 +1,5 @@
 import { Text, TouchableOpacity } from "react-native";
+import { useRouter } from "next/navigation";
 
 import { api } from "~/utils/api";
 
@@ -11,6 +12,7 @@ export function CompleteTaskButton({
   taskId,
   parentTaskId,
 }: CompleteTaskButtonProps) {
+  const router = useRouter();
   const utils = api.useUtils();
 
   const completeTask = api.task.completeTask.useMutation({
@@ -57,11 +59,25 @@ export function CompleteTaskButton({
       utils.task.getAllMyActiveTasks.setData(undefined, updatedTasks);
     },
     onSettled: async () => {
+      const promises = [];
       if (parentTaskId) {
-        await utils.task.getTask.invalidate({ id: parentTaskId });
+        promises.push(utils.task.getTask.cancel({ id: parentTaskId }));
       }
-      await utils.task.getTask.invalidate({ id: taskId });
-      await utils.task.getAllMyActiveTasks.invalidate();
+      promises.push(utils.task.getTask.cancel({ id: taskId }));
+      promises.push(utils.task.getAllMyActiveTasks.cancel());
+
+      const promises2 = [];
+      if (parentTaskId) {
+        promises2.push(utils.task.getTask.invalidate({ id: parentTaskId }));
+      }
+      promises2.push(utils.task.getTask.invalidate({ id: taskId }));
+      promises2.push(utils.task.getAllMyActiveTasks.invalidate());
+
+      await Promise.all(promises2);
+
+      if (parentTaskId) {
+        router.push(`/task/${parentTaskId}`);
+      }
     },
   });
 

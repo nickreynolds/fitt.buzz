@@ -31,6 +31,9 @@ export function TaskDetails({
 }: TaskDetailsProps) {
   const utils = api.useUtils();
 
+  console.log("initialTask", initialTask);
+  const task = utils.task.getTask.getData({ id: taskId });
+
   const deleteTask = api.task.deleteTask.useMutation({
     onMutate: () => {
       const tasks = utils.task.getAllMyActiveTasks.getData();
@@ -79,7 +82,7 @@ export function TaskDetails({
           </p>
         </div>
         <Switch
-          checked={initialTask?.isSet ?? false}
+          checked={task?.isSet ?? false}
           onCheckedChange={(checked) =>
             updateIsSet.mutate({ id: taskId, isSet: checked ? true : false })
           }

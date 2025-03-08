@@ -65,6 +65,9 @@ export function CompleteWeightRepsTaskButton({
               ...parentTask,
               childTasks: updatedChildTasks,
               childTaskCompletionDataMap: existingChildTaskCompletionDataMap,
+              numCompletedSets: parentTask.isSet
+                ? parentTask.numCompletedSets + 1
+                : parentTask.numCompletedSets,
             },
           );
         }

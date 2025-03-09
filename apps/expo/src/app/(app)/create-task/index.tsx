@@ -81,6 +81,7 @@ export default function CreateTask() {
       nextDue: new Date(dueDate.toDateString() + " " + dueTime.toTimeString()),
       recurring: isRecurring,
       frequencyHours: isRecurring ? parseInt(frequency) : undefined,
+      completionDataType: TaskCompletionTypes.Boolean,
     });
   };
 

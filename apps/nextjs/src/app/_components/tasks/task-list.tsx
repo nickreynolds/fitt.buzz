@@ -51,7 +51,7 @@ export function TaskList() {
           <div
             className="animate-slideIn opacity-0"
             // @ts-expect-error: `--delay` is a custom property
-            style={{ "--delay": `${index * 200}ms` }}
+            style={{ "--delay": `${index * 100}ms` }}
           >
             <TaskCard initialTask={task} taskId={task.id} />
           </div>

@@ -24,7 +24,7 @@ export default function RootLayout() {
     <TRPCProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Slot />
-        <StatusBar />
+        <StatusBar style="light" backgroundColor="#000000" />
         <PortalHost />
       </GestureHandlerRootView>
     </TRPCProvider>

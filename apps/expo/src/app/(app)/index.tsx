@@ -5,25 +5,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
 
 import { api } from "~/utils/api";
-import { useSignIn, useSignOut, useUser } from "~/utils/auth";
+import { useSignIn, useUser } from "~/utils/auth";
 import TaskCard from "../../_components/task-card";
 
 function MobileAuth({ children }: PropsWithChildren<object>) {
   const user = useUser();
   const signIn = useSignIn();
-  const signOut = useSignOut();
 
   if (user) {
-    return (
-      <>
-        <Button
-          onPress={() => signOut()}
-          title={"Sign Out"}
-          color={"#5B65E9"}
-        />
-        {children}
-      </>
-    );
+    return <>{children}</>;
   }
   return (
     <>
@@ -48,7 +38,11 @@ export function MyTasks() {
         data={tasks}
         // estimatedItemSize={20}
         ItemSeparatorComponent={() => <View className="h-2" />}
-        renderItem={(p) => <TaskCard task={p.item} />}
+        renderItem={(p) => (
+          <View className="animate-slideIn">
+            <TaskCard task={p.item} />
+          </View>
+        )}
         contentContainerStyle={{ minHeight: "100%" }}
         itemLayoutAnimation={LinearTransition}
       />

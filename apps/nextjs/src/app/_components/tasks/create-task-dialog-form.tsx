@@ -57,7 +57,7 @@ export function CreateTaskDialogForm({
   const [isRecurring, setIsRecurring] = useState(false);
 
   const zodSchema = CreateTaskSchema.extend({ nextDueString: z.string() }).omit(
-    { nextDue: true, id: true },
+    { nextDue: true, id: true, completionDataType: true },
   );
 
   const form = useForm({
@@ -134,6 +134,7 @@ export function CreateTaskDialogForm({
       nextDue: new Date(data.nextDueString),
       frequencyHours: isRecurring ? data.frequencyHours : undefined,
       recurring: isRecurring,
+      completionDataType: TaskCompletionTypes.Boolean,
     });
   }
 

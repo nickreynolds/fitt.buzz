@@ -220,15 +220,15 @@ importers:
       react-native-svg:
         specifier: ^15.11.1
         version: 15.11.1(react-native@0.74.6(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.11)(bufferutil@4.0.8)(react@18.3.1))(react@18.3.1)
+      react-native-uuid:
+        specifier: ^2.0.3
+        version: 2.0.3
       react-native-web:
         specifier: ~0.19.10
         version: 0.19.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       superjson:
         specifier: 2.2.1
         version: 2.2.1
-      uuid:
-        specifier: ^11.0.5
-        version: 11.0.5
     devDependencies:
       '@acme/api':
         specifier: workspace:*
@@ -7676,6 +7676,10 @@ packages:
     peerDependencies:
       react: '*'
       react-native: '*'
+
+  react-native-uuid@2.0.3:
+    resolution: {integrity: sha512-f/YfIS2f5UB+gut7t/9BKGSCYbRA9/74A5R1MDp+FLYsuS+OSWoiM/D8Jko6OJB6Jcu3v6ONuddvZKHdIGpeiw==}
+    engines: {node: '>=10.0.0', npm: '>=6.0.0'}
 
   react-native-web@0.19.13:
     resolution: {integrity: sha512-etv3bN8rJglrRCp/uL4p7l8QvUNUC++QwDbdZ8CB7BvZiMvsxfFIRM1j04vxNldG3uo2puRd6OSWR3ibtmc29A==}
@@ -17108,6 +17112,8 @@ snapshots:
       react: 18.3.1
       react-native: 0.74.6(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.11)(bufferutil@4.0.8)(react@18.3.1)
       warn-once: 0.1.1
+
+  react-native-uuid@2.0.3: {}
 
   react-native-web@0.19.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:

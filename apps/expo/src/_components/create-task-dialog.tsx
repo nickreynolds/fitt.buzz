@@ -10,9 +10,9 @@ import {
   TextInput,
   View,
 } from "react-native";
+import uuid from "react-native-uuid";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { format } from "date-fns";
-import { v4 } from "uuid";
 
 import { TaskCompletionTypes } from "@acme/utils";
 
@@ -82,7 +82,7 @@ export function CreateTaskDialog({ isOpen, onClose }: CreateTaskDialogProps) {
 
   const handleSubmit = () => {
     mutate({
-      id: v4(),
+      id: uuid.v4(),
       title,
       description,
       nextDue: new Date(dueDate.toDateString() + " " + dueTime.toTimeString()),

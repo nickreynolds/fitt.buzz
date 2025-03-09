@@ -10,9 +10,10 @@ import {
   TextInput,
   View,
 } from "react-native";
+import uuid from "react-native-uuid";
+import { router } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { format } from "date-fns";
-import { v4 } from "uuid";
 
 import { TaskCompletionTypes } from "@acme/utils";
 
@@ -65,7 +66,7 @@ export default function CreateTask() {
       setFrequency("24");
       setDueDate(new Date());
       setDueTime(new Date());
-      //   onClose();
+      router.push("/");
     },
     onSuccess: async () => {
       await utils.task.getAllMyActiveTasks.invalidate();
@@ -74,7 +75,7 @@ export default function CreateTask() {
 
   const handleSubmit = () => {
     mutate({
-      id: v4(),
+      id: uuid.v4(),
       title,
       description,
       nextDue: new Date(dueDate.toDateString() + " " + dueTime.toTimeString()),

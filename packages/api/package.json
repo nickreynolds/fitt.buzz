@@ -24,6 +24,7 @@
     "@acme/utils": "workspace:*",
     "@acme/validators": "workspace:*",
     "@trpc/server": "catalog:",
+    "pusher": "^5.2.0",
     "superjson": "2.2.1",
     "zod": "catalog:"
   },

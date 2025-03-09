@@ -1,4 +1,5 @@
 import type { TRPCRouterRecord } from "@trpc/server";
+import Pusher from "pusher";
 import { z } from "zod";
 
 import { and, desc, eq, inArray, isNull, lte, or, sql } from "@acme/db";
@@ -8,14 +9,19 @@ import {
   Task,
   TaskCompletion,
 } from "@acme/db/schema";
-import {
-  getCompletionPeriodBegins,
-  pusher,
-  TaskCompletionTypes,
-} from "@acme/utils";
+import { getCompletionPeriodBegins, TaskCompletionTypes } from "@acme/utils";
 
 import { protectedProcedure } from "../trpc";
 import { bootstrapTasks } from "../utils/bootstrap";
+
+console.log(process.env.PUSHER_APP_ID);
+
+export const pusher = new Pusher({
+  appId: process.env.PUSHER_APP_ID ?? "",
+  key: process.env.PUSHER_KEY ?? "",
+  secret: process.env.PUSHER_SECRET ?? "",
+  cluster: process.env.PUSHER_CLUSTER ?? "",
+});
 
 const baseTaskOutputSchema = z.object({
   id: z.string().uuid(),
@@ -101,12 +107,19 @@ export const taskRouter = {
                 : null,
           })
           .returning();
+        await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
+          tasks: [],
+        });
         return inserted[0]?.id;
       }
       const inserted = await ctx.db
         .insert(Task)
         .values({ ...input, creatorId: ctx.session.user.id })
         .returning();
+      await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
+        tasks: [],
+      });
+
       return inserted[0]?.id;
     }),
   createSubtask: protectedProcedure
@@ -121,7 +134,7 @@ export const taskRouter = {
       if (parent.creatorId !== ctx.session.user.id) {
         throw new Error("You are not the owner of the parent task");
       }
-      return ctx.db.insert(Task).values({
+      const inserted = await ctx.db.insert(Task).values({
         ...input,
         recurring: parent.recurring,
         frequencyHours: parent.frequencyHours ?? null,
@@ -129,6 +142,10 @@ export const taskRouter = {
         completionPeriodBegins: parent.completionPeriodBegins,
         creatorId: ctx.session.user.id,
       });
+      await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
+        tasks: [input.parentTaskId],
+      });
+      return inserted;
     }),
   completeWeightRepsTask: protectedProcedure
     .input(
@@ -140,6 +157,7 @@ export const taskRouter = {
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      let res;
       const task = await ctx.db.query.Task.findFirst({
         where: eq(Task.id, input.id),
         with: {
@@ -156,7 +174,7 @@ export const taskRouter = {
           throw new Error("Task is not of type WeightReps");
         }
 
-        const res = await ctx.db.transaction(async (trx) => {
+        res = await ctx.db.transaction(async (trx) => {
           if (task.parentTaskId) {
             let completeParentSet = true;
             const parentTask = await ctx.db.query.Task.findFirst({
@@ -240,7 +258,7 @@ export const taskRouter = {
             }
           }
 
-          const res = await trx.insert(TaskCompletion).values({
+          const res2 = await trx.insert(TaskCompletion).values({
             taskId: task.id,
             completionDataType: TaskCompletionTypes.WeightReps,
             completionData: {
@@ -251,13 +269,21 @@ export const taskRouter = {
             nextDue: task.nextDue,
           });
 
-          return res;
+          return res2;
         });
-
-        return res;
-      } else {
+      }
+      if (!res) {
         throw new Error("Task not found");
       }
+
+      const tasksToRefresh = [input.id];
+      if (task?.parentTaskId) {
+        tasksToRefresh.push(task.parentTaskId);
+      }
+      await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
+        tasks: tasksToRefresh,
+      });
+      return res;
     }),
   completeTask: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
@@ -383,8 +409,12 @@ export const taskRouter = {
         throw new Error("Task not found");
       }
 
+      const tasksToRefresh = [input.id];
+      if (task?.parentTaskId) {
+        tasksToRefresh.push(task.parentTaskId);
+      }
       await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
-        tasks: [input.id],
+        tasks: tasksToRefresh,
       });
       return res;
     }),
@@ -570,7 +600,6 @@ export const taskRouter = {
   setNumSets: protectedProcedure
     .input(z.object({ id: z.string().uuid(), numSets: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      // First try to find and delete a regular task
       const task = await ctx.db.query.Task.findFirst({
         where: eq(Task.id, input.id),
       });
@@ -579,10 +608,14 @@ export const taskRouter = {
         if (task.creatorId !== ctx.session.user.id) {
           throw new Error("You are not the owner of this task");
         }
-        return await ctx.db
+        const updated = await ctx.db
           .update(Task)
           .set({ numSets: input.numSets })
           .where(eq(Task.id, input.id));
+        await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
+          tasks: [input.id, task.parentTaskId],
+        });
+        return updated;
       }
       throw new Error("Task not found");
     }),
@@ -611,30 +644,11 @@ export const taskRouter = {
           .where(eq(Task.id, task.id));
       }
 
-      // TODO: write a single query to do this (below code should basically work but has a column type error)
+      const anyParentTaskId = tasks.some((task) => task.parentTaskId);
 
-      // console.log("reorder 3.");
-      // const sqlChunks: SQL[] = [];
-      // const ids: string[] = [];
-
-      // sqlChunks.push(sql`(case`);
-
-      // for (const m of input) {
-      //   sqlChunks.push(sql`when ${Task.id} = ${m.id} then ${m.sortIndex}`);
-      //   ids.push(m.id);
-      // }
-
-      // sqlChunks.push(sql`end)`);
-
-      // console.log("reorder 4.");
-      // const finalSql: SQL = sql.join(sqlChunks, sql.raw(" "));
-
-      // await ctx.db
-      //   .update(Task)
-      //   .set({ sortIndex: finalSql })
-      //   .where(inArray(Task.id, ids));
-
-      // console.log("reorder 5.");
+      await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
+        tasks: [input.map((task) => task.id), anyParentTaskId],
+      });
     }),
   updateTaskTitle: protectedProcedure
     .input(
@@ -656,10 +670,15 @@ export const taskRouter = {
         throw new Error("You are not the owner of this task");
       }
 
-      return await ctx.db
+      const updated = await ctx.db
         .update(Task)
         .set({ title: input.title })
         .where(eq(Task.id, input.id));
+      await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
+        tasks: [input.id, task.parentTaskId],
+      });
+
+      return updated;
     }),
   updateIsSet: protectedProcedure
     .input(
@@ -681,9 +700,13 @@ export const taskRouter = {
         throw new Error("You are not the owner of this task");
       }
 
-      return await ctx.db
+      const updated = await ctx.db
         .update(Task)
         .set({ isSet: input.isSet, numSets: input.isSet ? 1 : 0 })
         .where(eq(Task.id, input.id));
+      await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
+        tasks: [input.id, task.parentTaskId],
+      });
+      return updated;
     }),
 } satisfies TRPCRouterRecord;

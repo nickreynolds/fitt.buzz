@@ -41,6 +41,9 @@ export function Layout({ children }: LayoutProps) {
   channel.bind("refresh-tasks", async (data: { tasks: string[] }) => {
     console.log("refresh-tasks", data);
     await utils.task.getAllMyActiveTasks.invalidate();
+    for (const taskId of data.tasks) {
+      await utils.task.getTask.invalidate({ id: taskId });
+    }
   });
 
   return (

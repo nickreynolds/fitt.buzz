@@ -78,6 +78,11 @@ export const CreateTaskSchema = z.object({
   recurring: z.boolean(),
   frequencyHours: z.number().optional(),
   nextDue: z.date(),
+  completionDataType: z.enum([
+    TaskCompletionTypes.Boolean,
+    TaskCompletionTypes.WeightReps,
+    TaskCompletionTypes.Time,
+  ]),
 });
 
 export const CreateSubtaskSchema = z.object({

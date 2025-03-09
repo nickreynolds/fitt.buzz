@@ -21,23 +21,6 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
   );
   const utils = api.useUtils();
 
-  const doIsSet = api.task.setIsSet.useMutation({
-    onMutate: ({ id, isSet }) => {
-      const task = utils.task.getTask.getData({ id });
-      if (!task) {
-        throw new Error("Parent task not found");
-      }
-
-      utils.task.getTask.setData({ id }, { ...task, isSet });
-
-      // return parentTask;
-    },
-    async onSuccess(data) {
-      console.log("onSuccess data", data);
-      await utils.task.getTask.invalidate({ id: task?.id ?? "" });
-    },
-  });
-
   const doSetNumSets = api.task.setNumSets.useMutation({
     onMutate: ({ id, numSets }) => {
       const task = utils.task.getTask.getData({ id });
@@ -97,11 +80,6 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
             +
           </Button>
         </div>
-      )}
-      {!isSet && (
-        <Button onClick={() => doIsSet.mutate({ id: task.id, isSet: true })}>
-          Make Set
-        </Button>
       )}
       <List tasks={tasks.sort((a, b) => a.sortIndex - b.sortIndex)} />
     </div>

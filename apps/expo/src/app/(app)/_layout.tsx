@@ -1,16 +1,74 @@
+import type { PusherEvent } from "@pusher/pusher-websocket-react-native";
+import React from "react";
 import { Text } from "react-native";
 import { Redirect, Tabs } from "expo-router";
+import { Pusher } from "@pusher/pusher-websocket-react-native";
 import { Home, Plus, SettingsIcon } from "lucide-react-native";
 import { useColorScheme } from "nativewind";
 
 import { api } from "~/utils/api";
+import { useUser } from "~/utils/auth";
 
 export default function AppLayout() {
+  const pusher = Pusher.getInstance();
+  pusher.init({
+    apiKey: "b257f4198d06902e6bca",
+    cluster: "us2",
+    // onEvent: () => {
+    //   console.log("EVENT RECEIVED.");
+    // },
+    // onSubscriptionSucceeded: (channelName, data) => {
+    //   console.log("1. onSubscriptionSucceeded", channelName, data);
+    // },
+  });
   const { data: session, isLoading } = api.auth.getSession.useQuery();
   const { colorScheme } = useColorScheme();
+  const user = useUser();
+  const utils = api.useUtils();
 
-  console.log("AppLayout session", session);
+  const userId = user?.id;
+  React.useEffect(() => {
+    if (userId) {
+      const connect = async () => {
+        await pusher.connect();
+        await pusher.subscribe({
+          channelName: `user-${userId}`,
+          onEvent: (event: PusherEvent) => {
+            console.log("event", event);
+            const data = JSON.parse(event.data as string) as {
+              tasks: string[];
+            };
+            const tasks = data.tasks;
+            if (tasks.length > 0) {
+              for (const taskId of tasks) {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                utils.task.getTask.invalidate({ id: taskId });
+              }
+            }
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            utils.task.getAllMyActiveTasks.invalidate();
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            utils.task.getAllMyTasks.invalidate();
+          },
+          // onSubscriptionSucceeded: (data) => {
+          //   console.log("2. onSubscriptionSucceeded: ", data);
+          // },
+          onSubscriptionError(channelName, message, e) {
+            console.log("onSubscriptionError: ", channelName, message, e);
+          },
+        });
+      };
 
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      setTimeout(connect, 1000); // hack
+    }
+  }, [
+    userId,
+    utils.task.getTask,
+    utils.task.getAllMyActiveTasks,
+    utils.task.getAllMyTasks,
+    pusher,
+  ]);
   // You can keep the splash screen open, or render a loading screen like we do here.
   if (isLoading) {
     return <Text>Loading...</Text>;

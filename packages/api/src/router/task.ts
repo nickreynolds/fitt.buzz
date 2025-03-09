@@ -8,7 +8,11 @@ import {
   Task,
   TaskCompletion,
 } from "@acme/db/schema";
-import { getCompletionPeriodBegins, TaskCompletionTypes } from "@acme/utils";
+import {
+  getCompletionPeriodBegins,
+  pusher,
+  TaskCompletionTypes,
+} from "@acme/utils";
 
 import { protectedProcedure } from "../trpc";
 import { bootstrapTasks } from "../utils/bootstrap";
@@ -258,6 +262,8 @@ export const taskRouter = {
   completeTask: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
+      let res;
+
       const task = await ctx.db.query.Task.findFirst({
         where: eq(Task.id, input.id),
         with: {
@@ -343,7 +349,7 @@ export const taskRouter = {
 
           const prevDue = task.nextDue;
 
-          const res = await ctx.db
+          res = await ctx.db
             .update(Task)
             .set({
               lastCompleted: new Date(),
@@ -357,7 +363,6 @@ export const taskRouter = {
             })
             .where(inArray(Task.id, [input.id, ...allChildrenIDs]));
           console.log("res", res);
-          return res;
         } else {
           if (task.parentTaskId) {
             const parentTask = await ctx.db.query.Task.findFirst({
@@ -367,15 +372,21 @@ export const taskRouter = {
               // do same as in weights/reps
             }
           }
-          const res = await ctx.db
+          res = await ctx.db
             .update(Task)
             .set({ lastCompleted: new Date() })
             .where(eq(Task.id, input.id));
-          return res;
         }
       }
 
-      throw new Error("Task not found");
+      if (!res) {
+        throw new Error("Task not found");
+      }
+
+      await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
+        tasks: [input.id],
+      });
+      return res;
     }),
   getTask: protectedProcedure
     .input(z.object({ id: z.string() }))

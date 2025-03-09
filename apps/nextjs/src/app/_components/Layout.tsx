@@ -1,17 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import Pusher from "pusher-js";
 
+import { api } from "~/trpc/react";
 import { Header } from "./Header";
+import { SessionContext } from "./session";
 import { Sidebar } from "./Sidebar";
+
+const pusher = new Pusher("b257f4198d06902e6bca", {
+  cluster: "us2",
+});
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 export function Layout({ children }: LayoutProps) {
+  const userId = useContext(SessionContext);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [prevScreenWidth, setPrevScreenWidth] = useState(0);
+
+  const utils = api.useUtils();
 
   // This is to hide the sidebar when going from small to big screen so that text is hidden correctly during sidebar transition
   useEffect(() => {
@@ -26,6 +36,12 @@ export function Layout({ children }: LayoutProps) {
     handleResize();
     return () => window.removeEventListener("resize", handleResize);
   }, [prevScreenWidth]);
+
+  const channel = pusher.subscribe(`user-${userId}`);
+  channel.bind("refresh-tasks", async (data: { tasks: string[] }) => {
+    console.log("refresh-tasks", data);
+    await utils.task.getAllMyActiveTasks.invalidate();
+  });
 
   return (
     <div className="min-h-screen bg-background">

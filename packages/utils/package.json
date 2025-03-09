@@ -23,5 +23,8 @@
     "prettier": "catalog:",
     "typescript": "catalog:"
   },
+  "dependencies": {
+    "pusher": "^5.2.0"
+  },
   "prettier": "@acme/prettier-config"
 }

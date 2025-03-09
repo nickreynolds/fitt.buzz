@@ -51,9 +51,17 @@
     "AUTH_GOOGLE_SECRET",
     "AUTH_REDIRECT_PROXY_URL",
     "AUTH_SECRET",
-    "PORT"
+    "PORT",
+    "PUSHER_APP_ID",
+    "PUSHER_KEY",
+    "PUSHER_SECRET",
+    "PUSHER_CLUSTER"
   ],
   "globalPassThroughEnv": [
+    "PUSHER_APP_ID",
+    "PUSHER_KEY",
+    "PUSHER_SECRET",
+    "PUSHER_CLUSTER",
     "NODE_ENV",
     "CI",
     "VERCEL",

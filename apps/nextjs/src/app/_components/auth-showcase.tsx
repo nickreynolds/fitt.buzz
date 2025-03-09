@@ -1,5 +1,11 @@
+"use server";
+
+import React from "react";
+
 import { auth, signIn } from "@acme/auth";
 import { Button } from "@acme/ui/button";
+
+import { Session } from "./session";
 
 export async function AuthShowcase(props: { children: React.ReactNode }) {
   const session = await auth();
@@ -20,5 +26,9 @@ export async function AuthShowcase(props: { children: React.ReactNode }) {
     );
   }
 
-  return <div>{props.children}</div>;
+  return (
+    <Session userId={session.user.id}>
+      <div>{props.children}</div>
+    </Session>
+  );
 }

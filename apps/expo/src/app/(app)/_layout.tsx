@@ -31,7 +31,7 @@ export default function AppLayout() {
     if (userId) {
       const connect = async () => {
         await pusher.connect();
-        const channel = await pusher.subscribe({
+        await pusher.subscribe({
           channelName: `user-${userId}`,
           onEvent: (event: PusherEvent) => {
             console.log("event", event);

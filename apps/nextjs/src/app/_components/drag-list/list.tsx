@@ -111,7 +111,7 @@ export function List({ tasks }: { tasks: RouterOutputs["task"]["getTask"][] }) {
         <div
           // @ts-expect-error: `--delay` is a custom property
           style={{ "--delay": `${index * 100}ms` }}
-          className={`motion-translate-x-in-[-500%] motion-delay-[var(--delay,0)]`}
+          className={`animate-slideIn motion-translate-x-in-[-500%] motion-delay-[var(--delay,0)]`}
         >
           <Task key={task?.id} task={task} />
         </div>

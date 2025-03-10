@@ -32,12 +32,8 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
     );
   }, [task]);
 
-  if (!task) {
-    return null;
-  }
-
-  const tasks = task.childTasks;
-  if (!tasks || tasks.length === 0) {
+  const tasks = task?.childTasks ?? [];
+  if (tasks.length === 0) {
     return (
       <View>
         <Text>No subtasks</Text>
@@ -86,13 +82,15 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
         (a, b) => a.sortIndex - b.sortIndex,
       );
 
-      utils.task.getTask.setData(
-        { id: parentTaskId },
-        {
-          ...task,
-          childTasks: sortedChildTasks,
-        },
-      );
+      if (task) {
+        utils.task.getTask.setData(
+          { id: parentTaskId },
+          {
+            ...task,
+            childTasks: sortedChildTasks,
+          },
+        );
+      }
     },
     onSettled: async () => {
       await utils.task.getTask.invalidate({ id: parentTaskId });

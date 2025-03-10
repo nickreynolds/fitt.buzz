@@ -10,6 +10,7 @@ import { TRPCProvider } from "~/utils/api";
 import "../styles.css";
 
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { useColorScheme } from "nativewind";
 
 if (Platform.OS === "android") {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
@@ -20,11 +21,15 @@ if (Platform.OS === "android") {
 // This is the main layout of the app
 // It wraps your pages with the providers they need
 export default function RootLayout() {
+  const { colorScheme } = useColorScheme();
   return (
     <TRPCProvider>
+      <StatusBar
+        style="light"
+        backgroundColor={colorScheme === "dark" ? "#000000" : "#FFFFFF"}
+      />
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Slot />
-        <StatusBar style="light" backgroundColor="#000000" />
         <PortalHost />
       </GestureHandlerRootView>
     </TRPCProvider>

@@ -28,6 +28,9 @@ export default function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
   const [editedTitle, setEditedTitle] = useState(initialTask?.title ?? "");
   const pathname = usePathname();
   const utils = api.useUtils();
+  const parentTask = utils.task.getTask.getData({
+    id: initialTask?.parentTaskId ?? "",
+  });
 
   const isTaskPage = pathname === `/task/${taskId}`;
 
@@ -56,26 +59,18 @@ export default function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
   if (!task) {
     return <>F.</>;
   }
-  const canComplete = canBeCompleted(task);
+  const canComplete = canBeCompleted(task, parentTask);
+  console.log("canComplete: ", canComplete);
   const numChildTasks = task.childTasks?.length ?? 0;
   const numCompletedChildTasks = getNumCompletedChildTasks(task);
-  const isComplete = isCompleted(task);
+  const isComplete = isCompleted(task, parentTask);
 
   const undoneTasks = Array(numChildTasks - numCompletedChildTasks).fill(1);
   const doneTasks = Array(numCompletedChildTasks).fill(1);
 
   const numSets = task.numSets || 0;
-  const finishedSets = task.numCompletedSets;
-
-  console.log("numSets: ", numSets);
-  console.log("finishedSets: ", finishedSets);
-
   const undoneSets = Array(task.numSets - task.numCompletedSets).fill(1);
   const doneSets = Array(task.numCompletedSets).fill(1);
-
-  console.log("doneSets: ", doneSets);
-
-  console.log("tasK", task);
 
   return (
     <div className="flex flex-col justify-between">

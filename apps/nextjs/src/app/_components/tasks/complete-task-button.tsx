@@ -19,8 +19,9 @@ export function CompleteTaskButton({
 
   const completeTask = api.task.completeTask.useMutation({
     onMutate: async () => {
-      // prevent any in-flight updates from overwriting this optimistic update
-      // we'll get the updated data eventually
+      const task = utils.task.getTask.getData({ id: taskId });
+      const existingTaskCompletionData = task?.taskCompletionData ?? [];
+
       const promises = [];
       if (parentTaskId) {
         promises.push(utils.task.getTask.cancel({ id: parentTaskId }));
@@ -42,22 +43,45 @@ export function CompleteTaskButton({
             return t;
           });
 
+          const existingChildTaskCompletionDataMap =
+            parentTask.childTaskCompletionDataMap;
+          const existingChildTaskCompletionData =
+            existingChildTaskCompletionDataMap?.get(taskId) ?? [];
+
+          existingChildTaskCompletionDataMap?.set(taskId, [
+            ...existingChildTaskCompletionData,
+            JSON.stringify({
+              result: true,
+            }),
+          ]);
+
           utils.task.getTask.setData(
             { id: parentTaskId },
-            { ...parentTask, childTasks: updatedChildTasks },
+            {
+              ...parentTask,
+              childTasks: updatedChildTasks,
+              childTaskCompletionDataMap: existingChildTaskCompletionDataMap,
+              numCompletedSets: parentTask.isSet
+                ? parentTask.numCompletedSets + 1
+                : parentTask.numCompletedSets,
+            },
           );
         }
       }
 
-      const task = utils.task.getTask.getData({ id: taskId });
       if (task) {
         utils.task.getTask.setData(
           { id: taskId },
-          { ...task, lastCompleted: new Date() },
+          {
+            ...task,
+            lastCompleted: new Date(),
+            taskCompletionData: [
+              JSON.stringify([...existingTaskCompletionData, { result: true }]),
+            ],
+          },
         );
       }
 
-      // remove regular task if found
       const tasks = utils.task.getAllMyActiveTasks.getData();
       const updatedTasks = tasks?.filter((t) => t.id !== taskId);
       utils.task.getAllMyActiveTasks.setData(undefined, updatedTasks);
@@ -78,12 +102,6 @@ export function CompleteTaskButton({
       promises2.push(utils.task.getAllMyActiveTasks.invalidate());
 
       await Promise.all(promises2);
-
-      if (parentTaskId) {
-        router.push(`/task/${parentTaskId}`);
-      } else {
-        router.push("/");
-      }
     },
   });
 

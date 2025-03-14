@@ -37,14 +37,20 @@ export function Layout({ children }: LayoutProps) {
     return () => window.removeEventListener("resize", handleResize);
   }, [prevScreenWidth]);
 
-  const channel = pusher.subscribe(`user-${userId}`);
-  channel.bind("refresh-tasks", async (data: { tasks: string[] }) => {
-    console.log("refresh-tasks", data);
-    await utils.task.getAllMyActiveTasks.invalidate();
-    for (const taskId of data.tasks) {
-      await utils.task.getTask.invalidate({ id: taskId });
-    }
-  });
+  useEffect(() => {
+    const channel = pusher.subscribe(`user-${userId}`);
+    channel.bind("refresh-tasks", async (data: { tasks: string[] }) => {
+      console.log("refresh-tasks", data);
+      await utils.task.getAllMyActiveTasks.invalidate();
+      for (const taskId of data.tasks) {
+        await utils.task.getTask.invalidate({ id: taskId });
+      }
+    });
+
+    return () => {
+      pusher.unsubscribe(`user-${userId}`);
+    };
+  }, [userId, utils.task.getAllMyActiveTasks, utils.task.getTask]);
 
   return (
     <div className="min-h-screen bg-background">

@@ -5,11 +5,6 @@ export default function isCompleted(
   task: RouterOutputs["task"]["getTask"],
   parentTask?: RouterOutputs["task"]["getTask"],
 ): boolean {
-  if (task?.completionDataType === TaskCompletionTypes.WeightReps) {
-    // TODO: check parent set completion
-    return false;
-  }
-
   if (parentTask) {
     if (parentTask.isSet) {
       if (parentTask.numCompletedSets === parentTask.numSets) {
@@ -17,6 +12,11 @@ export default function isCompleted(
       }
       return false;
     }
+  }
+
+  if (task?.completionDataType === TaskCompletionTypes.WeightReps) {
+    // TODO: check parent set completion
+    return false;
   }
 
   if (task?.recurring) {

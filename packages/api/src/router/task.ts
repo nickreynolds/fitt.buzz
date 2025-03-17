@@ -654,7 +654,7 @@ const shouldCompleteParentSet = async (
   opts: inferProcedureBuilderResolverOptions<typeof protectedProcedure>,
 ): Promise<{ result: boolean; numParentCompletedSets: number }> => {
   const { ctx } = opts;
-  if (task.parentTaskId) {
+  if (task.parentTaskId && task.isSet) {
     let completeParentSet = true;
     const parentTask = await ctx.db.query.Task.findFirst({
       where: eq(Task.id, task.parentTaskId),

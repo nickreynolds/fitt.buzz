@@ -67,7 +67,7 @@ export default function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
 
   const undoneTasks = Array(numChildTasks - numCompletedChildTasks).fill(1);
   const doneTasks = Array(numCompletedChildTasks).fill(1);
-
+  console.log("task: ", task);
   const numSets = task.numSets || 0;
   const undoneSets = Array(task.numSets - task.numCompletedSets).fill(1);
   const doneSets = Array(task.numCompletedSets).fill(1);

@@ -568,7 +568,6 @@ export const taskRouter = {
         ),
       });
 
-      console.log("reorder 2.");
       for (const task of tasks) {
         if (task.creatorId !== ctx.session.user.id) {
           throw new Error("You are not the owner of this task");
@@ -665,7 +664,6 @@ const shouldCompleteParentSet = async (
     if (!parentTask) {
       throw new Error("Parent task specified but not found");
     }
-    console.log("task.nextDue: ", task.nextDue);
     if (parentTask.isSet) {
       const allChildrenCompletionData = await ctx.db
         .select()
@@ -679,8 +677,6 @@ const shouldCompleteParentSet = async (
             eq(TaskCompletion.nextDue, task.nextDue),
           ),
         );
-
-      console.log("allChildrenCompletionData", allChildrenCompletionData);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const groupedChildrenCompletionData = new Map<string, any[]>();

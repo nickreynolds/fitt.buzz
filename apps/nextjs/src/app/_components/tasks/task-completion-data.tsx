@@ -53,7 +53,7 @@ export function TaskCompletionData({ initialTask, taskId }: SubtaskListProps) {
   );
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let data1: any[] = [];
+  let data1: any[] = React.useMemo(() => [], []);
 
   if (task) {
     task.taskCompletionData?.forEach((completionData) => {

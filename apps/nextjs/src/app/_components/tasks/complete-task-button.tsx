@@ -13,8 +13,6 @@ export function CompleteTaskButton({
   taskId: string;
   parentTaskId: string | null;
 }) {
-  const router = useRouter();
-  //   const router = useRouter();
   const utils = api.useUtils();
 
   const completeTask = api.task.completeTask.useMutation({

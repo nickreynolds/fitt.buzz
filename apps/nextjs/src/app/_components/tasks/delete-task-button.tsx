@@ -18,7 +18,8 @@ export function DeleteTaskButton({ taskId }: { taskId: string }) {
       const updatedTasks = tasks?.filter((t) => t.id !== taskId);
       utils.task.getAllMyActiveTasks.setData(undefined, updatedTasks);
 
-      router.push("/tasks");
+      console.log("GO TO HOMEPAGE.");
+      router.push("/");
     },
     onSettled: async () => {
       await Promise.all([utils.task.getAllMyActiveTasks.invalidate()]);

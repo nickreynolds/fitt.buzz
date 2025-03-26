@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { formatTime, parseEditValue } from "@acme/utils";
 
-export const useTimer = () => {
+export const useTimer = (onTimerComplete: () => void) => {
   const [time, setTime] = useState<number>(60); // Start at 1 minute (60 seconds)
   const [originalTime, setOriginalTime] = useState<number>(60); // Track original starting time
   const [isRunning, setIsRunning] = useState<boolean>(false); // Start/paused
@@ -37,6 +37,9 @@ export const useTimer = () => {
           lastTickTime.current = Date.now();
         }, 1000 + diff);
       }
+    } else if (isRunning && time === 0) {
+      onTimerComplete();
+      setIsRunning(false);
     }
 
     return () => {

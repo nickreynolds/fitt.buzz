@@ -177,6 +177,13 @@ export const taskRouter = {
           throw new Error("Task is not of type WeightReps");
         }
 
+        if (
+          task.completionPeriodBegins &&
+          new Date() < task.completionPeriodBegins
+        ) {
+          throw new Error("Task is not in completion period");
+        }
+
         res = await ctx.db.transaction(async (trx) => {
           if (task.parentTaskId) {
             const { result, numParentCompletedSets } =
@@ -240,6 +247,13 @@ export const taskRouter = {
           throw new Error("Task is not of type Time");
         }
 
+        if (
+          task.completionPeriodBegins &&
+          new Date() < task.completionPeriodBegins
+        ) {
+          throw new Error("Task is not in completion period");
+        }
+
         res = await ctx.db.transaction(async (trx) => {
           if (task.parentTaskId) {
             const { result, numParentCompletedSets } =
@@ -251,6 +265,12 @@ export const taskRouter = {
                 .where(eq(Task.id, task.parentTaskId));
             }
           }
+
+          await trx
+            .update(Task)
+            .set({ lastCompleted: new Date() })
+            .where(eq(Task.id, input.id));
+
           const res2 = await trx.insert(TaskCompletion).values({
             taskId: task.id,
             completionDataType: TaskCompletionTypes.Time,
@@ -297,6 +317,13 @@ export const taskRouter = {
 
       if (task.completionDataType !== TaskCompletionTypes.Boolean) {
         throw new Error("Task is not of type WeightReps");
+      }
+
+      if (
+        task.completionPeriodBegins &&
+        new Date() < task.completionPeriodBegins
+      ) {
+        throw new Error("Task is not in completion period");
       }
 
       // if task has children, check that all children are completed.
@@ -567,13 +594,47 @@ export const taskRouter = {
       // First try to find and delete a regular task
       const task = await ctx.db.query.Task.findFirst({
         where: eq(Task.id, input.id),
+        with: {
+          childTasks: true,
+        },
       });
 
       if (task) {
         if (task.creatorId !== ctx.session.user.id) {
           throw new Error("You are not the owner of this task");
         }
-        return await ctx.db.delete(Task).where(eq(Task.id, input.id));
+
+        const allChildrenIDs: string[] = [];
+
+        let nextChildren = task.childTasks.map((child) => child.id);
+
+        while (nextChildren.length > 0) {
+          allChildrenIDs.push(...nextChildren);
+
+          const fullChildren = await ctx.db.query.Task.findMany({
+            where: inArray(Task.id, nextChildren),
+            with: {
+              childTasks: true,
+            },
+          });
+
+          nextChildren = fullChildren
+            .map((child) => child.childTasks.map((c) => c.id))
+            .flat();
+        }
+
+        return await ctx.db.transaction(async (trx) => {
+          // use transaction
+          await trx
+            .delete(TaskCompletion)
+            .where(
+              inArray(TaskCompletion.taskId, [input.id, ...allChildrenIDs]),
+            );
+
+          await trx
+            .delete(Task)
+            .where(inArray(Task.id, [input.id, ...allChildrenIDs]));
+        });
       }
       throw new Error("Task not found");
     }),

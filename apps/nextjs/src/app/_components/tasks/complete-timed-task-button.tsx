@@ -2,6 +2,7 @@
 
 import React from "react";
 
+import { canBeCompleted } from "@acme/api-utils";
 import { useTimer } from "@acme/hooks";
 import { Button } from "@acme/ui/button";
 
@@ -35,9 +36,13 @@ export function CompleteTimedTaskButton({
     resetTimer,
     pauseTimer,
     onForcedProgressChange,
-  } = useTimer();
+  } = useTimer(() => {
+    console.log("timer done");
+    completeTask.mutate({ id: taskId, time: originalTime });
+  });
 
   const parentTask = utils.task.getTask.getData({ id: parentTaskId ?? "" });
+  const task = utils.task.getTask.getData({ id: taskId });
   React.useEffect(() => {
     console.log("GO!. parentTask: ", parentTask);
     if (parentTask) {
@@ -153,47 +158,41 @@ export function CompleteTimedTaskButton({
     },
   });
 
+  if (!task) {
+    return <div />;
+  }
+
   return (
     <div className="flex flex-row">
-      <TimeDisplay
-        time={time}
-        originalTime={originalTime}
-        isEditing={isEditing}
-        editValue={editValue}
-        isRunning={isRunning}
-        onEditValueChange={setEditValue}
-        onStartEditing={startEditing}
-        onBlur={handleBlur}
-        onKeyDown={() => {
-          console.log("keydown");
-        }}
-        // inputRef={inputRef}
-        pauseTimer={pauseTimer}
-        onNewAngle={onForcedProgressChange}
-      />
+      {canBeCompleted(task, parentTask) && (
+        <>
+          <TimeDisplay
+            time={time}
+            originalTime={originalTime}
+            isEditing={isEditing}
+            editValue={editValue}
+            isRunning={isRunning}
+            onEditValueChange={setEditValue}
+            onStartEditing={startEditing}
+            onBlur={handleBlur}
+            onKeyDown={() => {
+              console.log("keydown");
+            }}
+            // inputRef={inputRef}
+            pauseTimer={pauseTimer}
+            onNewAngle={onForcedProgressChange}
+          />
 
-      <Button
-        variant="primary"
-        onClick={() => togglePause()}
-        className="motion-preset-bounce flex items-center gap-2"
-      >
-        {isRunning ? "Pause" : "Start"}
-      </Button>
-
-      {/* <Button
-        variant="primary"
-        onClick={() =>
-          completeTask.mutate({
-            id: taskId,
-            weight: weight,
-            reps: reps,
-            weightUnit: "lbs",
-          })
-        }
-        className="motion-preset-bounce flex items-center gap-2"
-      >
-        Complete
-      </Button> */}
+          <Button
+            variant="primary"
+            onClick={() => togglePause()}
+            className="motion-preset-bounce flex items-center gap-2"
+          >
+            {isRunning ? "Pause" : "Start"}
+          </Button>
+        </>
+      )}
+      {!canBeCompleted(task, parentTask) && <span>cannot complete</span>}
     </div>
   );
 }

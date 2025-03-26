@@ -2,12 +2,14 @@
 
 import React from "react";
 
+import { useTimer } from "@acme/hooks";
 import { Button } from "@acme/ui/button";
 
 import { api } from "~/trpc/react";
 import { NumericInputWithButtons } from "./NumericInputWithButtons";
+import TimeDisplay from "./time-display";
 
-export function CompleteWeightRepsTaskButton({
+export function CompleteTimedTaskButton({
   taskId,
   parentTaskId,
 }: {
@@ -16,8 +18,24 @@ export function CompleteWeightRepsTaskButton({
 }) {
   const utils = api.useUtils();
 
-  const [weight, setWeight] = React.useState(0);
-  const [reps, setReps] = React.useState(0);
+  const {
+    time,
+    setTime,
+    originalTime,
+    isRunning,
+    isEditing,
+    editValue,
+    // inputRef,
+    setEditValue,
+    startEditing,
+    handleBlur,
+    // handleKeyDown,
+    togglePause,
+    addMinute,
+    resetTimer,
+    pauseTimer,
+    onForcedProgressChange,
+  } = useTimer();
 
   const parentTask = utils.task.getTask.getData({ id: parentTaskId ?? "" });
   React.useEffect(() => {
@@ -35,18 +53,16 @@ export function CompleteWeightRepsTaskButton({
         console.log("prevCompletion1: ", prevCompletion1);
         if (prevCompletion1) {
           const prevCompletion = JSON.parse(prevCompletion1) as {
-            weight: number;
-            reps: number;
+            time: number;
           };
           console.log("YES GO. prevCompletion: ", prevCompletion);
-          setWeight(prevCompletion.weight);
-          setReps(prevCompletion.reps);
+          setTime(prevCompletion.time);
         }
       }
     }
-  }, [parentTask, taskId]);
+  }, [parentTask, taskId, setTime]);
 
-  const completeTask = api.task.completeWeightRepsTask.useMutation({
+  const completeTask = api.task.completeTimedTask.useMutation({
     onMutate: async (data) => {
       const task = utils.task.getTask.getData({ id: taskId });
       const existingTaskCompletionData = task?.taskCompletionData ?? [];
@@ -80,9 +96,7 @@ export function CompleteWeightRepsTaskButton({
           existingChildTaskCompletionDataMap?.set(taskId, [
             ...existingChildTaskCompletionData,
             JSON.stringify({
-              weight: data.weight,
-              reps: data.reps,
-              weightUnit: "lbs",
+              time: data.time,
             }),
           ]);
 
@@ -109,7 +123,7 @@ export function CompleteWeightRepsTaskButton({
             taskCompletionData: [
               JSON.stringify([
                 ...existingTaskCompletionData,
-                { weight: data.weight, reps: data.reps, weightUnit: "lbs" },
+                { time: data.time },
               ]),
             ],
           },
@@ -141,13 +155,32 @@ export function CompleteWeightRepsTaskButton({
 
   return (
     <div className="flex flex-row">
-      <NumericInputWithButtons
-        value={weight}
-        onChange={setWeight}
-        increment={2.5}
+      <TimeDisplay
+        time={time}
+        originalTime={originalTime}
+        isEditing={isEditing}
+        editValue={editValue}
+        isRunning={isRunning}
+        onEditValueChange={setEditValue}
+        onStartEditing={startEditing}
+        onBlur={handleBlur}
+        onKeyDown={() => {
+          console.log("keydown");
+        }}
+        // inputRef={inputRef}
+        pauseTimer={pauseTimer}
+        onNewAngle={onForcedProgressChange}
       />
-      <NumericInputWithButtons value={reps} onChange={setReps} increment={1} />
+
       <Button
+        variant="primary"
+        onClick={() => togglePause()}
+        className="motion-preset-bounce flex items-center gap-2"
+      >
+        {isRunning ? "Pause" : "Start"}
+      </Button>
+
+      {/* <Button
         variant="primary"
         onClick={() =>
           completeTask.mutate({
@@ -160,7 +193,7 @@ export function CompleteWeightRepsTaskButton({
         className="motion-preset-bounce flex items-center gap-2"
       >
         Complete
-      </Button>
+      </Button> */}
     </div>
   );
 }

@@ -1,0 +1,27 @@
+.progress-ring {
+  transform: rotate(-90deg);
+}
+
+.process-ring__circle-empty {
+  transition: none;
+}
+
+.progress-ring__circle {
+  transition: stroke-dashoffset 0.3s ease;
+}
+
+.progress-ring__circle-bg {
+  transition: stroke-dashoffset 0.3s ease;
+}
+
+.radial-progress-bar__circle {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  right: 0.5rem;
+  bottom: 0.5rem;
+
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}

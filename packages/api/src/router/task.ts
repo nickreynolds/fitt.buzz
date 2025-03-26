@@ -215,6 +215,67 @@ export const taskRouter = {
       });
       return res;
     }),
+  completeTimedTask: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        time: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      let res;
+      const task = await ctx.db.query.Task.findFirst({
+        where: eq(Task.id, input.id),
+        with: {
+          childTasks: true,
+        },
+      });
+
+      if (task) {
+        if (task.creatorId !== ctx.session.user.id) {
+          throw new Error("You are not the owner of this task");
+        }
+
+        if (task.completionDataType !== TaskCompletionTypes.Time) {
+          throw new Error("Task is not of type Time");
+        }
+
+        res = await ctx.db.transaction(async (trx) => {
+          if (task.parentTaskId) {
+            const { result, numParentCompletedSets } =
+              await shouldCompleteParentSet(task, { ctx, input });
+            if (result) {
+              await trx
+                .update(Task)
+                .set({ numCompletedSets: numParentCompletedSets + 1 })
+                .where(eq(Task.id, task.parentTaskId));
+            }
+          }
+          const res2 = await trx.insert(TaskCompletion).values({
+            taskId: task.id,
+            completionDataType: TaskCompletionTypes.Time,
+            completionData: {
+              time: input.time,
+            },
+            nextDue: task.nextDue,
+          });
+
+          return res2;
+        });
+      }
+      if (!res) {
+        throw new Error("Task not found");
+      }
+
+      const tasksToRefresh = [input.id];
+      if (task?.parentTaskId) {
+        tasksToRefresh.push(task.parentTaskId);
+      }
+      await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
+        tasks: tasksToRefresh,
+      });
+      return res;
+    }),
   completeTask: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {

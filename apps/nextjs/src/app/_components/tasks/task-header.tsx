@@ -16,6 +16,7 @@ import { TaskCompletionTypes } from "@acme/utils";
 
 import { api } from "~/trpc/react";
 import { CompleteTaskButton } from "./complete-task-button";
+import { CompleteTimedTaskButton } from "./complete-timed-task-button";
 import { CompleteWeightRepsTaskButton } from "./complete-weights-reps-task-button";
 
 interface TaskHeaderProps {
@@ -132,6 +133,12 @@ export default function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
       <div className="flex flex-row items-center gap-4 self-end">
         {task.completionDataType === TaskCompletionTypes.WeightReps && (
           <CompleteWeightRepsTaskButton
+            taskId={task.id}
+            parentTaskId={task.parentTaskId}
+          />
+        )}
+        {task.completionDataType === TaskCompletionTypes.Time && (
+          <CompleteTimedTaskButton
             taskId={task.id}
             parentTaskId={task.parentTaskId}
           />

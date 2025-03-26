@@ -99,7 +99,7 @@ importers:
         version: 1.13.0
       nitropack:
         specifier: ^2.10.4
-        version: 2.10.4(@planetscale/database@1.19.0)(drizzle-orm@0.36.4(@neondatabase/serverless@0.10.0)(@opentelemetry/api@1.9.0)(@planetscale/database@1.19.0)(@types/pg@8.11.10)(@types/react@18.3.11)(@vercel/postgres@0.10.0(utf-8-validate@6.0.4))(mysql2@3.11.3)(postgres@3.4.4)(react@18.3.1))(mysql2@3.11.3)(typescript@5.6.3)(webpack-sources@3.2.3)
+        version: 2.10.4(@planetscale/database@1.19.0)(drizzle-orm@0.36.4(@neondatabase/serverless@0.10.0)(@opentelemetry/api@1.9.0)(@planetscale/database@1.19.0)(@types/pg@8.11.10)(@types/react@18.3.11)(@vercel/postgres@0.10.0(utf-8-validate@6.0.4))(mysql2@3.11.3)(postgres@3.4.4)(react@19.0.0))(mysql2@3.11.3)(typescript@5.6.3)(webpack-sources@3.2.3)
       prettier:
         specifier: 'catalog:'
         version: 3.3.3
@@ -287,6 +287,9 @@ importers:
       '@acme/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@acme/hooks':
+        specifier: workspace:*
+        version: link:../../packages/hooks
       '@acme/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -539,10 +542,10 @@ importers:
         version: 0.10.0(utf-8-validate@6.0.4)
       drizzle-orm:
         specifier: ^0.36.4
-        version: 0.36.4(@neondatabase/serverless@0.10.0)(@opentelemetry/api@1.9.0)(@planetscale/database@1.19.0)(@types/pg@8.11.10)(@types/react@18.3.11)(@vercel/postgres@0.10.0(utf-8-validate@6.0.4))(mysql2@3.11.3)(postgres@3.4.4)(react@18.3.1)
+        version: 0.36.4(@neondatabase/serverless@0.10.0)(@opentelemetry/api@1.9.0)(@planetscale/database@1.19.0)(@types/pg@8.11.10)(@types/react@18.3.11)(@vercel/postgres@0.10.0(utf-8-validate@6.0.4))(mysql2@3.11.3)(postgres@3.4.4)(react@19.0.0)
       drizzle-zod:
         specifier: ^0.5.1
-        version: 0.5.1(drizzle-orm@0.36.4(@neondatabase/serverless@0.10.0)(@opentelemetry/api@1.9.0)(@planetscale/database@1.19.0)(@types/pg@8.11.10)(@types/react@18.3.11)(@vercel/postgres@0.10.0(utf-8-validate@6.0.4))(mysql2@3.11.3)(postgres@3.4.4)(react@18.3.1))(zod@3.23.8)
+        version: 0.5.1(drizzle-orm@0.36.4(@neondatabase/serverless@0.10.0)(@opentelemetry/api@1.9.0)(@planetscale/database@1.19.0)(@types/pg@8.11.10)(@types/react@18.3.11)(@vercel/postgres@0.10.0(utf-8-validate@6.0.4))(mysql2@3.11.3)(postgres@3.4.4)(react@19.0.0))(zod@3.23.8)
       zod:
         specifier: 'catalog:'
         version: 3.23.8
@@ -562,6 +565,34 @@ importers:
       drizzle-kit:
         specifier: ^0.28.1
         version: 0.28.1
+      eslint:
+        specifier: 'catalog:'
+        version: 9.12.0(jiti@2.4.0)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.3.3
+      typescript:
+        specifier: 'catalog:'
+        version: 5.6.3
+
+  packages/hooks:
+    dependencies:
+      '@acme/utils':
+        specifier: workspace:*
+        version: link:../utils
+      react:
+        specifier: ^19.0.0
+        version: 19.0.0
+    devDependencies:
+      '@acme/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint
+      '@acme/prettier-config':
+        specifier: workspace:*
+        version: link:../../tooling/prettier
+      '@acme/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/typescript
       eslint:
         specifier: 'catalog:'
         version: 9.12.0(jiti@2.4.0)
@@ -7787,6 +7818,10 @@ packages:
     resolution: {integrity: sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==}
     engines: {node: '>=0.10.0'}
 
+  react@19.0.0:
+    resolution: {integrity: sha512-V8AVnmPIICiWpGfm6GLzCR/W5FXLchHop40W4nXBmdlEceh16rCN8O8LNWm5bh5XUX91fh7KpA+W0TgMKmgTpQ==}
+    engines: {node: '>=0.10.0'}
+
   read-cache@1.0.0:
     resolution: {integrity: sha512-Owdv/Ft7IjOgm/i0xvNDZ1LrRANRfew4b2prF3OWMQLxLfu3bS8FVhCsrSCMK4lR56Y9ya+AThoTpDCTxCmpRA==}
 
@@ -13673,9 +13708,9 @@ snapshots:
 
   dayjs@1.11.13: {}
 
-  db0@0.2.1(drizzle-orm@0.36.4(@neondatabase/serverless@0.10.0)(@opentelemetry/api@1.9.0)(@planetscale/database@1.19.0)(@types/pg@8.11.10)(@types/react@18.3.11)(@vercel/postgres@0.10.0(utf-8-validate@6.0.4))(mysql2@3.11.3)(postgres@3.4.4)(react@18.3.1))(mysql2@3.11.3):
+  db0@0.2.1(drizzle-orm@0.36.4(@neondatabase/serverless@0.10.0)(@opentelemetry/api@1.9.0)(@planetscale/database@1.19.0)(@types/pg@8.11.10)(@types/react@18.3.11)(@vercel/postgres@0.10.0(utf-8-validate@6.0.4))(mysql2@3.11.3)(postgres@3.4.4)(react@19.0.0))(mysql2@3.11.3):
     optionalDependencies:
-      drizzle-orm: 0.36.4(@neondatabase/serverless@0.10.0)(@opentelemetry/api@1.9.0)(@planetscale/database@1.19.0)(@types/pg@8.11.10)(@types/react@18.3.11)(@vercel/postgres@0.10.0(utf-8-validate@6.0.4))(mysql2@3.11.3)(postgres@3.4.4)(react@18.3.1)
+      drizzle-orm: 0.36.4(@neondatabase/serverless@0.10.0)(@opentelemetry/api@1.9.0)(@planetscale/database@1.19.0)(@types/pg@8.11.10)(@types/react@18.3.11)(@vercel/postgres@0.10.0(utf-8-validate@6.0.4))(mysql2@3.11.3)(postgres@3.4.4)(react@19.0.0)
       mysql2: 3.11.3
 
   debug@2.6.9:
@@ -13846,7 +13881,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.36.4(@neondatabase/serverless@0.10.0)(@opentelemetry/api@1.9.0)(@planetscale/database@1.19.0)(@types/pg@8.11.10)(@types/react@18.3.11)(@vercel/postgres@0.10.0(utf-8-validate@6.0.4))(mysql2@3.11.3)(postgres@3.4.4)(react@18.3.1):
+  drizzle-orm@0.36.4(@neondatabase/serverless@0.10.0)(@opentelemetry/api@1.9.0)(@planetscale/database@1.19.0)(@types/pg@8.11.10)(@types/react@18.3.11)(@vercel/postgres@0.10.0(utf-8-validate@6.0.4))(mysql2@3.11.3)(postgres@3.4.4)(react@19.0.0):
     optionalDependencies:
       '@neondatabase/serverless': 0.10.0
       '@opentelemetry/api': 1.9.0
@@ -13856,11 +13891,11 @@ snapshots:
       '@vercel/postgres': 0.10.0(utf-8-validate@6.0.4)
       mysql2: 3.11.3
       postgres: 3.4.4
-      react: 18.3.1
+      react: 19.0.0
 
-  drizzle-zod@0.5.1(drizzle-orm@0.36.4(@neondatabase/serverless@0.10.0)(@opentelemetry/api@1.9.0)(@planetscale/database@1.19.0)(@types/pg@8.11.10)(@types/react@18.3.11)(@vercel/postgres@0.10.0(utf-8-validate@6.0.4))(mysql2@3.11.3)(postgres@3.4.4)(react@18.3.1))(zod@3.23.8):
+  drizzle-zod@0.5.1(drizzle-orm@0.36.4(@neondatabase/serverless@0.10.0)(@opentelemetry/api@1.9.0)(@planetscale/database@1.19.0)(@types/pg@8.11.10)(@types/react@18.3.11)(@vercel/postgres@0.10.0(utf-8-validate@6.0.4))(mysql2@3.11.3)(postgres@3.4.4)(react@19.0.0))(zod@3.23.8):
     dependencies:
-      drizzle-orm: 0.36.4(@neondatabase/serverless@0.10.0)(@opentelemetry/api@1.9.0)(@planetscale/database@1.19.0)(@types/pg@8.11.10)(@types/react@18.3.11)(@vercel/postgres@0.10.0(utf-8-validate@6.0.4))(mysql2@3.11.3)(postgres@3.4.4)(react@18.3.1)
+      drizzle-orm: 0.36.4(@neondatabase/serverless@0.10.0)(@opentelemetry/api@1.9.0)(@planetscale/database@1.19.0)(@types/pg@8.11.10)(@types/react@18.3.11)(@vercel/postgres@0.10.0(utf-8-validate@6.0.4))(mysql2@3.11.3)(postgres@3.4.4)(react@19.0.0)
       zod: 3.23.8
 
   dunder-proto@1.0.1:
@@ -16250,7 +16285,7 @@ snapshots:
 
   nice-try@1.0.5: {}
 
-  nitropack@2.10.4(@planetscale/database@1.19.0)(drizzle-orm@0.36.4(@neondatabase/serverless@0.10.0)(@opentelemetry/api@1.9.0)(@planetscale/database@1.19.0)(@types/pg@8.11.10)(@types/react@18.3.11)(@vercel/postgres@0.10.0(utf-8-validate@6.0.4))(mysql2@3.11.3)(postgres@3.4.4)(react@18.3.1))(mysql2@3.11.3)(typescript@5.6.3)(webpack-sources@3.2.3):
+  nitropack@2.10.4(@planetscale/database@1.19.0)(drizzle-orm@0.36.4(@neondatabase/serverless@0.10.0)(@opentelemetry/api@1.9.0)(@planetscale/database@1.19.0)(@types/pg@8.11.10)(@types/react@18.3.11)(@vercel/postgres@0.10.0(utf-8-validate@6.0.4))(mysql2@3.11.3)(postgres@3.4.4)(react@19.0.0))(mysql2@3.11.3)(typescript@5.6.3)(webpack-sources@3.2.3):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.3.4
       '@netlify/functions': 2.8.2
@@ -16274,7 +16309,7 @@ snapshots:
       cookie-es: 1.2.2
       croner: 9.0.0
       crossws: 0.3.1
-      db0: 0.2.1(drizzle-orm@0.36.4(@neondatabase/serverless@0.10.0)(@opentelemetry/api@1.9.0)(@planetscale/database@1.19.0)(@types/pg@8.11.10)(@types/react@18.3.11)(@vercel/postgres@0.10.0(utf-8-validate@6.0.4))(mysql2@3.11.3)(postgres@3.4.4)(react@18.3.1))(mysql2@3.11.3)
+      db0: 0.2.1(drizzle-orm@0.36.4(@neondatabase/serverless@0.10.0)(@opentelemetry/api@1.9.0)(@planetscale/database@1.19.0)(@types/pg@8.11.10)(@types/react@18.3.11)(@vercel/postgres@0.10.0(utf-8-validate@6.0.4))(mysql2@3.11.3)(postgres@3.4.4)(react@19.0.0))(mysql2@3.11.3)
       defu: 6.1.4
       destr: 2.0.3
       dot-prop: 9.0.0
@@ -17263,6 +17298,8 @@ snapshots:
   react@18.3.1:
     dependencies:
       loose-envify: 1.4.0
+
+  react@19.0.0: {}
 
   read-cache@1.0.0:
     dependencies:

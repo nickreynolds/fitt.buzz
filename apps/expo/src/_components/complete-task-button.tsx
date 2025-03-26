@@ -1,4 +1,5 @@
-import { Text, TouchableOpacity } from "react-native";
+import React from "react";
+import { Pressable, Text } from "react-native";
 import { router } from "expo-router";
 
 import { api } from "~/utils/api";
@@ -15,15 +16,18 @@ export function CompleteTaskButton({
   const utils = api.useUtils();
 
   const completeTask = api.task.completeTask.useMutation({
-    onMutate: () => {
-      // prevent any in-flight updates from overwriting this optimistic update
-      // we'll get the updated data eventually
+    onMutate: async () => {
+      const task = utils.task.getTask.getData({ id: taskId });
+      const existingTaskCompletionData = task?.taskCompletionData ?? [];
+
       const promises = [];
       if (parentTaskId) {
         promises.push(utils.task.getTask.cancel({ id: parentTaskId }));
       }
       promises.push(utils.task.getTask.cancel({ id: taskId }));
       promises.push(utils.task.getAllMyActiveTasks.cancel());
+
+      await Promise.all(promises);
 
       if (parentTaskId) {
         const parentTask = utils.task.getTask.getData({
@@ -37,22 +41,45 @@ export function CompleteTaskButton({
             return t;
           });
 
+          const existingChildTaskCompletionDataMap =
+            parentTask.childTaskCompletionDataMap;
+          const existingChildTaskCompletionData =
+            existingChildTaskCompletionDataMap?.get(taskId) ?? [];
+
+          existingChildTaskCompletionDataMap?.set(taskId, [
+            ...existingChildTaskCompletionData,
+            JSON.stringify({
+              result: true,
+            }),
+          ]);
+
           utils.task.getTask.setData(
             { id: parentTaskId },
-            { ...parentTask, childTasks: updatedChildTasks },
+            {
+              ...parentTask,
+              childTasks: updatedChildTasks,
+              childTaskCompletionDataMap: existingChildTaskCompletionDataMap,
+              numCompletedSets: parentTask.isSet
+                ? parentTask.numCompletedSets + 1
+                : parentTask.numCompletedSets,
+            },
           );
         }
       }
 
-      const task = utils.task.getTask.getData({ id: taskId });
       if (task) {
         utils.task.getTask.setData(
           { id: taskId },
-          { ...task, lastCompleted: new Date() },
+          {
+            ...task,
+            lastCompleted: new Date(),
+            taskCompletionData: [
+              JSON.stringify([...existingTaskCompletionData, { result: true }]),
+            ],
+          },
         );
       }
 
-      // remove regular task if found
       const tasks = utils.task.getAllMyActiveTasks.getData();
       const updatedTasks = tasks?.filter((t) => t.id !== taskId);
       utils.task.getAllMyActiveTasks.setData(undefined, updatedTasks);
@@ -83,11 +110,11 @@ export function CompleteTaskButton({
   });
 
   return (
-    <TouchableOpacity
-      className="rounded-lg bg-primary p-2 text-foreground"
+    <Pressable
       onPress={() => completeTask.mutate({ id: taskId })}
+      className="flex-row items-center justify-center rounded-lg bg-primary px-4 py-2"
     >
-      <Text>complete</Text>
-    </TouchableOpacity>
+      <Text className="text-foreground">Complete</Text>
+    </Pressable>
   );
 }

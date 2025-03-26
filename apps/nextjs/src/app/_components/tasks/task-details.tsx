@@ -31,7 +31,6 @@ export function TaskDetails({
 }: TaskDetailsProps) {
   const utils = api.useUtils();
 
-  console.log("initialTask", initialTask);
   const task = utils.task.getTask.getData({ id: taskId });
 
   const deleteTask = api.task.deleteTask.useMutation({

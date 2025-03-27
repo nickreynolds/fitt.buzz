@@ -14,11 +14,6 @@ export default function isCompleted(
     }
   }
 
-  if (task?.completionDataType === TaskCompletionTypes.WeightReps) {
-    // TODO: check parent set completion
-    return false;
-  }
-
   if (task?.recurring) {
     return (
       (task.completionPeriodBegins &&

@@ -17,7 +17,7 @@ import { TaskCompletionTypes } from "@acme/utils";
 import { api } from "~/trpc/react";
 import { CompleteTaskButton } from "./complete-task-button";
 import { CompleteTimedTaskButton } from "./complete-timed-task-button";
-import { CompleteWeightRepsTaskButton } from "./complete-weights-reps-task-button";
+import { CompleteWeightRepsTaskButton } from "./complete-weight-reps-task-button";
 
 interface TaskHeaderProps {
   initialTask: RouterOutputs["task"]["getTask"];

@@ -195,6 +195,12 @@ export const taskRouter = {
                 .where(eq(Task.id, task.parentTaskId));
             }
           }
+
+          await trx
+            .update(Task)
+            .set({ lastCompleted: new Date() })
+            .where(eq(Task.id, input.id));
+
           const res2 = await trx.insert(TaskCompletion).values({
             taskId: task.id,
             completionDataType: TaskCompletionTypes.WeightReps,

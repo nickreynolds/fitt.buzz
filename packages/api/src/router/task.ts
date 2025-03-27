@@ -184,7 +184,6 @@ export const taskRouter = {
           throw new Error("Task is not in completion period");
         }
 
-        console.log("go go go.");
         res = await ctx.db.transaction(async (trx) => {
           if (task.parentTaskId) {
             const { result, numParentCompletedSets } =

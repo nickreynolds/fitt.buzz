@@ -3,6 +3,7 @@
 import React from "react";
 
 import type { RouterOutputs } from "@acme/api";
+import { formatTime, TaskCompletionTypes } from "@acme/utils";
 
 import type { TaskCompletionInfo } from "./TaskCompletionTable";
 import { api } from "~/trpc/react";
@@ -31,15 +32,42 @@ export function TaskChildrenCompletionData({
         const completionData = task.childTaskCompletionDataMap?.get(
           childTask.id,
         );
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        const parsedData = completionData?.map((data) => JSON.parse(data));
-        if (parsedData) {
+
+        completionData?.forEach((data) => {
+          console.log("parsing completion data: ", data);
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          data1 = [...data1, parsedData];
-        }
+          const parsedData = JSON.parse(data);
+          if (parsedData) {
+            if (
+              childTask.completionDataType === TaskCompletionTypes.WeightReps
+            ) {
+              const parsedData2 = parsedData as {
+                weight: number;
+                reps: number;
+              };
+              const result = `Weight: ${parsedData2.weight}, Reps: ${parsedData2.reps}`;
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              data1 = [...data1, { result }];
+            } else if (
+              childTask.completionDataType === TaskCompletionTypes.Boolean
+            ) {
+              const result = `Completed.`;
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              data1 = [...data1, { result }];
+            } else {
+              const parsedData2 = parsedData as { time: number };
+              const result = formatTime(parsedData2.time);
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              data1 = [...data1, { result }];
+            }
+          }
+        });
       });
     }
     data1 = data1.flat();
+
+    console.log("data: ", data1);
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return Array.isArray(data1) ? data1 : [];
   }, [task]);

@@ -139,6 +139,7 @@ export const useTimer = (onTimerComplete: () => void) => {
     time,
     setTime,
     originalTime,
+    setOriginalTime,
     isRunning,
     isEditing,
     editValue,

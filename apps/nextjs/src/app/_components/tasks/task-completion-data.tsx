@@ -13,6 +13,7 @@ import {
 } from "@tanstack/react-table";
 
 import type { RouterOutputs } from "@acme/api";
+import { formatTime, TaskCompletionTypes } from "@acme/utils";
 
 interface SubtaskListProps {
   initialTask: RouterOutputs["task"]["getTask"];
@@ -21,9 +22,7 @@ interface SubtaskListProps {
 
 interface TaskCompletionInfo {
   title: string;
-  weight: number;
-  reps: number;
-  weightUnit: string;
+  result: string;
 }
 
 const columnHelper = createColumnHelper<TaskCompletionInfo>();
@@ -35,13 +34,9 @@ const columns = [
     footer: (info) => info.column.id,
   }),
 
-  columnHelper.accessor("weight", {
-    header: () => "Weight",
+  columnHelper.accessor("result", {
+    header: () => "Result",
     cell: (info) => info.renderValue(),
-    footer: (info) => info.column.id,
-  }),
-  columnHelper.accessor("reps", {
-    header: () => "Reps",
     footer: (info) => info.column.id,
   }),
 ];
@@ -60,11 +55,25 @@ export function TaskCompletionData({ initialTask, taskId }: SubtaskListProps) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const parsedData = JSON.parse(completionData);
       if (parsedData) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        data1 = [...data1, parsedData];
+        if (task.completionDataType === TaskCompletionTypes.WeightReps) {
+          const parsedData2 = parsedData as { weight: number; reps: number };
+          const result = `Weight: ${parsedData2.weight}, Reps: ${parsedData2.reps}`;
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          data1 = [...data1, result];
+        } else if (task.completionDataType === TaskCompletionTypes.Boolean) {
+          const result = `Completed.`;
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          data1 = [...data1, result];
+        } else if (task.completionDataType === TaskCompletionTypes.Time) {
+          const parsedData2 = parsedData as { time: number };
+          const result = formatTime(parsedData2.time);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          data1 = [...data1, result];
+        } else {
+          throw new Error("Invalid completion data type.");
+        }
       }
     });
-    console.log("data: ", data1);
   }
 
   data1 = data1.flat();

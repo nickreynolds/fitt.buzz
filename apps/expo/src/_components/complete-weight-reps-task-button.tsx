@@ -24,24 +24,20 @@ export function CompleteWeightRepsTaskButton({
 
   const parentTask = utils.task.getTask.getData({ id: parentTaskId ?? "" });
   React.useEffect(() => {
-    console.log("GO!. parentTask: ", parentTask);
     if (parentTask) {
       const numCompletedSets = parentTask.numCompletedSets;
       const prevCompletions =
         parentTask.prevChildTaskCompletionDataMap?.get(taskId);
-      console.log("prevCompletions: ", prevCompletions);
       if (prevCompletions && prevCompletions.length > 0) {
         const prevCompletion1 =
           prevCompletions[
             Math.min(numCompletedSets, prevCompletions.length - 1)
           ];
-        console.log("prevCompletion1: ", prevCompletion1);
         if (prevCompletion1) {
           const prevCompletion = JSON.parse(prevCompletion1) as {
             weight: number;
             reps: number;
           };
-          console.log("YES GO. prevCompletion: ", prevCompletion);
           setWeight(prevCompletion.weight.toString());
           setReps(prevCompletion.reps.toString());
         }

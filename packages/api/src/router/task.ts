@@ -526,12 +526,21 @@ export const taskRouter = {
 
         prevChildTaskCompletionDataMap = new Map<string, string[]>();
         for (const child of task.childTasks) {
+          console.log(
+            "SOMETHING SOMETHING CHILD TASKS: ",
+            allPrevTaskCompletionDataPoints,
+          );
           const childTaskCompletionData = allPrevTaskCompletionDataPoints
             .filter((point) => point.taskId === child.id)
             .map((point) => JSON.stringify(point.completionData));
           prevChildTaskCompletionDataMap.set(child.id, childTaskCompletionData);
         }
       }
+
+      console.log(
+        "prevChildTaskCompletionDataMap: ",
+        prevChildTaskCompletionDataMap,
+      );
 
       return {
         ...task,

@@ -40,8 +40,8 @@ export function CompleteTimedTaskButton({
     handleBlur,
     // handleKeyDown,
     togglePause,
-    addMinute,
-    resetTimer,
+    // addMinute,
+    // resetTimer,
     pauseTimer,
     onForcedProgressChange,
   } = useTimer(() => {

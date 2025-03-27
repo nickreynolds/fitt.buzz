@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, Text } from "react-native";
 
 import { useTaskCompletion } from "~/hooks/useTaskCompletion";
 import { api } from "~/utils/api";

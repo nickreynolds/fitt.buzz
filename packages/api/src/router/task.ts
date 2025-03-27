@@ -177,6 +177,13 @@ export const taskRouter = {
           throw new Error("Task is not of type WeightReps");
         }
 
+        if (
+          task.completionPeriodBegins &&
+          new Date() < task.completionPeriodBegins
+        ) {
+          throw new Error("Task is not in completion period");
+        }
+
         res = await ctx.db.transaction(async (trx) => {
           if (task.parentTaskId) {
             const { result, numParentCompletedSets } =
@@ -188,6 +195,12 @@ export const taskRouter = {
                 .where(eq(Task.id, task.parentTaskId));
             }
           }
+
+          await trx
+            .update(Task)
+            .set({ lastCompleted: new Date() })
+            .where(eq(Task.id, input.id));
+
           const res2 = await trx.insert(TaskCompletion).values({
             taskId: task.id,
             completionDataType: TaskCompletionTypes.WeightReps,
@@ -195,6 +208,80 @@ export const taskRouter = {
               weight: input.weight,
               weightUnit: input.weightUnit,
               reps: input.reps,
+            },
+            nextDue: task.nextDue,
+          });
+
+          return res2;
+        });
+      }
+      if (!res) {
+        throw new Error("Task not found");
+      }
+
+      const tasksToRefresh = [input.id];
+      if (task?.parentTaskId) {
+        tasksToRefresh.push(task.parentTaskId);
+      }
+      await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
+        tasks: tasksToRefresh,
+      });
+      return res;
+    }),
+  completeTimedTask: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        time: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      let res;
+      const task = await ctx.db.query.Task.findFirst({
+        where: eq(Task.id, input.id),
+        with: {
+          childTasks: true,
+        },
+      });
+
+      if (task) {
+        if (task.creatorId !== ctx.session.user.id) {
+          throw new Error("You are not the owner of this task");
+        }
+
+        if (task.completionDataType !== TaskCompletionTypes.Time) {
+          throw new Error("Task is not of type Time");
+        }
+
+        if (
+          task.completionPeriodBegins &&
+          new Date() < task.completionPeriodBegins
+        ) {
+          throw new Error("Task is not in completion period");
+        }
+
+        res = await ctx.db.transaction(async (trx) => {
+          if (task.parentTaskId) {
+            const { result, numParentCompletedSets } =
+              await shouldCompleteParentSet(task, { ctx, input });
+            if (result) {
+              await trx
+                .update(Task)
+                .set({ numCompletedSets: numParentCompletedSets + 1 })
+                .where(eq(Task.id, task.parentTaskId));
+            }
+          }
+
+          await trx
+            .update(Task)
+            .set({ lastCompleted: new Date() })
+            .where(eq(Task.id, input.id));
+
+          const res2 = await trx.insert(TaskCompletion).values({
+            taskId: task.id,
+            completionDataType: TaskCompletionTypes.Time,
+            completionData: {
+              time: input.time,
             },
             nextDue: task.nextDue,
           });
@@ -236,6 +323,13 @@ export const taskRouter = {
 
       if (task.completionDataType !== TaskCompletionTypes.Boolean) {
         throw new Error("Task is not of type WeightReps");
+      }
+
+      if (
+        task.completionPeriodBegins &&
+        new Date() < task.completionPeriodBegins
+      ) {
+        throw new Error("Task is not in completion period");
       }
 
       // if task has children, check that all children are completed.
@@ -506,13 +600,47 @@ export const taskRouter = {
       // First try to find and delete a regular task
       const task = await ctx.db.query.Task.findFirst({
         where: eq(Task.id, input.id),
+        with: {
+          childTasks: true,
+        },
       });
 
       if (task) {
         if (task.creatorId !== ctx.session.user.id) {
           throw new Error("You are not the owner of this task");
         }
-        return await ctx.db.delete(Task).where(eq(Task.id, input.id));
+
+        const allChildrenIDs: string[] = [];
+
+        let nextChildren = task.childTasks.map((child) => child.id);
+
+        while (nextChildren.length > 0) {
+          allChildrenIDs.push(...nextChildren);
+
+          const fullChildren = await ctx.db.query.Task.findMany({
+            where: inArray(Task.id, nextChildren),
+            with: {
+              childTasks: true,
+            },
+          });
+
+          nextChildren = fullChildren
+            .map((child) => child.childTasks.map((c) => c.id))
+            .flat();
+        }
+
+        return await ctx.db.transaction(async (trx) => {
+          // use transaction
+          await trx
+            .delete(TaskCompletion)
+            .where(
+              inArray(TaskCompletion.taskId, [input.id, ...allChildrenIDs]),
+            );
+
+          await trx
+            .delete(Task)
+            .where(inArray(Task.id, [input.id, ...allChildrenIDs]));
+        });
       }
       throw new Error("Task not found");
     }),
@@ -653,8 +781,7 @@ const shouldCompleteParentSet = async (
   opts: inferProcedureBuilderResolverOptions<typeof protectedProcedure>,
 ): Promise<{ result: boolean; numParentCompletedSets: number }> => {
   const { ctx } = opts;
-  if (task.parentTaskId && task.isSet) {
-    let completeParentSet = true;
+  if (task.parentTaskId) {
     const parentTask = await ctx.db.query.Task.findFirst({
       where: eq(Task.id, task.parentTaskId),
       with: {
@@ -664,6 +791,8 @@ const shouldCompleteParentSet = async (
     if (!parentTask) {
       throw new Error("Parent task specified but not found");
     }
+
+    let completeParentSet = parentTask.isSet;
     if (parentTask.isSet) {
       const allChildrenCompletionData = await ctx.db
         .select()
@@ -709,6 +838,7 @@ const shouldCompleteParentSet = async (
         }
       }
       for (const num of allOtherChildrenCompletionNum) {
+        console.log("num: ", num);
         if (
           num !=
           (groupedChildrenCompletionData.get(task.id)?.length ?? 0) + 1

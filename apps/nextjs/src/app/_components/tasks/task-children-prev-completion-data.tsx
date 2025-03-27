@@ -3,6 +3,7 @@
 import React from "react";
 
 import type { RouterOutputs } from "@acme/api";
+import { formatTime, TaskCompletionTypes } from "@acme/utils";
 
 import type { TaskCompletionInfo } from "./TaskCompletionTable";
 import { api } from "~/trpc/react";
@@ -22,27 +23,44 @@ export function TaskChildrenPrevCompletionData({
     { initialData: initialTask },
   );
 
-  const data = React.useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let data1: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let data1: any[] = [];
 
-    if (task) {
-      task.childTasks?.forEach((childTask) => {
-        const completionData = task.prevChildTaskCompletionDataMap?.get(
-          childTask.id,
-        );
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        const parsedData = completionData?.map((data) => JSON.parse(data));
+  if (task) {
+    task.childTasks?.forEach((childTask) => {
+      const completionData = task.prevChildTaskCompletionDataMap?.get(
+        childTask.id,
+      );
+
+      completionData?.forEach((data) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const parsedData = JSON.parse(data);
         if (parsedData) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          data1 = [...data1, parsedData];
+          if (childTask.completionDataType === TaskCompletionTypes.WeightReps) {
+            const parsedData2 = parsedData as {
+              weight: number;
+              reps: number;
+            };
+            const result = `Weight: ${parsedData2.weight}, Reps: ${parsedData2.reps}`;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            data1 = [...data1, { result }];
+          } else if (
+            childTask.completionDataType === TaskCompletionTypes.Boolean
+          ) {
+            const result = `Completed.`;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            data1 = [...data1, { result }];
+          } else {
+            const parsedData2 = parsedData as { time: number };
+            const result = formatTime(parsedData2.time);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            data1 = [...data1, { result }];
+          }
         }
       });
-    }
-    data1 = data1.flat();
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return Array.isArray(data1) ? data1 : [];
-  }, [task]);
+    });
+  }
+  data1 = data1.flat();
 
   const childTaskCompletionDataMap = task?.prevChildTaskCompletionDataMap;
 
@@ -50,5 +68,5 @@ export function TaskChildrenPrevCompletionData({
     return null;
   }
 
-  return <TaskCompletionTable data={data as TaskCompletionInfo[]} />;
+  return <TaskCompletionTable data={data1 as TaskCompletionInfo[]} />;
 }

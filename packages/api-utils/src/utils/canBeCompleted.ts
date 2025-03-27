@@ -1,15 +1,14 @@
 import type { RouterOutputs } from "@acme/api";
 
 import getNumCompletedChildTasks from "./getNumCompletedChildTasks";
+import inCompletionPeriod from "./inCompletionPeriod";
 import isCompleted from "./isCompleted";
 
 export default function canBeCompleted(
   task: RouterOutputs["task"]["getAllMyActiveTasks"][number],
   parentTask?: RouterOutputs["task"]["getTask"],
 ): boolean {
-  const inCompletionPeriod =
-    !task.recurring ||
-    (task.completionPeriodBegins && new Date() > task.completionPeriodBegins);
+  const inCompletion = inCompletionPeriod(task);
 
   if (parentTask) {
     if (parentTask.isSet) {
@@ -34,13 +33,13 @@ export default function canBeCompleted(
       }
     }
 
-    return (!alreadyCompleted && inCompletionPeriod) ?? false;
+    return (!alreadyCompleted && inCompletion) || false;
   }
 
   const canBeCompleted =
-    inCompletionPeriod &&
+    inCompletion &&
     numCompletedChildTasks === numChildTasks &&
     !alreadyCompleted;
 
-  return canBeCompleted ?? false;
+  return canBeCompleted || false;
 }

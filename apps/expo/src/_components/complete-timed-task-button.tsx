@@ -4,15 +4,17 @@ import { Pressable, Text } from "react-native";
 import { useTaskCompletion } from "~/hooks/useTaskCompletion";
 import { api } from "~/utils/api";
 
-interface CompleteTaskButtonProps {
+interface CompleteTimedTaskButtonProps {
   taskId: string;
   parentTaskId: string | null;
+  time: number;
 }
 
-export function CompleteTaskButton({
+export function CompleteTimedTaskButton({
   taskId,
   parentTaskId,
-}: CompleteTaskButtonProps) {
+  time,
+}: CompleteTimedTaskButtonProps) {
   const { handleOptimisticUpdate, handleSettled } = useTaskCompletion({
     taskId,
     parentTaskId,
@@ -20,7 +22,7 @@ export function CompleteTaskButton({
 
   const completeTask = api.task.completeTask.useMutation({
     onMutate: async () => {
-      await handleOptimisticUpdate({ result: true });
+      await handleOptimisticUpdate({ result: true, time });
     },
     onSettled: handleSettled,
   });
@@ -30,7 +32,7 @@ export function CompleteTaskButton({
       onPress={() => completeTask.mutate({ id: taskId })}
       className="flex-row items-center justify-center rounded-lg bg-primary px-4 py-2"
     >
-      <Text className="text-foreground">Complete</Text>
+      <Text className="text-foreground">Complete ({time}s)</Text>
     </Pressable>
   );
 }

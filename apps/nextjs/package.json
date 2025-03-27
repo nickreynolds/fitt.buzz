@@ -18,6 +18,7 @@
     "@acme/api-utils": "workspace:*",
     "@acme/auth": "workspace:*",
     "@acme/db": "workspace:*",
+    "@acme/hooks": "workspace:*",
     "@acme/ui": "workspace:*",
     "@acme/utils": "workspace:*",
     "@acme/validators": "workspace:*",

@@ -111,7 +111,7 @@ export function TaskDetails({
                 {format(lastCompleted, "PPP 'at' p")}
               </p>
               <TaskChildrenPrevCompletionData
-                initialTask={initialTask}
+                initialTask={task ?? initialTask}
                 taskId={taskId}
               />
             </div>

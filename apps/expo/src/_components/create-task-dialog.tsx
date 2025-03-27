@@ -23,6 +23,7 @@ import { api } from "~/utils/api";
 const COMPLETION_TYPE_OPTIONS = [
   { value: TaskCompletionTypes.Boolean, label: "Simple Completion" },
   { value: TaskCompletionTypes.WeightReps, label: "Weight & Reps" },
+  { value: TaskCompletionTypes.Time, label: "Time" },
 ];
 
 interface CreateTaskDialogProps {

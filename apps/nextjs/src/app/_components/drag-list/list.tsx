@@ -109,6 +109,7 @@ export function List({ tasks }: { tasks: RouterOutputs["task"]["getTask"][] }) {
     <>
       {stateTasks.map((task, index) => (
         <div
+          key={task?.id}
           // @ts-expect-error: `--delay` is a custom property
           style={{ "--delay": `${index * 100}ms` }}
           className={`animate-slideIn motion-translate-x-in-[-500%] motion-delay-[var(--delay,0)]`}

@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 import { Layout } from "~/app/_components/Layout";
 import BackButton from "~/app/_components/tasks/back-button";
 import { CreateSubtaskButton } from "~/app/_components/tasks/create-subtask-button";
@@ -11,6 +13,7 @@ import TaskHeader from "~/app/_components/tasks/task-header";
 import { api } from "~/trpc/react";
 
 export default function TaskPage({ params }: { params: { id: string } }) {
+  const router = useRouter();
   const { id } = params;
   const { data: task } = api.task.getTask.useQuery(
     { id },
@@ -64,6 +67,9 @@ export default function TaskPage({ params }: { params: { id: string } }) {
               lastCompleted={task.lastCompleted}
               initialTask={task}
               taskId={task.id}
+              onClose={() => {
+                router.push("/");
+              }}
             />
           </div>
         </div>

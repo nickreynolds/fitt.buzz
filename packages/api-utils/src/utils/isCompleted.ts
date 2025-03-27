@@ -1,5 +1,4 @@
 import type { RouterOutputs } from "@acme/api";
-import { TaskCompletionTypes } from "@acme/utils";
 
 export default function isCompleted(
   task: RouterOutputs["task"]["getTask"],
@@ -12,11 +11,6 @@ export default function isCompleted(
       }
       return false;
     }
-  }
-
-  if (task?.completionDataType === TaskCompletionTypes.WeightReps) {
-    // TODO: check parent set completion
-    return false;
   }
 
   if (task?.recurring) {

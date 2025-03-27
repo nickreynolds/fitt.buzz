@@ -72,6 +72,8 @@ export default function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
   const undoneSets = Array(task.numSets - task.numCompletedSets).fill(1);
   const doneSets = Array(task.numCompletedSets).fill(1);
 
+  console.log("doneSets: ", doneSets);
+
   return (
     <div className="flex flex-col justify-between">
       <div className="flex-grow">

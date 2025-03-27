@@ -184,6 +184,7 @@ export const taskRouter = {
           throw new Error("Task is not in completion period");
         }
 
+        console.log("go go go.");
         res = await ctx.db.transaction(async (trx) => {
           if (task.parentTaskId) {
             const { result, numParentCompletedSets } =
@@ -532,21 +533,12 @@ export const taskRouter = {
 
         prevChildTaskCompletionDataMap = new Map<string, string[]>();
         for (const child of task.childTasks) {
-          console.log(
-            "SOMETHING SOMETHING CHILD TASKS: ",
-            allPrevTaskCompletionDataPoints,
-          );
           const childTaskCompletionData = allPrevTaskCompletionDataPoints
             .filter((point) => point.taskId === child.id)
             .map((point) => JSON.stringify(point.completionData));
           prevChildTaskCompletionDataMap.set(child.id, childTaskCompletionData);
         }
       }
-
-      console.log(
-        "prevChildTaskCompletionDataMap: ",
-        prevChildTaskCompletionDataMap,
-      );
 
       return {
         ...task,
@@ -790,8 +782,7 @@ const shouldCompleteParentSet = async (
   opts: inferProcedureBuilderResolverOptions<typeof protectedProcedure>,
 ): Promise<{ result: boolean; numParentCompletedSets: number }> => {
   const { ctx } = opts;
-  if (task.parentTaskId && task.isSet) {
-    let completeParentSet = true;
+  if (task.parentTaskId) {
     const parentTask = await ctx.db.query.Task.findFirst({
       where: eq(Task.id, task.parentTaskId),
       with: {
@@ -801,6 +792,8 @@ const shouldCompleteParentSet = async (
     if (!parentTask) {
       throw new Error("Parent task specified but not found");
     }
+
+    let completeParentSet = parentTask.isSet;
     if (parentTask.isSet) {
       const allChildrenCompletionData = await ctx.db
         .select()
@@ -846,6 +839,7 @@ const shouldCompleteParentSet = async (
         }
       }
       for (const num of allOtherChildrenCompletionNum) {
+        console.log("num: ", num);
         if (
           num !=
           (groupedChildrenCompletionData.get(task.id)?.length ?? 0) + 1

@@ -42,7 +42,13 @@ export function useTaskCompletion({
       if (parentTask) {
         const updatedChildTasks = parentTask.childTasks?.map((t) => {
           if (t.id === taskId) {
-            return { ...t, lastCompleted: new Date() };
+            return {
+              ...t,
+              lastCompleted: new Date(),
+              taskCompletionData: [
+                JSON.stringify([...existingTaskCompletionData, completionData]),
+              ],
+            };
           }
           return t;
         });

@@ -7,17 +7,17 @@ import { Button } from "@acme/ui/button";
 import { CreateTaskDialogForm } from "./create-task-dialog-form";
 
 export function CreateTaskForm() {
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   return (
     <>
-      <Button type="button" onClick={() => setIsDatePickerOpen(true)}>
+      <Button type="button" onClick={() => setIsCreateDialogOpen(true)}>
         Create Task
       </Button>
 
       <CreateTaskDialogForm
-        open={isDatePickerOpen}
-        onOpenChange={setIsDatePickerOpen}
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
       />
     </>
   );

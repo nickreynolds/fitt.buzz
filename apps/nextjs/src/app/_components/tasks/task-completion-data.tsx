@@ -64,6 +64,7 @@ export function TaskCompletionData({ initialTask, taskId }: SubtaskListProps) {
           const result = `Completed.`;
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           data1 = [...data1, result];
+          //eslint-disable-next-line
         } else if (task.completionDataType === TaskCompletionTypes.Time) {
           const parsedData2 = parsedData as { time: number };
           const result = formatTime(parsedData2.time);

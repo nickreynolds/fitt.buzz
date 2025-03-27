@@ -8,7 +8,6 @@ import { Button } from "@acme/ui/button";
 
 import { useTaskCompletion } from "~/hooks/useTaskCompletion";
 import { api } from "~/trpc/react";
-import { NumericInputWithButtons } from "./NumericInputWithButtons";
 import TimeDisplay from "./time-display";
 
 interface CompleteTimedTaskButtonProps {
@@ -23,13 +22,6 @@ export function CompleteTimedTaskButton({
   const { handleOptimisticUpdate, handleSettled } = useTaskCompletion({
     taskId,
     parentTaskId,
-  });
-
-  const completeTask = api.task.completeTimedTask.useMutation({
-    onMutate: async () => {
-      await handleOptimisticUpdate({ time });
-    },
-    onSettled: handleSettled,
   });
 
   const utils = api.useUtils();
@@ -53,12 +45,18 @@ export function CompleteTimedTaskButton({
     pauseTimer,
     onForcedProgressChange,
   } = useTimer(() => {
-    console.log("timer done");
     completeTask.mutate({ id: taskId, time: originalTime });
     if (audioRef.current) {
       // eslint-disable-next-line
       audioRef.current.play();
     }
+  });
+
+  const completeTask = api.task.completeTimedTask.useMutation({
+    onMutate: async () => {
+      await handleOptimisticUpdate({ time: originalTime });
+    },
+    onSettled: handleSettled,
   });
 
   const parentTask = utils.task.getTask.getData({ id: parentTaskId ?? "" });

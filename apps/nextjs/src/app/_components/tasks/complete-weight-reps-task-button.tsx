@@ -2,6 +2,7 @@
 
 import React from "react";
 
+import { canBeCompleted } from "@acme/api-utils";
 import { Button } from "@acme/ui/button";
 
 import { useTaskCompletion } from "~/hooks/useTaskCompletion";
@@ -25,6 +26,8 @@ export function CompleteWeightRepsTaskButton({
   });
 
   const utils = api.useUtils();
+
+  const task = utils.task.getTask.getData({ id: taskId });
   const parentTask = utils.task.getTask.getData({ id: parentTaskId ?? "" });
   React.useEffect(() => {
     if (parentTask) {
@@ -59,28 +62,40 @@ export function CompleteWeightRepsTaskButton({
     onSettled: handleSettled,
   });
 
+  if (!task) {
+    return <div />;
+  }
+
   return (
     <div className="flex flex-row">
-      <NumericInputWithButtons
-        value={weight}
-        onChange={setWeight}
-        increment={2.5}
-      />
-      <NumericInputWithButtons value={reps} onChange={setReps} increment={1} />
-      <Button
-        variant="primary"
-        onClick={() =>
-          completeTask.mutate({
-            id: taskId,
-            weight: weight,
-            reps: reps,
-            weightUnit: "lbs",
-          })
-        }
-        className="motion-preset-bounce flex items-center gap-2"
-      >
-        Complete
-      </Button>
+      {canBeCompleted(task, parentTask) && (
+        <>
+          <NumericInputWithButtons
+            value={weight}
+            onChange={setWeight}
+            increment={2.5}
+          />
+          <NumericInputWithButtons
+            value={reps}
+            onChange={setReps}
+            increment={1}
+          />
+          <Button
+            variant="primary"
+            onClick={() =>
+              completeTask.mutate({
+                id: taskId,
+                weight: weight,
+                reps: reps,
+                weightUnit: "lbs",
+              })
+            }
+            className="motion-preset-bounce flex items-center gap-2"
+          >
+            Complete
+          </Button>
+        </>
+      )}
     </div>
   );
 }

@@ -1,10 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { formatTime, parseEditValue } from "@acme/utils";
 
-export const useTimer = (onTimerComplete: () => void) => {
-  const [time, setTime] = useState<number>(60); // Start at 1 minute (60 seconds)
-  const [originalTime, setOriginalTime] = useState<number>(60); // Track original starting time
+export const useTimer = ({
+  onTimerComplete,
+  initialTime,
+}: {
+  onTimerComplete: () => void;
+  initialTime: number;
+}) => {
+  const [time, setTime] = useState<number>(initialTime); // Start at 1 minute (60 seconds)
+  const [originalTime, setOriginalTime] = useState<number>(initialTime); // Track original starting time
   const [isRunning, setIsRunning] = useState<boolean>(false); // Start/paused
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editValue, setEditValue] = useState<string>("");
@@ -80,7 +86,7 @@ export const useTimer = (onTimerComplete: () => void) => {
   //     }
   //   };
 
-  const togglePause = () => {
+  const togglePause = React.useCallback(() => {
     if (isRunning) {
       const now = Date.now();
       const timeSinceLastTick = now - lastTickTime.current;
@@ -101,7 +107,7 @@ export const useTimer = (onTimerComplete: () => void) => {
       }
     }
     setIsRunning((prev) => !prev);
-  };
+  }, []);
 
   const pauseTimer = () => {
     setIsRunning(false);

@@ -1,14 +1,12 @@
-import type { AVPlaybackSource } from "expo-av";
-import React, { useEffect, useState } from "react";
-import { Pressable, Text, View } from "react-native";
-import { Audio } from "expo-av";
+import React, { useState } from "react";
+import { Pressable, Text, TextInput, View } from "react-native";
 
 import { canBeCompleted, isCompleted } from "@acme/api-utils";
-import { useTimer } from "@acme/hooks";
-import { formatTime } from "@acme/utils";
+import { formatTime, parseEditValue } from "@acme/utils";
 
 import { useTaskCompletion } from "~/hooks/useTaskCompletion";
 import { api } from "~/utils/api";
+import { TimerDialog } from "./timer-dialog";
 
 interface CompleteTimedTaskButtonProps {
   taskId: string;
@@ -19,64 +17,11 @@ export function CompleteTimedTaskButton({
   taskId,
   parentTaskId,
 }: CompleteTimedTaskButtonProps) {
-  const { handleOptimisticUpdate, handleSettled } = useTaskCompletion({
-    taskId,
-    parentTaskId,
-  });
-
-  const [sound, setSound] = useState<Audio.Sound>();
-
-  async function playSound() {
-    console.log("Loading Sound");
-    const { sound } = await Audio.Sound.createAsync(
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      require("../../assets/sounds/meditation-bell.mp3") as AVPlaybackSource,
-    );
-    setSound(sound);
-
-    console.log("Playing Sound");
-    await sound.playAsync();
-  }
-
-  useEffect(() => {
-    return sound
-      ? () => {
-          console.log("Unloading Sound");
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          sound.unloadAsync();
-        }
-      : undefined;
-  }, [sound]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editValue, setEditValue] = useState("0100");
   const utils = api.useUtils();
-  const {
-    time,
-    setTime,
-    originalTime,
-    setOriginalTime,
-    isRunning,
-    // isEditing,
-    // editValue,
-    // setEditValue,
-    startEditing,
-    // handleBlur,
-    togglePause,
-    // pauseTimer,
-    // onForcedProgressChange,
-  } = useTimer(() => {
-    completeTask.mutate({ id: taskId, time: originalTime });
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    playSound();
-  });
-
-  const completeTask = api.task.completeTimedTask.useMutation({
-    onMutate: async () => {
-      await handleOptimisticUpdate({ time: originalTime });
-    },
-    onSettled: handleSettled,
-  });
-
-  const parentTask = utils.task.getTask.getData({ id: parentTaskId ?? "" });
   const task = utils.task.getTask.getData({ id: taskId });
+  const parentTask = utils.task.getTask.getData({ id: parentTaskId ?? "" });
 
   React.useEffect(() => {
     if (parentTask) {
@@ -92,51 +37,69 @@ export function CompleteTimedTaskButton({
           const prevCompletion = JSON.parse(prevCompletion1) as {
             time: number;
           };
-          setTime(prevCompletion.time);
-          setOriginalTime(prevCompletion.time);
+          setEditValue(formatEditValue(prevCompletion.time.toString()));
         }
       }
     }
-  }, [parentTask, taskId, setTime, setOriginalTime]);
-
-  // React.useEffect(() => {
-  //   return () => {
-  //     if (audioRef.current) {
-  //       audioRef.current.unloadAsync();
-  //     }
-  //   };
-  // }, []);
+  }, [parentTask, taskId, setEditValue]);
 
   if (!task) {
-    return <View />;
+    return null;
   }
 
-  return (
-    <View className="flex-row items-center">
-      {canBeCompleted(task, parentTask) && (
-        <>
-          <Pressable
-            onPress={startEditing}
-            className="items-center justify-center"
-          >
-            <Text className="text-2xl font-medium text-foreground">
-              {formatTime(time)}
-            </Text>
-          </Pressable>
+  const handleInputChange = (value: string) => {
+    const cleanValue = value.replace(/\D/g, ""); // Remove non-digits
+    if (cleanValue.length <= 4) {
+      // Only allow up to 4 digits
+      setEditValue(cleanValue);
+    }
+  };
 
+  const formatEditValue = (value: string) => {
+    value = value.replace(/\D/g, "");
+    if (value.length <= 2) return value;
+    if (value.length == 3) return `${value.slice(0, 1)}:${value.slice(1)}`;
+    return `${value.slice(0, 2)}:${value.slice(2)}`;
+  };
+
+  const handleStartTimer = () => {
+    const time = parseEditValue(editValue);
+    if (time > 0) {
+      setIsDialogOpen(true);
+    }
+  };
+
+  return (
+    <>
+      {canBeCompleted(task, parentTask) && (
+        <View className="flex-row items-center gap-2">
+          <TextInput
+            value={formatEditValue(editValue)}
+            onChangeText={handleInputChange}
+            className="w-20 border-b-2 border-none bg-transparent p-0 text-center text-2xl font-medium text-foreground"
+            maxLength={5}
+            placeholder="00:00"
+            placeholderTextColor="#666"
+          />
           <Pressable
-            onPress={() => togglePause()}
-            className="ml-4 flex-row items-center justify-center rounded-lg bg-primary px-4 py-2"
+            onPress={handleStartTimer}
+            className="flex-row items-center justify-center rounded-lg bg-primary px-4 py-2"
           >
-            <Text className="text-foreground">
-              {isRunning ? "Pause" : "Start"}
-            </Text>
+            <Text className="text-foreground">Start Timer</Text>
           </Pressable>
-        </>
+        </View>
       )}
       {!isCompleted(task, parentTask) && !canBeCompleted(task, parentTask) && (
         <Text>cannot complete</Text>
       )}
-    </View>
+
+      <TimerDialog
+        taskId={taskId}
+        parentTaskId={parentTaskId}
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        initialTime={parseEditValue(editValue)}
+      />
+    </>
   );
 }

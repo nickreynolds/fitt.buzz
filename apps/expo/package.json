@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@acme/api-utils": "workspace:*",
+    "@acme/hooks": "workspace:*",
     "@acme/utils": "workspace:*",
     "@bacons/text-decoder": "^0.0.0",
     "@expo/metro-config": "^0.18.11",
@@ -32,6 +33,7 @@
     "@trpc/server": "catalog:",
     "date-fns": "^4.1.0",
     "expo": "~51.0.38",
+    "expo-av": "14.0.6",
     "expo-constants": "~16.0.2",
     "expo-dev-client": "~4.0.28",
     "expo-linking": "~6.3.1",

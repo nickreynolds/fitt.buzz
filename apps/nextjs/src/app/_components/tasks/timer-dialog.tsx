@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 
-import { canBeCompleted, isCompleted } from "@acme/api-utils";
 import { useTimer } from "@acme/hooks";
 import { Button } from "@acme/ui/button";
 import {
@@ -12,7 +11,6 @@ import {
   DialogTitle,
 } from "@acme/ui/dialog";
 
-import { useTaskCompletion } from "~/hooks/useTaskCompletion";
 import { api } from "~/trpc/react";
 import TimeDisplay from "./time-display";
 
@@ -22,6 +20,7 @@ interface TimerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialTime: number;
+  onTimerComplete: (time: number) => void;
 }
 
 export function TimerDialog({
@@ -30,14 +29,9 @@ export function TimerDialog({
   open,
   onOpenChange,
   initialTime,
+  onTimerComplete,
 }: TimerDialogProps) {
-  const { handleOptimisticUpdate, handleSettled } = useTaskCompletion({
-    taskId,
-    parentTaskId,
-  });
-
   const utils = api.useUtils();
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const {
     time,
     setTime,
@@ -54,24 +48,12 @@ export function TimerDialog({
     onForcedProgressChange,
   } = useTimer({
     onTimerComplete: () => {
-      completeTask.mutate({ id: taskId, time: originalTime });
-      if (audioRef.current) {
-        // eslint-disable-next-line
-        audioRef.current.play();
-      }
+      onTimerComplete(originalTime);
       onOpenChange(false);
     },
     initialTime,
   });
 
-  const completeTask = api.task.completeTimedTask.useMutation({
-    onMutate: async () => {
-      await handleOptimisticUpdate({ time: originalTime });
-    },
-    onSettled: handleSettled,
-  });
-
-  // const parentTask = utils.task.getTask.getData({ id: parentTaskId ?? "" });
   const task = utils.task.getTask.getData({ id: taskId });
 
   // Set initial time when dialog opens
@@ -79,7 +61,6 @@ export function TimerDialog({
     if (open) {
       setTime(initialTime);
       setOriginalTime(initialTime);
-      // togglePause(); // Start the timer immediately
     }
   }, [open, initialTime, setTime, setOriginalTime]);
 
@@ -101,7 +82,6 @@ export function TimerDialog({
         </DialogHeader>
 
         <div className="flex flex-col items-center justify-center py-8">
-          <audio ref={audioRef} src="/sounds/meditation-bell.mp3" />
           <TimeDisplay
             time={time}
             originalTime={originalTime}

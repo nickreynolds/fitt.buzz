@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 import { canBeCompleted, isCompleted } from "@acme/api-utils";
 import { Button } from "@acme/ui/button";
 import { Input } from "@acme/ui/input";
-import { formatTime, parseEditValue } from "@acme/utils";
+import { parseEditValue } from "@acme/utils";
 
 import { useTaskCompletion } from "~/hooks/useTaskCompletion";
 import { api } from "~/trpc/react";
@@ -22,9 +22,23 @@ export function CompleteTimedTaskButton({
 }: CompleteTimedTaskButtonProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editValue, setEditValue] = useState("0100");
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const utils = api.useUtils();
   const task = utils.task.getTask.getData({ id: taskId });
   const parentTask = utils.task.getTask.getData({ id: parentTaskId ?? "" });
+
+  const { handleOptimisticUpdate, handleSettled } = useTaskCompletion({
+    taskId,
+    parentTaskId,
+  });
+
+  const completeTask = api.task.completeTimedTask.useMutation({
+    onMutate: async () => {
+      await handleOptimisticUpdate({ time: parseEditValue(editValue) });
+    },
+    onSettled: handleSettled,
+  });
+
   React.useEffect(() => {
     if (parentTask) {
       const numCompletedSets = parentTask.numCompletedSets;
@@ -71,6 +85,14 @@ export function CompleteTimedTaskButton({
     }
   };
 
+  const handleTimerComplete = (time: number) => {
+    completeTask.mutate({ id: taskId, time });
+    if (audioRef.current) {
+      // eslint-disable-next-line
+      audioRef.current.play();
+    }
+  };
+
   return (
     <>
       {canBeCompleted(task, parentTask) && (
@@ -96,12 +118,14 @@ export function CompleteTimedTaskButton({
         <span>cannot complete</span>
       )}
 
+      <audio ref={audioRef} src="/sounds/meditation-bell.mp3" />
       <TimerDialog
         taskId={taskId}
         parentTaskId={parentTaskId}
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         initialTime={parseEditValue(editValue)}
+        onTimerComplete={handleTimerComplete}
       />
     </>
   );

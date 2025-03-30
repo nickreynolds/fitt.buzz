@@ -121,7 +121,6 @@ export function CompleteTimedTaskButton({
       <audio ref={audioRef} src="/sounds/meditation-bell.mp3" />
       <TimerDialog
         taskId={taskId}
-        parentTaskId={parentTaskId}
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         initialTime={parseEditValue(editValue)}

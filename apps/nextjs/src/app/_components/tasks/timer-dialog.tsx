@@ -16,7 +16,6 @@ import TimeDisplay from "./time-display";
 
 interface TimerDialogProps {
   taskId: string;
-  parentTaskId: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialTime: number;
@@ -25,7 +24,6 @@ interface TimerDialogProps {
 
 export function TimerDialog({
   taskId,
-  parentTaskId,
   open,
   onOpenChange,
   initialTime,

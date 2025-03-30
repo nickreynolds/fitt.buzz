@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { SafeAreaView, ScrollView, Text, View } from "react-native";
 import DraggableFlatList, {
   ScaleDecorator,
 } from "react-native-draggable-flatlist";
@@ -24,11 +24,12 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
 
   const [listData, setListData] = React.useState<
     RouterOutputs["task"]["getTask"][]
-  >(task?.childTasks?.sort((a, b) => a.sortIndex - b.sortIndex) ?? []);
+  >(task?.childTasks?.concat().sort((a, b) => a.sortIndex - b.sortIndex) ?? []);
 
   React.useEffect(() => {
     setListData(
-      task?.childTasks?.sort((a, b) => a.sortIndex - b.sortIndex) ?? [],
+      task?.childTasks?.concat().sort((a, b) => a.sortIndex - b.sortIndex) ??
+        [],
     );
   }, [task]);
 
@@ -99,7 +100,7 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
   }
 
   return (
-    <View className="mt-4 space-y-2">
+    <SafeAreaView className="mt-4 flex h-1/2 space-y-2">
       <DraggableFlatList
         data={listData}
         renderItem={renderItem}
@@ -114,7 +115,8 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
           });
           mutateTaskOrder.mutate(taskOrder);
         }}
+        scrollEnabled={true}
       />
-    </View>
+    </SafeAreaView>
   );
 }

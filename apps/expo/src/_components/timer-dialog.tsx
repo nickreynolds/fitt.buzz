@@ -46,7 +46,7 @@ export function TimerDialog({
     if (open) {
       togglePause(); // Start the timer immediately
     }
-  }, [open, togglePause]);
+  }, [open]);
 
   return (
     <DialogPrimitive.Root
@@ -59,8 +59,8 @@ export function TimerDialog({
       }}
     >
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="absolute inset-0 bottom-16 left-16 right-16 top-32 z-50">
-          <DialogPrimitive.Content className="bg- h-full w-full rounded-lg p-4">
+        <DialogPrimitive.Overlay className="absolute inset-0 bottom-32 left-16 right-16 top-32 z-50">
+          <DialogPrimitive.Content className="h-full w-full rounded-lg bg-muted p-4">
             <DialogPrimitive.Title>
               <Text className="text-lg font-semibold text-primary">Timer</Text>
             </DialogPrimitive.Title>
@@ -70,8 +70,11 @@ export function TimerDialog({
                 {formatTime(time)}
               </Text>
 
-              <Pressable onPress={togglePause} className="mt-8">
-                {isRunning ? <Text>"Pause"</Text> : <Text>"Start"</Text>}
+              <Pressable
+                onPress={togglePause}
+                className="mt-8 rounded-md bg-primary p-4"
+              >
+                {isRunning ? <Text>Pause</Text> : <Text>Start</Text>}
               </Pressable>
             </View>
           </DialogPrimitive.Content>

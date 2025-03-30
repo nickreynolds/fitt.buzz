@@ -33,13 +33,6 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
   }, [task]);
 
   const tasks = task?.childTasks ?? [];
-  if (tasks.length === 0) {
-    return (
-      <View>
-        <Text>No subtasks</Text>
-      </View>
-    );
-  }
 
   const renderItem = ({
     item,
@@ -96,6 +89,14 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
       await utils.task.getTask.invalidate({ id: parentTaskId });
     },
   });
+
+  if (tasks.length === 0) {
+    return (
+      <View>
+        <Text>No subtasks</Text>
+      </View>
+    );
+  }
 
   return (
     <View className="mt-4 space-y-2">

@@ -25,6 +25,7 @@ export function TimerDialog({
     setOriginalTime,
     isRunning,
     togglePause,
+    resetTimer,
   } = useTimer({
     onTimerComplete: () => {
       onTimerComplete(originalTime);
@@ -48,7 +49,15 @@ export function TimerDialog({
   }, [open, togglePause]);
 
   return (
-    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
+    <DialogPrimitive.Root
+      open={open}
+      onOpenChange={(open) => {
+        onOpenChange(open);
+        if (!open) {
+          resetTimer();
+        }
+      }}
+    >
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="absolute inset-0 bottom-16 left-16 right-16 top-32 z-50">
           <DialogPrimitive.Content className="bg- h-full w-full rounded-lg p-4">

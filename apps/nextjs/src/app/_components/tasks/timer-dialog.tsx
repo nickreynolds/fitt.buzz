@@ -44,6 +44,7 @@ export function TimerDialog({
     togglePause,
     pauseTimer,
     onForcedProgressChange,
+    resetTimer,
   } = useTimer({
     onTimerComplete: () => {
       onTimerComplete(originalTime);
@@ -66,14 +67,22 @@ export function TimerDialog({
     if (open) {
       togglePause(); // Start the timer immediately
     }
-  }, [open, togglePause]);
+  }, [open]);
 
   if (!task) {
     return null;
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(open) => {
+        onOpenChange(open);
+        if (!open) {
+          resetTimer();
+        }
+      }}
+    >
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{task.title}</DialogTitle>

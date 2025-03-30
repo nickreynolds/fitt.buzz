@@ -86,7 +86,7 @@ export const useTimer = ({
   //     }
   //   };
 
-  const togglePause = React.useCallback(() => {
+  const togglePause = () => {
     if (isRunning) {
       const now = Date.now();
       const timeSinceLastTick = now - lastTickTime.current;
@@ -107,7 +107,7 @@ export const useTimer = ({
       }
     }
     setIsRunning((prev) => !prev);
-  }, []);
+  };
 
   const pauseTimer = () => {
     setIsRunning(false);

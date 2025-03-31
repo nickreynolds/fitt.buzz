@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  Pressable,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Dumbbell } from "lucide-react-native";
 
 import { useTaskCompletion } from "~/hooks/useTaskCompletion";

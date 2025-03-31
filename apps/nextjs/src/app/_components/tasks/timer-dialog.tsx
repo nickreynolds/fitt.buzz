@@ -67,6 +67,7 @@ export function TimerDialog({
     if (open) {
       togglePause(); // Start the timer immediately
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   if (!task) {

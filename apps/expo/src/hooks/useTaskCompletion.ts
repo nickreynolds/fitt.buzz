@@ -3,10 +3,11 @@ import { router } from "expo-router";
 import { api } from "~/utils/api";
 
 interface TaskCompletionData {
-  result: boolean | number;
+  result?: boolean | number;
   weight?: number;
   reps?: number;
   time?: number;
+  weightUnit?: string;
 }
 
 interface UseTaskCompletionProps {

@@ -10,7 +10,9 @@ import {
 } from "@acme/api-utils";
 import { TaskCompletionTypes } from "@acme/utils";
 
+import { api } from "~/utils/api";
 import { CompleteTaskButton } from "./complete-task-button";
+import { CompleteTimedTaskButton } from "./complete-timed-task-button";
 import { CompleteWeightRepsTaskButton } from "./complete-weight-reps-task-button";
 import Icon from "./icon";
 
@@ -23,31 +25,45 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
   if (!initialTask) {
     return null;
   }
+  const utils = api.useUtils();
+  const { data } = api.task.getTask.useQuery(
+    { id: taskId },
+    { initialData: initialTask },
+  );
 
-  const canComplete = canBeCompleted(initialTask);
-  const numChildTasks = initialTask.childTasks?.length ?? 0;
-  const numCompletedChildTasks = getNumCompletedChildTasks(initialTask);
-  const isComplete = isCompleted(initialTask);
+  const task = data ?? initialTask;
+  const parentTask = utils.task.getTask.getData({
+    id: initialTask.parentTaskId ?? "",
+  });
+
+  const canComplete = canBeCompleted(task, parentTask);
+  const numChildTasks = task.childTasks?.length ?? 0;
+  const numCompletedChildTasks = getNumCompletedChildTasks(task);
+  const isComplete = isCompleted(task);
   const undoneTasks = Array(numChildTasks - numCompletedChildTasks).fill(1);
   const doneTasks = Array(numCompletedChildTasks).fill(1);
-  const numSets = initialTask.numSets;
-  const numCompletedSets = initialTask.numCompletedSets;
+  const numSets = task.numSets;
+  const numCompletedSets = task.numCompletedSets;
 
   const status = () => {
     if (canComplete) {
-      if (initialTask.completionDataType === TaskCompletionTypes.WeightReps) {
+      if (task.completionDataType === TaskCompletionTypes.WeightReps) {
         return (
           <CompleteWeightRepsTaskButton
-            taskId={initialTask.id}
-            parentTaskId={initialTask.parentTaskId}
+            taskId={task.id}
+            parentTaskId={task.parentTaskId}
+          />
+        );
+      } else if (task.completionDataType === TaskCompletionTypes.Time) {
+        return (
+          <CompleteTimedTaskButton
+            taskId={task.id}
+            parentTaskId={task.parentTaskId}
           />
         );
       }
       return (
-        <CompleteTaskButton
-          taskId={initialTask.id}
-          parentTaskId={initialTask.parentTaskId}
-        />
+        <CompleteTaskButton taskId={task.id} parentTaskId={task.parentTaskId} />
       );
     }
 
@@ -107,8 +123,8 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
             className="w-full text-2xl font-semibold text-primary"
             onPress={() => router.push(`/task/${taskId}`)}
           >
-            {initialTask.title}
-            {initialTask.recurring && (
+            {task.title}
+            {task.recurring && (
               <Text className="text-muted-foreground"> ↻</Text>
             )}
           </Text>

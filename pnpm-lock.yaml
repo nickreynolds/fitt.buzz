@@ -112,6 +112,9 @@ importers:
       '@acme/api-utils':
         specifier: workspace:*
         version: link:../../packages/api-utils
+      '@acme/hooks':
+        specifier: workspace:*
+        version: link:../../packages/hooks
       '@acme/utils':
         specifier: workspace:*
         version: link:../../packages/utils
@@ -160,6 +163,9 @@ importers:
       expo:
         specifier: ~51.0.38
         version: 51.0.38(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(bufferutil@4.0.8)
+      expo-av:
+        specifier: 14.0.6
+        version: 14.0.6(expo@51.0.38(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(bufferutil@4.0.8))
       expo-constants:
         specifier: ~16.0.2
         version: 16.0.2(expo@51.0.38(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(bufferutil@4.0.8))
@@ -581,8 +587,8 @@ importers:
         specifier: workspace:*
         version: link:../utils
       react:
-        specifier: ^19.0.0
-        version: 19.0.0
+        specifier: catalog:react18
+        version: 18.3.1
     devDependencies:
       '@acme/eslint-config':
         specifier: workspace:*
@@ -5283,6 +5289,11 @@ packages:
 
   expo-asset@10.0.10:
     resolution: {integrity: sha512-0qoTIihB79k+wGus9wy0JMKq7DdenziVx3iUkGvMAy2azscSgWH6bd2gJ9CGnhC6JRd3qTMFBL0ou/fx7WZl7A==}
+    peerDependencies:
+      expo: '*'
+
+  expo-av@14.0.6:
+    resolution: {integrity: sha512-8FHKgMYo49C5hhgG0ssRRd454VQ82TuujhMdlz7ScJBihEXa89kWKpfk9bXrvetFtrJoAmYuGxsXCJCygZhxfA==}
     peerDependencies:
       expo: '*'
 
@@ -14422,6 +14433,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  expo-av@14.0.6(expo@51.0.38(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(bufferutil@4.0.8)):
+    dependencies:
+      expo: 51.0.38(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(bufferutil@4.0.8)
+
   expo-constants@16.0.2(expo@51.0.38(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(bufferutil@4.0.8)):
     dependencies:
       '@expo/config': 9.0.4
@@ -17299,7 +17314,8 @@ snapshots:
     dependencies:
       loose-envify: 1.4.0
 
-  react@19.0.0: {}
+  react@19.0.0:
+    optional: true
 
   read-cache@1.0.0:
     dependencies:

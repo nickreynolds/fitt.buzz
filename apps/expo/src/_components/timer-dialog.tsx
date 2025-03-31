@@ -77,6 +77,11 @@ export function TimerDialog({
                 {isRunning ? <Text>Pause</Text> : <Text>Start</Text>}
               </Pressable>
             </View>
+            <DialogPrimitive.Close className="absolute right-4 top-4">
+              <View className="mt-8 rounded-md bg-primary p-4">
+                <Text>X</Text>
+              </View>
+            </DialogPrimitive.Close>
           </DialogPrimitive.Content>
         </DialogPrimitive.Overlay>
       </DialogPrimitive.Portal>

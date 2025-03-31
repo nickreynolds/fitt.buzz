@@ -60,10 +60,10 @@ export function TaskCompletionTable({ task }: TaskCompletionTableProps) {
           return (
             <View
               key={childTask.id}
-              className="flex-col border-b border-border"
+              className="flex w-full flex-row flex-wrap justify-start"
             >
               {completionData.map((data, i) => (
-                <View key={i} className="w-24 flex-row p-2">
+                <View key={i} className="flex-row rounded-md bg-secondary p-2">
                   <Text className="text-sm text-foreground">
                     {childTask.title}{" "}
                   </Text>

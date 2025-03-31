@@ -25,15 +25,18 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
   if (!initialTask) {
     return null;
   }
-
+  const utils = api.useUtils();
   const { data } = api.task.getTask.useQuery(
     { id: taskId },
     { initialData: initialTask },
   );
 
   const task = data ?? initialTask;
+  const parentTask = utils.task.getTask.getData({
+    id: initialTask.parentTaskId ?? "",
+  });
 
-  const canComplete = canBeCompleted(task);
+  const canComplete = canBeCompleted(task, parentTask);
   const numChildTasks = task.childTasks?.length ?? 0;
   const numCompletedChildTasks = getNumCompletedChildTasks(task);
   const isComplete = isCompleted(task);

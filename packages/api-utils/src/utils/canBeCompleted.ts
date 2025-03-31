@@ -9,7 +9,7 @@ export default function canBeCompleted(
   parentTask?: RouterOutputs["task"]["getTask"],
 ): boolean {
   const inCompletion = inCompletionPeriod(task);
-
+  console.log("canBeCompleted", task);
   if (parentTask) {
     if (parentTask.isSet) {
       if (parentTask.numCompletedSets === parentTask.numSets) {

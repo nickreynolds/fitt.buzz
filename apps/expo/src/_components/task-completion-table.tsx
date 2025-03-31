@@ -33,8 +33,22 @@ export function TaskCompletionTable({ task }: TaskCompletionTableProps) {
     }
   };
 
+  const allCompletionData = [];
+
+  for (const childTask of task.childTasks ?? []) {
+    const completionData = task.childTaskCompletionDataMap?.get(childTask.id);
+    if (!completionData?.length) continue;
+    allCompletionData.push(
+      ...completionData.map((cd, index) => {
+        return { key: `${childTask.id}-${index}`, cd, title: childTask.title };
+      }),
+    );
+  }
+
+  console.log(allCompletionData);
+
   return (
-    <View className="mt-4 min-w-full">
+    <View className="mt-4 min-w-full max-w-full">
       <View>
         {/* Main task row */}
         {task.taskCompletionData && task.taskCompletionData.length > 0 && (
@@ -50,31 +64,25 @@ export function TaskCompletionTable({ task }: TaskCompletionTableProps) {
           </View>
         )}
 
-        {/* Child task rows */}
-        {task.childTasks?.map((childTask) => {
-          const completionData = task.childTaskCompletionDataMap?.get(
-            childTask.id,
-          );
-          if (!completionData?.length) return null;
-
-          return (
-            <View
-              key={childTask.id}
-              className="flex w-full flex-row flex-wrap justify-start"
-            >
-              {completionData.map((data, i) => (
-                <View key={i} className="flex-row rounded-md bg-secondary p-2">
+        <View className="wrap flex w-full max-w-full flex-row">
+          {/* Child task rows */}
+          {allCompletionData.length > 0 &&
+            allCompletionData.map((childTask) => {
+              return (
+                <View
+                  key={childTask.key}
+                  className="flex-row rounded-md bg-secondary p-2"
+                >
                   <Text className="text-sm text-foreground">
                     {childTask.title}{" "}
                   </Text>
                   <Text className="text-sm text-primary">
-                    {renderCompletionData(data)}
+                    {renderCompletionData(childTask.cd)}
                   </Text>
                 </View>
-              ))}
-            </View>
-          );
-        })}
+              );
+            })}
+        </View>
       </View>
     </View>
   );

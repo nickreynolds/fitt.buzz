@@ -167,3 +167,23 @@ export const Session = pgTable("session", (t) => ({
 export const SessionRelations = relations(Session, ({ one }) => ({
   user: one(User, { fields: [Session.userId], references: [User.id] }),
 }));
+
+export const DomainBlocking = pgTable("domain_blocking", (t) => ({
+  id: t.uuid().notNull().primaryKey().defaultRandom(),
+  creatorId: t
+    .uuid()
+    .notNull()
+    .references(() => User.id),
+  domain: t.text().notNull(),
+  createdAt: t.timestamp().notNull().defaultNow(),
+  updatedAt: t
+    .timestamp({ mode: "date", withTimezone: true })
+    .$onUpdateFn(() => new Date()),
+}));
+
+export const DomainBlockingRelations = relations(DomainBlocking, ({ one }) => ({
+  creator: one(User, {
+    fields: [DomainBlocking.creatorId],
+    references: [User.id],
+  }),
+}));

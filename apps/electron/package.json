@@ -17,10 +17,8 @@
     "build:preload:types": "dts-cb -i \"layers/preload/tsconfig.json\" -o \"layers/preload/exposedInMainWorld.d.ts\"",
     "compile": "cross-env MODE=production npm run build && electron-builder build --config .electron-builder.config.js --dir --config.asar=false",
     "watch": "node scripts/watch.js",
-    "lint": "eslint . --ext js,ts",
     "typecheck:main": "tsc --noEmit -p layers/main/tsconfig.json",
-    "typecheck:preload": "tsc --noEmit -p layers/preload/tsconfig.json",
-    "typecheck": "npm run typecheck:main && npm run typecheck:preload"
+    "typecheck:preload": "tsc --noEmit -p layers/preload/tsconfig.json"
   },
   "devDependencies": {
     "@acme/eslint-config": "workspace:*",

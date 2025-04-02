@@ -196,7 +196,7 @@ export function CreateSubtaskDialogForm({
                         setCompletionType(e as TaskCompletionTypes);
                       }}
                       type="single"
-                      defaultValue="center"
+                      defaultValue={TaskCompletionTypes.Boolean}
                     >
                       <ToggleGroupItem value={TaskCompletionTypes.Boolean}>
                         Boolean

@@ -19,6 +19,7 @@ import { api } from "~/trpc/react";
 import { CompleteTaskButton } from "./complete-task-button";
 import { CompleteTimedTaskButton } from "./complete-timed-task-button";
 import { CompleteWeightRepsTaskButton } from "./complete-weight-reps-task-button";
+import { OverdueBadge } from "./overdue-badge";
 
 interface TaskHeaderProps {
   initialTask: RouterOutputs["task"]["getTask"];
@@ -120,9 +121,7 @@ export default function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
               {task.recurring && (
                 <span className="text-muted-foreground"> ↻</span>
               )}
-              {isTaskOverdue && (
-                <span className="ml-2 text-sm text-destructive">(overdue)</span>
-              )}
+              {isTaskOverdue && <OverdueBadge />}
             </h2>
             <Pencil className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
           </button>
@@ -133,9 +132,7 @@ export default function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
               {task.recurring && (
                 <span className="text-muted-foreground"> ↻</span>
               )}
-              {isTaskOverdue && (
-                <span className="ml-2 text-sm text-destructive">(overdue)</span>
-              )}
+              {isTaskOverdue && <OverdueBadge />}
             </h2>
           </Link>
         )}

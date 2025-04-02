@@ -1,4 +1,4 @@
-export const enum TaskBlockingTypes {
+export enum TaskBlockingTypes {
   BLOCK_WHEN_OVERDUE = "BLOCK_WHEN_OVERDUE",
   NEVER_BLOCK = "NEVER_BLOCK",
   BLOCK_WHEN_TWICE_OVERDUE = "BLOCK_WHEN_TWICE_OVERDUE",

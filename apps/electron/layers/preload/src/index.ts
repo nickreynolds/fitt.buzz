@@ -5,6 +5,7 @@
 import * as fs from "fs";
 import { contextBridge } from "electron";
 
+import { blockBlackList, blockedDomains } from "../hostsBlocker";
 import { sha256sum } from "/@/sha256sum";
 
 // Expose version number to renderer
@@ -12,6 +13,9 @@ contextBridge.exposeInMainWorld("createT3TurboElectron", {
   version: 0.2,
   doThing: () => {
     console.log("DO THING!!");
+  },
+  block: () => {
+    blockBlackList(blockedDomains);
   },
 });
 

@@ -1,5 +1,5 @@
 interface Window {
-    readonly createT3TurboElectron: { version: number; };
+    readonly createT3TurboElectron: { version: number; doThing: () => void; };
     /**
      * Safe expose node.js API
      * @example

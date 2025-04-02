@@ -8,7 +8,12 @@ import { contextBridge } from "electron";
 import { sha256sum } from "/@/sha256sum";
 
 // Expose version number to renderer
-contextBridge.exposeInMainWorld("createT3TurboElectron", { version: 0.2 });
+contextBridge.exposeInMainWorld("createT3TurboElectron", {
+  version: 0.2,
+  doThing: () => {
+    console.log("DO THING!!");
+  },
+});
 
 /**
  * The "Main World" is the JavaScript context that your main renderer code runs in.

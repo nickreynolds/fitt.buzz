@@ -12,6 +12,7 @@ import {
 
 export default async function HomePage() {
   await api.task.getAllMyActiveTasks.prefetch();
+
   return (
     <HydrateClient>
       <Layout>

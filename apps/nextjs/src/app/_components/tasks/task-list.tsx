@@ -7,7 +7,8 @@ import "./transitions.css";
 
 import React from "react";
 
-import { Button } from "@acme/ui/button";
+import { Label } from "@acme/ui/label";
+import { Switch } from "@acme/ui/switch";
 
 export function TaskList() {
   const [tasks] = api.task.getAllMyActiveTasks.useSuspenseQuery();
@@ -19,9 +20,16 @@ export function TaskList() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Button onClick={() => setShowAllTasks((prev) => !prev)}>
-        {showAllTasks ? "Show only active tasks" : "Show all tasks"}
-      </Button>
+      <div className="flex items-center space-x-2">
+        <Switch
+          id="show-all-tasks"
+          checked={showAllTasks}
+          onCheckedChange={setShowAllTasks}
+        />
+        <Label htmlFor="show-all-tasks">
+          {!showAllTasks ? "Show all tasks" : "Show only active tasks"}
+        </Label>
+      </div>
       <div className="task-list flex w-full flex-col gap-4">
         {displayedTasks?.map((task, index) => (
           <div

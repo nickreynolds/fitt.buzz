@@ -604,7 +604,7 @@ export const taskRouter = {
           childTasks: true,
         },
       });
-
+      let res;
       if (task) {
         if (task.creatorId !== ctx.session.user.id) {
           throw new Error("You are not the owner of this task");
@@ -629,7 +629,7 @@ export const taskRouter = {
             .flat();
         }
 
-        return await ctx.db.transaction(async (trx) => {
+        res = await ctx.db.transaction(async (trx) => {
           // use transaction
           await trx
             .delete(TaskCompletion)
@@ -641,7 +641,12 @@ export const taskRouter = {
             .delete(Task)
             .where(inArray(Task.id, [input.id, ...allChildrenIDs]));
         });
+        await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
+          tasks: [],
+        });
+        return res;
       }
+
       throw new Error("Task not found");
     }),
   setIsSet: protectedProcedure

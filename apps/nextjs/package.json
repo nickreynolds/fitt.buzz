@@ -8,20 +8,11 @@
   "main": "build/main.cjs",
   "scripts": {
     "next:build": "pnpm with-env next build",
-    "build": "run-s next:build electron:build",
+    "build": "run-s next:build",
     "clean": "git clean -xdf .cache .next .turbo node_modules",
     "dev": "pnpm with-env next dev",
-    "dev:electron": "pnpm with-env npm-run-all --parallel electron:dev dev",
-    "dist": "pnpm with-env run-s build electron:dist",
-    "electron:build": "tsup",
-    "electron:build_watch": "tsup --watch",
-    "electron:dev": "npm-run-all --parallel electron:build_watch electron:watch",
-    "electron:watch": "cross-env NODE_ENV='development' nodemon",
-    "electron:dist": "electron-builder --dir",
     "format": "prettier --check . --ignore-path ../../.gitignore",
     "lint": "eslint",
-    "next:dev": "next dev",
-    "postinstall": "electron-builder install-app-deps",
     "start": "pnpm with-env next start",
     "typecheck": "tsc --noEmit",
     "with-env": "dotenv -e ../../.env --"
@@ -38,7 +29,6 @@
     "@atlaskit/pragmatic-drag-and-drop": "^1.1.11",
     "@atlaskit/pragmatic-drag-and-drop-flourish": "^1.1.0",
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.0.3",
-    "@electron-toolkit/utils": "^3.0.0",
     "@t3-oss/env-nextjs": "^0.11.1",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-query-devtools": "^5.66.3",
@@ -66,14 +56,11 @@
     "@acme/prettier-config": "workspace:*",
     "@acme/tailwind-config": "workspace:*",
     "@acme/tsconfig": "workspace:*",
-    "@electron/notarize": "^3.0.1",
     "@types/node": "^20.17.7",
     "@types/react": "catalog:react18",
     "@types/react-dom": "catalog:react18",
     "@types/react-transition-group": "^4.4.12",
     "dotenv-cli": "^7.4.4",
-    "electron": "31.3.1",
-    "electron-builder": "24.13.3",
     "eslint": "catalog:",
     "jiti": "^1.21.6",
     "nodemon": "^3.1.4",
@@ -81,54 +68,7 @@
     "prettier": "catalog:",
     "tailwindcss": "catalog:",
     "tailwindcss-motion": "^1.0.1",
-    "tsup": "^8.2.4",
     "typescript": "catalog:"
   },
-  "prettier": "@acme/prettier-config",
-  "build": {
-    "mac": {
-      "notarize": {
-        "teamId": "R5878UK933"
-      }
-    },
-    "asar": true,
-    "executableName": "Fitt.Buzz",
-    "appId": "fitt.buzz.app",
-    "asarUnpack": [
-      "node_modules/next",
-      "node_modules/@img",
-      "node_modules/sharp",
-      "**\\*.{node,dll}"
-    ],
-    "files": [
-      "build",
-      {
-        "from": ".next/standalone",
-        "to": "app",
-        "filter": [
-          "!**/.env",
-          "!**/package.json"
-        ]
-      },
-      {
-        "from": ".next/static",
-        "to": "app/.next/static"
-      },
-      {
-        "from": "public",
-        "to": "app/public"
-      }
-    ],
-    "win": {
-      "target": [
-        "nsis"
-      ]
-    },
-    "linux": {
-      "target": [
-        "deb"
-      ],
-      "category": "Development"
-    }
-  }
+  "prettier": "@acme/prettier-config"
 }

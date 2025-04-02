@@ -2,12 +2,14 @@
   "$schema": "https://turborepo.org/schema.json",
   "ui": "tui",
   "tasks": {
-    "topo": {
-      "dependsOn": ["^topo"]
+    "topo": { "dependsOn": ["^topo"] },
+    "compile": {
+      "dependsOn": ["^build", "^compile"],
+      "outputs": ["dist/**", ".next/**"]
     },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".cache/tsbuildinfo.json", "dist/**"]
+      "outputs": [".cache/tsbuildinfo.json", "dist/**", ".next/**"]
     },
     "dev": {
       "dependsOn": ["^dev"],
@@ -47,6 +49,8 @@
   },
   "globalEnv": [
     "POSTGRES_URL",
+    "AUTH_DISCORD_ID",
+    "AUTH_DISCORD_SECRET",
     "AUTH_GOOGLE_ID",
     "AUTH_GOOGLE_SECRET",
     "AUTH_REDIRECT_PROXY_URL",

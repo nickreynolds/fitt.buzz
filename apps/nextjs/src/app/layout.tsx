@@ -9,6 +9,7 @@ import { Toaster } from "@acme/ui/toast";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { AuthShowcase } from "./_components/auth-showcase";
+import { BlockingMonitor } from "./_components/blocking-monitor";
 
 import "~/app/globals.css";
 
@@ -53,6 +54,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <TRPCReactProvider>
             <ReactQueryDevtools initialIsOpen={true} />
+            <BlockingMonitor />
             <AuthShowcase>{props.children}</AuthShowcase>
           </TRPCReactProvider>
           <Toaster />

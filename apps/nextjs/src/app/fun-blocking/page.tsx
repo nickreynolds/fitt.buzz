@@ -34,6 +34,12 @@ export default function FunBlockingPage() {
     <Layout>
       <div className="container mx-auto max-w-4xl px-4 py-8">
         <h1 className="mb-8 text-3xl font-bold">Fun Blocking</h1>
+        <p>
+          In order to enable domain blocking, you must install (and keep
+          running) the Electron App version of fitt.buzz You must also set the
+          permissions of your "hosts" file to be writable. (on MacOS, this is
+          /etc/hosts)
+        </p>
 
         <div className="mb-8">
           <form onSubmit={handleSubmit} className="flex gap-2">

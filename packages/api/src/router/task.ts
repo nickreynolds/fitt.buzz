@@ -822,6 +822,38 @@ export const taskRouter = {
       });
       return updated;
     }),
+  shouldBlockFun: protectedProcedure
+    .output(z.boolean())
+    .query(async ({ ctx }) => {
+      // Get all tasks for the user
+      const tasks = await ctx.db.query.Task.findMany({
+        where: (tasks, { eq }) => eq(tasks.creatorId, ctx.session.user.id),
+      });
+
+      // Check if any task is overdue and has BLOCK_WHEN_OVERDUE set
+      const now = new Date();
+      for (const task of tasks) {
+        if (task.blocking === TaskBlockingTypes.BLOCK_WHEN_OVERDUE) {
+          const nextDue = new Date(task.nextDue);
+
+          // For recurring tasks, check if we're in the completion period
+          if (task.recurring && task.completionPeriodBegins) {
+            const completionPeriodBegins = new Date(
+              task.completionPeriodBegins,
+            );
+            if (now > completionPeriodBegins && now > nextDue) {
+              return true;
+            }
+          }
+          // For non-recurring tasks, simply check if the due date has passed
+          else if (now > nextDue) {
+            return true;
+          }
+        }
+      }
+
+      return false;
+    }),
 } satisfies TRPCRouterRecord;
 
 const shouldCompleteParentSet = async (

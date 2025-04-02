@@ -3,7 +3,7 @@ import type { RouterOutputs } from "@acme/api";
 export default function isOverdue(
   task: RouterOutputs["task"]["getTask"] | undefined,
 ): boolean {
-  if (!task || !task.nextDue) {
+  if (!task) {
     return false;
   }
 

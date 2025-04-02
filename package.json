@@ -31,7 +31,8 @@
     "typescript": "catalog:"
   },
   "resolutions": {
-    "react-native-reanimated": "3.10.1"
+    "react-native-reanimated": "3.10.1",
+    "typescript": "5.8.2"
   },
   "prettier": "@acme/prettier-config"
 }

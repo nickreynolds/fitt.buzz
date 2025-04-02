@@ -24,16 +24,18 @@ export function BlockingMonitor() {
       // Extract domain strings from the blocked domains
       const domainsToBlock = blockedDomains.map((blocking) => blocking.domain);
 
-      // @ts-ignore
+      // @ts-expect-error - hacky way to get the electron api
       if (window.createT3TurboElectron) {
-        // @ts-ignore
+        // @ts-expect-error - hacky way to get the electron api
+        // eslint-disable-next-line
         window.createT3TurboElectron.block(domainsToBlock);
       }
     } else {
       console.log("unblocking");
-      // @ts-ignore
+      // @ts-expect-error - hacky way to get the electron api
       if (window.createT3TurboElectron) {
-        // @ts-ignore
+        // @ts-expect-error - hacky way to get the electron api
+        // eslint-disable-next-line
         window.createT3TurboElectron.unblock();
       }
     }

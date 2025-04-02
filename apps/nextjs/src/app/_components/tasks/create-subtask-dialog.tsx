@@ -186,7 +186,7 @@ export function CreateSubtaskDialogForm({
               <FormField
                 control={form.control}
                 name="completionDataType"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <FormLabel>Completion Type</FormLabel>
                     <ToggleGroup

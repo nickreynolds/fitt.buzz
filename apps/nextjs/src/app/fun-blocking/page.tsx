@@ -41,6 +41,12 @@ export default function FunBlockingPage() {
           /etc/hosts)
         </p>
 
+        <p>
+          Blocking may take several minutes to take effect (an overdue task will
+          not immediately cause websites to be blocked), but the unblocking of
+          websites should happen immediately upon completing the necessary tasks
+        </p>
+
         <div className="mb-8">
           <form onSubmit={handleSubmit} className="flex gap-2">
             <Input

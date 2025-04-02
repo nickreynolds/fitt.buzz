@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import uuid from "react-native-uuid";
 
-import { TaskCompletionTypes } from "@acme/utils";
+import { TaskBlockingTypes, TaskCompletionTypes } from "@acme/utils";
 
 import { api } from "~/utils/api";
 import Icon from "./icon";
@@ -67,6 +67,7 @@ export function CreateSubtaskDialog({
         isSet: false,
         numSets: 1,
         numCompletedSets: 0,
+        blocking: TaskBlockingTypes.NEVER_BLOCK,
       };
 
       utils.task.getTask.setData(
@@ -113,6 +114,8 @@ export function CreateSubtaskDialog({
             ? TaskCompletionTypes.WeightReps
             : TaskCompletionTypes.Time,
       isSet: false,
+      recurring: parentTask.recurring,
+      nextDue: parentTask.nextDue,
     });
   };
 

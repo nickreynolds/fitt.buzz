@@ -15,7 +15,7 @@ import { router } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { format } from "date-fns";
 
-import { TaskCompletionTypes } from "@acme/utils";
+import { TaskBlockingTypes, TaskCompletionTypes } from "@acme/utils";
 
 import { api } from "~/utils/api";
 
@@ -52,6 +52,7 @@ export default function CreateTask() {
           numSets: 0,
           numCompletedSets: 0,
           completionDataType: TaskCompletionTypes.Boolean,
+          blocking: TaskBlockingTypes.NEVER_BLOCK,
         };
 
         const tasks = utils.task.getAllMyActiveTasks.getData();

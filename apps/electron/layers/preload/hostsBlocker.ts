@@ -96,10 +96,12 @@ function findTimeBlockerIndexes(hosts: string[]) {
   };
 
   for (let x = 0; x < hosts.length; x++) {
+    // @ts-expect-error
     if (hosts[x].indexOf(TIME_BLOCKER_START) > -1) {
       positions.start = x;
     }
 
+    // @ts-expect-error
     if (hosts[x].indexOf(TIME_BLOCKER_END) > -1) {
       positions.end = x;
     }

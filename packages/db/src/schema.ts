@@ -83,32 +83,31 @@ export const TaskRelations = relations(Task, ({ one, many }) => ({
 }));
 
 export const CreateTaskSchema = z.object({
-  title: z.string(),
-  description: z.string().nullable(),
+  id: z.string().uuid(),
+  title: z.string().max(256),
+  description: z.string().max(256),
   recurring: z.boolean(),
-  frequencyHours: z.number().nullable(),
+  frequencyHours: z.number().optional(),
   nextDue: z.date(),
-  parentTaskId: z.string().uuid().nullable(),
-  sortIndex: z.number(),
+  completionDataType: z.enum([
+    TaskCompletionTypes.Boolean,
+    TaskCompletionTypes.WeightReps,
+    TaskCompletionTypes.Time,
+  ]),
+});
+
+export const CreateSubtaskSchema = CreateTaskSchema.extend({
+  id: z.string().uuid(),
+  title: z.string().max(256),
+  description: z.string().max(256),
+  parentTaskId: z.string().uuid(),
+  sortIndex: z.number().optional(),
   completionDataType: z.enum([
     TaskCompletionTypes.Boolean,
     TaskCompletionTypes.WeightReps,
     TaskCompletionTypes.Time,
   ]),
   isSet: z.boolean(),
-  numSets: z.number(),
-  numCompletedSets: z.number(),
-  blocking: z
-    .enum([
-      TaskBlockingTypes.BLOCK_WHEN_OVERDUE,
-      TaskBlockingTypes.NEVER_BLOCK,
-      TaskBlockingTypes.BLOCK_WHEN_TWICE_OVERDUE,
-    ])
-    .default(TaskBlockingTypes.NEVER_BLOCK),
-});
-
-export const CreateSubtaskSchema = CreateTaskSchema.extend({
-  parentTaskId: z.string().uuid(),
 });
 
 export const User = pgTable("user", (t) => ({

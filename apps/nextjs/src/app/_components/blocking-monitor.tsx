@@ -13,8 +13,7 @@ export function BlockingMonitor() {
   const { data: blockedDomains } = api.domainBlocking.getAll.useQuery(
     undefined,
     {
-      refetchInterval: 30 * 1000, // for testing
-      // refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
+      refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
     },
   );
 

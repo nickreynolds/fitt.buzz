@@ -23,7 +23,11 @@ import {
 } from "@acme/ui/form";
 import { Input } from "@acme/ui/input";
 import { Textarea } from "@acme/ui/textarea";
-import { getCompletionPeriodBegins, TaskCompletionTypes } from "@acme/utils";
+import {
+  getCompletionPeriodBegins,
+  TaskBlockingTypes,
+  TaskCompletionTypes,
+} from "@acme/utils";
 
 import { api } from "~/trpc/react";
 
@@ -38,7 +42,12 @@ export function CreateSubtaskDialogForm({
   onOpenChange,
   parentTaskId,
 }: CreateSubtaskDialogFormProps) {
-  const zodSchema = CreateSubtaskSchema.omit({ parentTaskId: true, id: true });
+  const zodSchema = CreateSubtaskSchema.omit({
+    parentTaskId: true,
+    id: true,
+    recurring: true,
+    nextDue: true,
+  });
   const [isSet, setIsSet] = useState(false);
 
   const form = useForm({
@@ -96,6 +105,7 @@ export function CreateSubtaskDialogForm({
         isSet: data.isSet,
         numSets: 1,
         numCompletedSets: 0,
+        blocking: TaskBlockingTypes.NEVER_BLOCK,
       };
 
       utils.task.getTask.setData(
@@ -139,6 +149,8 @@ export function CreateSubtaskDialogForm({
             ? TaskCompletionTypes.WeightReps
             : TaskCompletionTypes.Time,
       isSet,
+      recurring: parentTask.recurring,
+      nextDue: parentTask.nextDue,
     });
   }
 

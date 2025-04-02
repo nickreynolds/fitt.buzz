@@ -16,7 +16,7 @@ import { Picker } from "@react-native-picker/picker";
 import * as DialogPrimitive from "@rn-primitives/dialog";
 import { format } from "date-fns";
 
-import { TaskCompletionTypes } from "@acme/utils";
+import { TaskBlockingTypes, TaskCompletionTypes } from "@acme/utils";
 
 import { api } from "~/utils/api";
 
@@ -79,6 +79,7 @@ export function CreateTaskDialog({
         isSet: false,
         numSets: 1,
         numCompletedSets: 0,
+        blocking: TaskBlockingTypes.NEVER_BLOCK,
       };
 
       const tasks = utils.task.getAllMyActiveTasks.getData();

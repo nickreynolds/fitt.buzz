@@ -129,7 +129,7 @@ app.on("web-contents-created", (_, contents) => {
    * @see https://www.electronjs.org/docs/latest/tutorial/security#12-verify-webview-options-before-creation
    */
   contents.on("will-attach-webview", (event, webPreferences, params) => {
-    const { origin } = new URL(params.src);
+    const { origin } = new URL(params.src ?? "");
     if (!ALLOWED_ORIGINS_AND_PERMISSIONS.has(origin)) {
       if (import.meta.env.DEV) {
         console.warn(

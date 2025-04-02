@@ -31,6 +31,7 @@ export function BlockingMonitor() {
         window.createT3TurboElectron.block(domainsToBlock);
       }
     } else {
+      console.log("unblocking");
       // @ts-ignore
       if (window.createT3TurboElectron) {
         // @ts-ignore

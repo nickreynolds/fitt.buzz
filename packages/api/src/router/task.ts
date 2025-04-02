@@ -12,7 +12,11 @@ import {
   Task,
   TaskCompletion,
 } from "@acme/db/schema";
-import { getCompletionPeriodBegins, TaskCompletionTypes } from "@acme/utils";
+import {
+  getCompletionPeriodBegins,
+  TaskBlockingTypes,
+  TaskCompletionTypes,
+} from "@acme/utils";
 
 import { protectedProcedure } from "../trpc";
 import { bootstrapTasks } from "../utils/bootstrap";
@@ -24,6 +28,7 @@ export const pusher = new Pusher({
   key: process.env.PUSHER_KEY ?? "",
   secret: process.env.PUSHER_SECRET ?? "",
   cluster: process.env.PUSHER_CLUSTER ?? "",
+  useTLS: true,
 });
 
 const baseTaskOutputSchema = z.object({
@@ -49,6 +54,11 @@ const baseTaskOutputSchema = z.object({
   isSet: z.boolean(),
   numSets: z.number(),
   numCompletedSets: z.number(),
+  blocking: z.enum([
+    TaskBlockingTypes.BLOCK_WHEN_OVERDUE,
+    TaskBlockingTypes.NEVER_BLOCK,
+    TaskBlockingTypes.BLOCK_WHEN_TWICE_OVERDUE,
+  ]),
   taskCompletionData: z.array(z.string()).optional(),
   childTaskCompletionDataMap: z.map(z.string(), z.array(z.string())).optional(),
   prevTaskCompletionData: z.array(z.string()).optional(),
@@ -773,6 +783,39 @@ export const taskRouter = {
       const updated = await ctx.db
         .update(Task)
         .set({ isSet: input.isSet, numSets: input.isSet ? 1 : 0 })
+        .where(eq(Task.id, input.id));
+      await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
+        tasks: [input.id, task.parentTaskId],
+      });
+      return updated;
+    }),
+  updateBlocking: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        blocking: z.enum([
+          TaskBlockingTypes.BLOCK_WHEN_OVERDUE,
+          TaskBlockingTypes.NEVER_BLOCK,
+          TaskBlockingTypes.BLOCK_WHEN_TWICE_OVERDUE,
+        ]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const task = await ctx.db.query.Task.findFirst({
+        where: eq(Task.id, input.id),
+      });
+
+      if (!task) {
+        throw new Error("Task not found");
+      }
+
+      if (task.creatorId !== ctx.session.user.id) {
+        throw new Error("You are not the owner of this task");
+      }
+
+      const updated = await ctx.db
+        .update(Task)
+        .set({ blocking: input.blocking })
         .where(eq(Task.id, input.id));
       await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
         tasks: [input.id, task.parentTaskId],

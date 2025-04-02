@@ -3,7 +3,11 @@ import { relations } from "drizzle-orm";
 import { pgEnum, pgTable, primaryKey } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
-import { TaskCompletionConditions, TaskCompletionTypes } from "@acme/utils";
+import {
+  TaskBlockingTypes,
+  TaskCompletionConditions,
+  TaskCompletionTypes,
+} from "@acme/utils";
 
 export const completionDataTypeEnum = pgEnum("completion_type", [
   TaskCompletionTypes.Boolean,
@@ -14,6 +18,12 @@ export const completionDataTypeEnum = pgEnum("completion_type", [
 export const completionConditionsEnum = pgEnum("completion_conditions", [
   TaskCompletionConditions.AllSubtasks,
   TaskCompletionConditions.AnySubtask,
+]);
+
+export const blockingTypeEnum = pgEnum("blocking_type", [
+  TaskBlockingTypes.BLOCK_WHEN_OVERDUE,
+  TaskBlockingTypes.NEVER_BLOCK,
+  TaskBlockingTypes.BLOCK_WHEN_TWICE_OVERDUE,
 ]);
 
 export const Task = pgTable("task", (t) => ({
@@ -49,6 +59,7 @@ export const Task = pgTable("task", (t) => ({
   completionConditions: completionConditionsEnum()
     .notNull()
     .default(TaskCompletionConditions.AllSubtasks),
+  blocking: blockingTypeEnum().notNull().default(TaskBlockingTypes.NEVER_BLOCK),
 }));
 
 export const TaskCompletion = pgTable("task_completion", (t) => ({
@@ -72,31 +83,32 @@ export const TaskRelations = relations(Task, ({ one, many }) => ({
 }));
 
 export const CreateTaskSchema = z.object({
-  id: z.string().uuid(),
-  title: z.string().max(256),
-  description: z.string().max(256),
+  title: z.string(),
+  description: z.string().nullable(),
   recurring: z.boolean(),
-  frequencyHours: z.number().optional(),
+  frequencyHours: z.number().nullable(),
   nextDue: z.date(),
-  completionDataType: z.enum([
-    TaskCompletionTypes.Boolean,
-    TaskCompletionTypes.WeightReps,
-    TaskCompletionTypes.Time,
-  ]),
-});
-
-export const CreateSubtaskSchema = z.object({
-  id: z.string().uuid(),
-  title: z.string().max(256),
-  description: z.string().max(256),
-  parentTaskId: z.string().uuid(),
-  sortIndex: z.number().optional(),
+  parentTaskId: z.string().uuid().nullable(),
+  sortIndex: z.number(),
   completionDataType: z.enum([
     TaskCompletionTypes.Boolean,
     TaskCompletionTypes.WeightReps,
     TaskCompletionTypes.Time,
   ]),
   isSet: z.boolean(),
+  numSets: z.number(),
+  numCompletedSets: z.number(),
+  blocking: z
+    .enum([
+      TaskBlockingTypes.BLOCK_WHEN_OVERDUE,
+      TaskBlockingTypes.NEVER_BLOCK,
+      TaskBlockingTypes.BLOCK_WHEN_TWICE_OVERDUE,
+    ])
+    .default(TaskBlockingTypes.NEVER_BLOCK),
+});
+
+export const CreateSubtaskSchema = CreateTaskSchema.extend({
+  parentTaskId: z.string().uuid(),
 });
 
 export const User = pgTable("user", (t) => ({

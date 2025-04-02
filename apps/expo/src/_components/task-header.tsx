@@ -7,6 +7,7 @@ import {
   canBeCompleted,
   getNumCompletedChildTasks,
   isCompleted,
+  isOverdue,
 } from "@acme/api-utils";
 import { TaskCompletionTypes } from "@acme/utils";
 
@@ -40,6 +41,7 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
   const numChildTasks = task.childTasks?.length ?? 0;
   const numCompletedChildTasks = getNumCompletedChildTasks(task);
   const isComplete = isCompleted(task);
+  const isTaskOverdue = !task.parentTaskId && isOverdue(task);
   const undoneTasks = Array(numChildTasks - numCompletedChildTasks).fill(1);
   const doneTasks = Array(numCompletedChildTasks).fill(1);
   const numSets = task.numSets;
@@ -126,6 +128,9 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
             {task.title}
             {task.recurring && (
               <Text className="text-muted-foreground"> ↻</Text>
+            )}
+            {isTaskOverdue && (
+              <Text className="text-destructive"> (overdue)</Text>
             )}
           </Text>
         </Link>

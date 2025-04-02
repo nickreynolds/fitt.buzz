@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { v4 } from "uuid";
 
 import { CreateSubtaskSchema } from "@acme/db/schema";
-import { Checkbox } from "@acme/ui";
+import { Checkbox, ToggleGroup, ToggleGroupItem } from "@acme/ui";
 import { Button } from "@acme/ui/button";
 import {
   Dialog,
@@ -40,6 +40,9 @@ export function CreateSubtaskDialogForm({
 }: CreateSubtaskDialogFormProps) {
   const zodSchema = CreateSubtaskSchema.omit({ parentTaskId: true, id: true });
   const [isSet, setIsSet] = useState(false);
+  const [completionType, setCompletionType] = useState(
+    TaskCompletionTypes.Boolean,
+  );
 
   const form = useForm({
     resolver: zodResolver(zodSchema),
@@ -133,9 +136,9 @@ export function CreateSubtaskDialogForm({
       description: data.description,
       sortIndex: numSiblingTasks,
       completionDataType:
-        data.completionDataType === TaskCompletionTypes.Boolean
+        completionType === TaskCompletionTypes.Boolean
           ? TaskCompletionTypes.Boolean
-          : data.completionDataType === TaskCompletionTypes.WeightReps
+          : completionType === TaskCompletionTypes.WeightReps
             ? TaskCompletionTypes.WeightReps
             : TaskCompletionTypes.Time,
       isSet,
@@ -179,25 +182,33 @@ export function CreateSubtaskDialogForm({
                 </FormItem>
               )}
             />
-
             {!isSet && (
               <FormField
                 control={form.control}
                 name="completionDataType"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <FormLabel>Completion Type</FormLabel>
-                    <FormControl>
-                      <select {...field}>
-                        <option value={TaskCompletionTypes.Boolean}>
-                          Boolean
-                        </option>
-                        <option value={TaskCompletionTypes.WeightReps}>
-                          Weight & Reps
-                        </option>
-                        <option value={TaskCompletionTypes.Time}>Time</option>
-                      </select>
-                    </FormControl>
+                    <ToggleGroup
+                      value={completionType}
+                      onValueChange={(e) => {
+                        console.log("e: ", e);
+                        setCompletionType(e as TaskCompletionTypes);
+                      }}
+                      type="single"
+                      defaultValue={TaskCompletionTypes.Boolean}
+                    >
+                      <ToggleGroupItem value={TaskCompletionTypes.Boolean}>
+                        Boolean
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value={TaskCompletionTypes.WeightReps}>
+                        Weight & Reps
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value={TaskCompletionTypes.Time}>
+                        Time
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+
                     <FormMessage />
                   </FormItem>
                 )}

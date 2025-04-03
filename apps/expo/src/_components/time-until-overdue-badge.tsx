@@ -5,13 +5,9 @@ import { getFriendlyTime } from "@acme/utils";
 
 interface TimeUntilOverdueBadgeProps {
   nextDue: Date;
-  className?: string;
 }
 
-export function TimeUntilOverdueBadge({
-  nextDue,
-  className,
-}: TimeUntilOverdueBadgeProps) {
+export function TimeUntilOverdueBadge({ nextDue }: TimeUntilOverdueBadgeProps) {
   const now = new Date();
   const secondsUntilDue = Math.max(
     0,

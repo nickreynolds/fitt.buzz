@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Plus } from "lucide-react";
 
 import type { RouterOutputs } from "@acme/api";
@@ -14,6 +14,9 @@ type DomainBlocking = RouterOutputs["domainBlocking"]["getAll"][number];
 
 export default function FunBlockingPage() {
   const [newDomain, setNewDomain] = useState("");
+  const [showPermissionsButton, setShowPermissionsButton] = useState(false);
+  const [isElectron, setIsElectron] = useState(false);
+  const [permissionsNonce, setPermissionsNonce] = useState(0);
   const utils = api.useUtils();
   const { data: domainBlockings } = api.domainBlocking.getAll.useQuery();
   const createDomainBlocking = api.domainBlocking.create.useMutation({
@@ -30,17 +33,57 @@ export default function FunBlockingPage() {
     }
   };
 
+  React.useEffect(() => {
+    async function getPermissions() {
+      // @ts-expect-error - hacky way to get the electron api
+      if (typeof window.createT3TurboElectron !== "undefined") {
+        // @ts-expect-error - hacky way to get the electron api
+        // eslint-disable-next-line
+        const res = await window.createT3TurboElectron.getPermissions();
+        if (res != "666") {
+          setShowPermissionsButton(true);
+        }
+      }
+    }
+    // eslint-disable-next-line
+    getPermissions();
+  }, [permissionsNonce]);
+
+  React.useEffect(() => {
+    // @ts-expect-error - hacky way to get the electron api
+    setIsElectron(typeof window.createT3TurboElectron !== "undefined");
+  }, []);
+
   return (
     <Layout>
       <div className="container mx-auto max-w-4xl px-4 py-8">
         <h1 className="mb-8 text-3xl font-bold">Fun Blocking</h1>
-        <p>
-          In order to enable domain blocking, you must install (and keep
-          running) the Electron App version of fitt.buzz You must also set the
-          permissions of your "hosts" file to be writable. (on MacOS, this is
-          /etc/hosts)
-        </p>
+        {!isElectron && (
+          <p>
+            Domain blocking will only work if you are running the Electron App.
+          </p>
+        )}
 
+        {showPermissionsButton && (
+          <div>
+            {" "}
+            <p>
+              In order to enable domain blocking, you must install (and keep
+              running) the Electron App version of fitt.buzz and click the "set
+              permissions" button
+            </p>
+            <Button
+              onClick={async () => {
+                // @ts-expect-error - hacky way to get the electron api
+                // eslint-disable-next-line
+                await window.createT3TurboElectron.setPermissions();
+                setPermissionsNonce(permissionsNonce + 1);
+              }}
+            >
+              Set Permissions
+            </Button>
+          </div>
+        )}
         <p>
           Blocking may take several minutes to take effect (an overdue task will
           not immediately cause websites to be blocked), but the unblocking of

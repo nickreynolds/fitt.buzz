@@ -37,6 +37,7 @@
   "dependencies": {
     "electron-updater": "4.6.5",
     "react": "catalog:react18",
-    "react-dom": "catalog:react18"
+    "react-dom": "catalog:react18",
+    "sudo-prompt": "^9.2.1"
   }
 }

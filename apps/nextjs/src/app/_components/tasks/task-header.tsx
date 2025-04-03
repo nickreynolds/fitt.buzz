@@ -20,6 +20,7 @@ import { CompleteTaskButton } from "./complete-task-button";
 import { CompleteTimedTaskButton } from "./complete-timed-task-button";
 import { CompleteWeightRepsTaskButton } from "./complete-weight-reps-task-button";
 import { OverdueBadge } from "./overdue-badge";
+import { TimeUntilOverdueBadge } from "./time-until-overdue-badge";
 
 interface TaskHeaderProps {
   initialTask: RouterOutputs["task"]["getTask"];
@@ -122,6 +123,9 @@ export default function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
                 <span className="text-muted-foreground"> ↻</span>
               )}
               {isTaskOverdue && <OverdueBadge />}
+              {!task.parentTaskId && !isTaskOverdue && (
+                <TimeUntilOverdueBadge nextDue={task.nextDue} />
+              )}
             </h2>
             <Pencil className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
           </button>
@@ -133,6 +137,9 @@ export default function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
                 <span className="text-muted-foreground"> ↻</span>
               )}
               {isTaskOverdue && <OverdueBadge />}
+              {!task.parentTaskId && !isTaskOverdue && (
+                <TimeUntilOverdueBadge nextDue={task.nextDue} />
+              )}
             </h2>
           </Link>
         )}

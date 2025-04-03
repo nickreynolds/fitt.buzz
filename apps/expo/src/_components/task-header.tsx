@@ -17,6 +17,7 @@ import { CompleteTimedTaskButton } from "./complete-timed-task-button";
 import { CompleteWeightRepsTaskButton } from "./complete-weight-reps-task-button";
 import Icon from "./icon";
 import { OverdueBadge } from "./overdue-badge";
+import { TimeUntilOverdueBadge } from "./time-until-overdue-badge";
 
 interface TaskHeaderProps {
   initialTask: RouterOutputs["task"]["getTask"];
@@ -132,6 +133,9 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
             )}
           </Text>
           {isTaskOverdue && <OverdueBadge />}
+          {!task.parentTaskId && !isTaskOverdue && (
+            <TimeUntilOverdueBadge nextDue={task.nextDue} />
+          )}
         </Link>
         <View className="flex flex-row items-center gap-4 self-end">
           {status()}

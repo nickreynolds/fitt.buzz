@@ -3,7 +3,11 @@ import { relations } from "drizzle-orm";
 import { pgEnum, pgTable, primaryKey } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
-import { TaskCompletionConditions, TaskCompletionTypes } from "@acme/utils";
+import {
+  TaskBlockingTypes,
+  TaskCompletionConditions,
+  TaskCompletionTypes,
+} from "@acme/utils";
 
 export const completionDataTypeEnum = pgEnum("completion_type", [
   TaskCompletionTypes.Boolean,
@@ -14,6 +18,12 @@ export const completionDataTypeEnum = pgEnum("completion_type", [
 export const completionConditionsEnum = pgEnum("completion_conditions", [
   TaskCompletionConditions.AllSubtasks,
   TaskCompletionConditions.AnySubtask,
+]);
+
+export const blockingTypeEnum = pgEnum("blocking_type", [
+  TaskBlockingTypes.BLOCK_WHEN_OVERDUE,
+  TaskBlockingTypes.NEVER_BLOCK,
+  TaskBlockingTypes.BLOCK_WHEN_TWICE_OVERDUE,
 ]);
 
 export const Task = pgTable("task", (t) => ({
@@ -49,6 +59,7 @@ export const Task = pgTable("task", (t) => ({
   completionConditions: completionConditionsEnum()
     .notNull()
     .default(TaskCompletionConditions.AllSubtasks),
+  blocking: blockingTypeEnum().notNull().default(TaskBlockingTypes.NEVER_BLOCK),
 }));
 
 export const TaskCompletion = pgTable("task_completion", (t) => ({
@@ -85,7 +96,7 @@ export const CreateTaskSchema = z.object({
   ]),
 });
 
-export const CreateSubtaskSchema = z.object({
+export const CreateSubtaskSchema = CreateTaskSchema.extend({
   id: z.string().uuid(),
   title: z.string().max(256),
   description: z.string().max(256),
@@ -154,4 +165,24 @@ export const Session = pgTable("session", (t) => ({
 
 export const SessionRelations = relations(Session, ({ one }) => ({
   user: one(User, { fields: [Session.userId], references: [User.id] }),
+}));
+
+export const DomainBlocking = pgTable("domain_blocking", (t) => ({
+  id: t.uuid().notNull().primaryKey().defaultRandom(),
+  creatorId: t
+    .uuid()
+    .notNull()
+    .references(() => User.id),
+  domain: t.text().notNull(),
+  createdAt: t.timestamp().notNull().defaultNow(),
+  updatedAt: t
+    .timestamp({ mode: "date", withTimezone: true })
+    .$onUpdateFn(() => new Date()),
+}));
+
+export const DomainBlockingRelations = relations(DomainBlocking, ({ one }) => ({
+  creator: one(User, {
+    fields: [DomainBlocking.creatorId],
+    references: [User.id],
+  }),
 }));

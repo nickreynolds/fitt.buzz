@@ -31,7 +31,11 @@ import {
   SelectValue,
 } from "@acme/ui/select";
 import { Textarea } from "@acme/ui/textarea";
-import { getCompletionPeriodBegins, TaskCompletionTypes } from "@acme/utils";
+import {
+  getCompletionPeriodBegins,
+  TaskBlockingTypes,
+  TaskCompletionTypes,
+} from "@acme/utils";
 
 import { api } from "~/trpc/react";
 
@@ -102,6 +106,7 @@ export function CreateTaskDialogForm({
         isSet: false,
         numSets: 1,
         numCompletedSets: 0,
+        blocking: TaskBlockingTypes.NEVER_BLOCK,
       };
 
       utils.task.getTask.setData({ id: data.id }, task);

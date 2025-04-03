@@ -24,6 +24,7 @@ export default function TaskPage({ params }: { params: { id: string } }) {
     return <div>Task not found</div>;
   }
 
+  // window.createT3TurboElectron.block();
   return (
     <Layout>
       <div className="flex min-h-full w-full flex-col px-4 py-16 sm:px-6 lg:px-8">

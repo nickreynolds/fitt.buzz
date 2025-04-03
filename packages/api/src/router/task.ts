@@ -12,7 +12,11 @@ import {
   Task,
   TaskCompletion,
 } from "@acme/db/schema";
-import { getCompletionPeriodBegins, TaskCompletionTypes } from "@acme/utils";
+import {
+  getCompletionPeriodBegins,
+  TaskBlockingTypes,
+  TaskCompletionTypes,
+} from "@acme/utils";
 
 import { protectedProcedure } from "../trpc";
 import { bootstrapTasks } from "../utils/bootstrap";
@@ -24,6 +28,7 @@ export const pusher = new Pusher({
   key: process.env.PUSHER_KEY ?? "",
   secret: process.env.PUSHER_SECRET ?? "",
   cluster: process.env.PUSHER_CLUSTER ?? "",
+  useTLS: true,
 });
 
 const baseTaskOutputSchema = z.object({
@@ -49,6 +54,11 @@ const baseTaskOutputSchema = z.object({
   isSet: z.boolean(),
   numSets: z.number(),
   numCompletedSets: z.number(),
+  blocking: z.enum([
+    TaskBlockingTypes.BLOCK_WHEN_OVERDUE,
+    TaskBlockingTypes.NEVER_BLOCK,
+    TaskBlockingTypes.BLOCK_WHEN_TWICE_OVERDUE,
+  ]),
   taskCompletionData: z.array(z.string()).optional(),
   childTaskCompletionDataMap: z.map(z.string(), z.array(z.string())).optional(),
   prevTaskCompletionData: z.array(z.string()).optional(),
@@ -604,7 +614,7 @@ export const taskRouter = {
           childTasks: true,
         },
       });
-
+      let res;
       if (task) {
         if (task.creatorId !== ctx.session.user.id) {
           throw new Error("You are not the owner of this task");
@@ -629,7 +639,7 @@ export const taskRouter = {
             .flat();
         }
 
-        return await ctx.db.transaction(async (trx) => {
+        res = await ctx.db.transaction(async (trx) => {
           // use transaction
           await trx
             .delete(TaskCompletion)
@@ -641,7 +651,12 @@ export const taskRouter = {
             .delete(Task)
             .where(inArray(Task.id, [input.id, ...allChildrenIDs]));
         });
+        await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
+          tasks: [],
+        });
+        return res;
       }
+
       throw new Error("Task not found");
     }),
   setIsSet: protectedProcedure
@@ -773,6 +788,71 @@ export const taskRouter = {
         tasks: [input.id, task.parentTaskId],
       });
       return updated;
+    }),
+  updateBlocking: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        blocking: z.enum([
+          TaskBlockingTypes.BLOCK_WHEN_OVERDUE,
+          TaskBlockingTypes.NEVER_BLOCK,
+          TaskBlockingTypes.BLOCK_WHEN_TWICE_OVERDUE,
+        ]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const task = await ctx.db.query.Task.findFirst({
+        where: eq(Task.id, input.id),
+      });
+
+      if (!task) {
+        throw new Error("Task not found");
+      }
+
+      if (task.creatorId !== ctx.session.user.id) {
+        throw new Error("You are not the owner of this task");
+      }
+
+      const updated = await ctx.db
+        .update(Task)
+        .set({ blocking: input.blocking })
+        .where(eq(Task.id, input.id));
+      await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
+        tasks: [input.id, task.parentTaskId],
+      });
+      return updated;
+    }),
+  shouldBlockFun: protectedProcedure
+    .output(z.boolean())
+    .query(async ({ ctx }) => {
+      // Get all tasks for the user
+      const tasks = await ctx.db.query.Task.findMany({
+        where: (tasks, { eq }) => eq(tasks.creatorId, ctx.session.user.id),
+      });
+
+      // Check if any task is overdue and has BLOCK_WHEN_OVERDUE set
+      const now = new Date();
+      for (const task of tasks) {
+        if (task.blocking === TaskBlockingTypes.BLOCK_WHEN_OVERDUE) {
+          const nextDue = new Date(task.nextDue);
+
+          // For recurring tasks, check if we're in the completion period
+          if (task.recurring && task.completionPeriodBegins) {
+            const completionPeriodBegins = new Date(
+              task.completionPeriodBegins,
+            );
+            if (now > completionPeriodBegins && now > nextDue) {
+              return true;
+            }
+          }
+          // For non-recurring tasks, simply check if the due date has passed
+          else if (now > nextDue) {
+            return true;
+          }
+        }
+      }
+
+      return false;
     }),
 } satisfies TRPCRouterRecord;
 

@@ -6,6 +6,7 @@ import { Trash2 } from "lucide-react";
 import type { RouterOutputs } from "@acme/api";
 import { Button } from "@acme/ui/button";
 import { Switch } from "@acme/ui/switch";
+import { TaskBlockingTypes } from "@acme/utils";
 
 import { api } from "~/trpc/react";
 import { TaskChildrenPrevCompletionData } from "./task-children-prev-completion-data";
@@ -64,6 +65,34 @@ export function TaskDetails({
     },
   });
 
+  const updateBlocking = api.task.updateBlocking.useMutation({
+    onMutate: ({ blocking }) => {
+      const previousTask = utils.task.getTask.getData({ id: taskId });
+      if (previousTask) {
+        utils.task.getTask.setData(
+          { id: taskId },
+          { ...previousTask, blocking },
+        );
+      }
+    },
+    onSettled: async () => {
+      await utils.task.getTask.invalidate({ id: taskId });
+    },
+  });
+
+  const getBlockingLabel = (blocking: TaskBlockingTypes) => {
+    switch (blocking) {
+      case TaskBlockingTypes.BLOCK_WHEN_OVERDUE:
+        return "Block when overdue";
+      case TaskBlockingTypes.NEVER_BLOCK:
+        return "Never block";
+      case TaskBlockingTypes.BLOCK_WHEN_TWICE_OVERDUE:
+        return "Block when twice overdue";
+      default:
+        return "Unknown";
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div>
@@ -86,6 +115,31 @@ export function TaskDetails({
             updateIsSet.mutate({ id: taskId, isSet: checked ? true : false })
           }
         />
+      </div>
+
+      <div>
+        <h3 className="text-sm font-medium">Blocking Behavior</h3>
+        <p className="text-sm text-muted-foreground">
+          Controls how this task blocks other tasks when overdue
+        </p>
+        <div className="mt-2 flex flex-col gap-2">
+          {Object.values(TaskBlockingTypes).map((blockingType) => (
+            <div key={blockingType} className="flex items-center gap-2">
+              <Switch
+                checked={task?.blocking === blockingType}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    updateBlocking.mutate({
+                      id: taskId,
+                      blocking: blockingType,
+                    });
+                  }
+                }}
+              />
+              <span className="text-sm">{getBlockingLabel(blockingType)}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {isRecurring && (

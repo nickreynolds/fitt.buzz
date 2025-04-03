@@ -7,6 +7,7 @@ import {
   canBeCompleted,
   getNumCompletedChildTasks,
   isCompleted,
+  isOverdue,
 } from "@acme/api-utils";
 import { TaskCompletionTypes } from "@acme/utils";
 
@@ -15,6 +16,7 @@ import { CompleteTaskButton } from "./complete-task-button";
 import { CompleteTimedTaskButton } from "./complete-timed-task-button";
 import { CompleteWeightRepsTaskButton } from "./complete-weight-reps-task-button";
 import Icon from "./icon";
+import { OverdueBadge } from "./overdue-badge";
 
 interface TaskHeaderProps {
   initialTask: RouterOutputs["task"]["getTask"];
@@ -40,6 +42,7 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
   const numChildTasks = task.childTasks?.length ?? 0;
   const numCompletedChildTasks = getNumCompletedChildTasks(task);
   const isComplete = isCompleted(task);
+  const isTaskOverdue = !task.parentTaskId && isOverdue(task);
   const undoneTasks = Array(numChildTasks - numCompletedChildTasks).fill(1);
   const doneTasks = Array(numCompletedChildTasks).fill(1);
   const numSets = task.numSets;
@@ -128,6 +131,7 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
               <Text className="text-muted-foreground"> ↻</Text>
             )}
           </Text>
+          {isTaskOverdue && <OverdueBadge />}
         </Link>
         <View className="flex flex-row items-center gap-4 self-end">
           {status()}

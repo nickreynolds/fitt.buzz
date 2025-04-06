@@ -5,6 +5,7 @@ import { Slot } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { PortalHost } from "@rn-primitives/portal";
 
+import { AppBlockingMonitor } from "~/_components/app-blocking-monitor";
 import { TRPCProvider } from "~/utils/api";
 
 import "../styles.css";
@@ -21,6 +22,8 @@ if (Platform.OS === "android") {
 // This is the main layout of the app
 // It wraps your pages with the providers they need
 export default function RootLayout() {
+  // console.log("hello: ", hello());
+  // console.log("hello: ", PI);
   const { colorScheme } = useColorScheme();
   return (
     <TRPCProvider>
@@ -31,6 +34,7 @@ export default function RootLayout() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Slot />
         <PortalHost />
+        <AppBlockingMonitor />
       </GestureHandlerRootView>
     </TRPCProvider>
   );

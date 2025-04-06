@@ -846,7 +846,7 @@ export const taskRouter = {
             }
           }
           // For non-recurring tasks, simply check if the due date has passed
-          else if (now > nextDue) {
+          else if (!task.lastCompleted && now > nextDue) {
             return true;
           }
         }

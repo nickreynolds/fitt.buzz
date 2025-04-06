@@ -3,7 +3,7 @@ import React from "react";
 import { Text } from "react-native";
 import { Redirect, Tabs } from "expo-router";
 import { Pusher } from "@pusher/pusher-websocket-react-native";
-import { Home, Plus, SettingsIcon } from "lucide-react-native";
+import { Home, Plus, SettingsIcon, Shield } from "lucide-react-native";
 import { useColorScheme } from "nativewind";
 
 import { api } from "~/utils/api";
@@ -110,6 +110,13 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        name="fun-blocking/index"
+        options={{
+          title: "Fun Blocking",
+          tabBarIcon: ({ color, size }) => <Shield size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: "Settings",
@@ -122,4 +129,10 @@ export default function AppLayout() {
       <Tabs.Screen name="task/[id]" options={{ href: null }} />
     </Tabs>
   );
+  // return (
+  //   <AppBlockerView
+  //     name="fun-blocking"
+  //     style={{ flex: 1, backgroundColor: "red" }}
+  //   />
+  // );
 }

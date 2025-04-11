@@ -29,6 +29,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: "#1F104A",
     },
     versionCode: 2,
+    permissions: [
+      "android.permission.QUERY_ALL_PACKAGES",
+      "android.permission.RECEIVE_BOOT_COMPLETED",
+    ],
   },
   // extra: {
   //   eas: {
@@ -39,7 +43,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     tsconfigPaths: true,
     typedRoutes: true,
   },
-  plugins: ["expo-router"],
+  plugins: [
+    "expo-router",
+    ["./plugin/android/withAndroidXMLResource.js", "./assets/xml"],
+    ["./plugin/android/withAndroidValuesResource.js", "./assets/values"],
+    "./plugin/android/withAndroidCustomActivity.js",
+    "./plugin/android/withAndroidCustomService.js",
+  ],
   owner: "nickreynolds2",
   extra: {
     eas: {

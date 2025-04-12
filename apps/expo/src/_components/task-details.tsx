@@ -6,6 +6,7 @@ import { Trash2 } from "lucide-react-native";
 
 import type { RouterOutputs } from "@acme/api";
 
+import { Switch } from "~/components/ui/switch";
 import { api } from "~/utils/api";
 
 interface TaskDetailsProps {
@@ -67,14 +68,20 @@ export function TaskDetails({
             Enable if this task should be completed in sets
           </Text>
         </View>
-        <SwitchPrimitive.Root
+        <Switch
+          checked={initialTask?.isSet ? true : false}
+          onCheckedChange={(checked) =>
+            updateIsSet.mutate({ id: taskId, isSet: checked })
+          }
+        />
+        {/* <SwitchPrimitive.Root
           checked={initialTask?.isSet ? true : false}
           onCheckedChange={(checked) =>
             updateIsSet.mutate({ id: taskId, isSet: checked })
           }
         >
           <SwitchPrimitive.Thumb className="h-6 w-6 bg-white" />
-        </SwitchPrimitive.Root>
+        </SwitchPrimitive.Root> */}
       </View>
 
       <View>

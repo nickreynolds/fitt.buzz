@@ -8,7 +8,7 @@ import { TextClassContext } from "~/components/ui/text";
 import { cn } from "~/lib/utils";
 
 const toggleVariants = cva(
-  "web:group web:inline-flex web:ring-offset-background web:transition-colors web:hover:bg-muted web:focus-visible:outline-none web:focus-visible:ring-2 web:focus-visible:ring-ring web:focus-visible:ring-offset-2 items-center justify-center rounded-md active:bg-muted",
+  "web:group web:inline-flex web:ring-offset-background web:transition-colors web:hover:bg-muted web:focus-visible:outline-none web:focus-visible:ring-2 web:focus-visible:ring-ring web:focus-visible:ring-offset-2 items-center justify-center rounded-md active:bg-primary",
   {
     variants: {
       variant: {

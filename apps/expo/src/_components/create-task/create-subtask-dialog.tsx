@@ -4,8 +4,9 @@ import uuid from "react-native-uuid";
 
 import { TaskBlockingTypes, TaskCompletionTypes } from "@acme/utils";
 
+import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
 import { api } from "~/utils/api";
-import Icon from "./icon";
+import Icon from "../icon";
 
 interface CreateSubtaskDialogProps {
   parentTaskId: string;
@@ -136,44 +137,49 @@ export function CreateSubtaskDialog({
 
         <View className="space-y-2">
           <Text className="font-medium text-foreground">Completion Type</Text>
-          <View className="flex-row space-x-2">
-            <Pressable
-              onPress={() => setCompletionType(TaskCompletionTypes.Boolean)}
-              className={`flex-1 rounded-md p-2 ${
-                completionType === TaskCompletionTypes.Boolean
-                  ? "bg-primary"
-                  : "bg-secondary"
-              }`}
+          <ToggleGroup
+            type="single"
+            value={completionType}
+            onValueChange={(value) => {
+              if (value) {
+                setCompletionType(value as TaskCompletionTypes);
+              }
+            }}
+            className="w-full"
+          >
+            <ToggleGroupItem
+              value={TaskCompletionTypes.Boolean}
+              className="flex-1"
             >
               <View className="flex-row items-center justify-center space-x-2">
                 <Icon name="Check" className="h-4 w-4 text-foreground" />
                 <Text className="text-foreground">Manual</Text>
               </View>
-            </Pressable>
+            </ToggleGroupItem>
 
-            <Pressable
-              onPress={() => setCompletionType(TaskCompletionTypes.WeightReps)}
-              className={`flex-1 rounded-md p-2 ${
-                completionType === TaskCompletionTypes.WeightReps
-                  ? "bg-primary"
-                  : "bg-secondary"
-              }`}
+            <ToggleGroupItem
+              value={TaskCompletionTypes.WeightReps}
+              className="flex-1"
             >
               <View className="flex-row items-center justify-center space-x-2">
                 <Icon name="Dumbbell" className="h-4 w-4 text-foreground" />
                 <Text className="text-foreground">Weight & Reps</Text>
               </View>
-            </Pressable>
-          </View>
+            </ToggleGroupItem>
+
+            <ToggleGroupItem
+              value={TaskCompletionTypes.Time}
+              className="flex-1"
+            >
+              <View className="flex-row items-center justify-center space-x-2">
+                <Icon name="Clock" className="h-4 w-4 text-foreground" />
+                <Text className="text-foreground">Time</Text>
+              </View>
+            </ToggleGroupItem>
+          </ToggleGroup>
         </View>
 
         <View className="flex-row justify-end space-x-2">
-          <Pressable
-            onPress={onClose}
-            className="rounded-md bg-secondary px-4 py-2"
-          >
-            <Text className="text-foreground">Cancel</Text>
-          </Pressable>
           <Pressable
             onPress={handleCreate}
             className="rounded-md bg-primary px-4 py-2"

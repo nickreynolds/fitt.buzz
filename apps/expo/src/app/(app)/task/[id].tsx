@@ -30,7 +30,10 @@ export default function Index() {
         <TaskDetailsDialog initialTask={task} taskId={id as string} />
         <TaskCompletionTable task={task} />
         <SubtaskList initialTask={task} parentTaskId={id as string} />
-        <CreateSubtaskButton taskId={id as string} />
+        <CreateSubtaskButton
+          taskId={id as string}
+          parentTaskTitle={task.title}
+        />
       </View>
     </SafeAreaView>
   );

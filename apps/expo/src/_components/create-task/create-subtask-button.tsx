@@ -7,10 +7,12 @@ import { CreateSubtaskDialog } from "./create-subtask-dialog";
 
 export interface CreateSubtaskButtonProps {
   taskId: string;
+  parentTaskTitle: string;
 }
 
 export default function CreateSubtaskButton({
   taskId,
+  parentTaskTitle,
 }: CreateSubtaskButtonProps) {
   const [isSubtaskDialogOpen, setIsSubtaskDialogOpen] = React.useState(false);
   return (
@@ -30,6 +32,7 @@ export default function CreateSubtaskButton({
             <View className="pt-12">
               <CreateSubtaskDialog
                 parentTaskId={taskId}
+                parentTaskTitle={parentTaskTitle}
                 isOpen={isSubtaskDialogOpen}
                 onClose={() => setIsSubtaskDialogOpen(false)}
               />

@@ -10,12 +10,14 @@ import Icon from "../icon";
 
 interface CreateSubtaskDialogProps {
   parentTaskId: string;
+  parentTaskTitle: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
 export function CreateSubtaskDialog({
   parentTaskId,
+  parentTaskTitle,
   // isOpen,
   onClose,
 }: CreateSubtaskDialogProps) {
@@ -124,7 +126,8 @@ export function CreateSubtaskDialog({
     <View>
       <View className="w-full space-y-4 rounded-lg bg-card p-4">
         <Text className="text-xl font-semibold text-foreground">
-          Create Subtask
+          Create Subtask for{" "}
+          <Text className="text-primary">{parentTaskTitle}</Text>
         </Text>
 
         <TextInput

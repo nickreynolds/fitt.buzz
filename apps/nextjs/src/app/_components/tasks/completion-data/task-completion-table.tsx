@@ -21,8 +21,6 @@ export const TaskCompletionTable: React.FC<TaskCompletionTableProps> = ({
       {data.map((row, i) => {
         return <div key={i}>{row.result}</div>;
       })}
-
-      <div className="h-4" />
     </div>
   );
 };

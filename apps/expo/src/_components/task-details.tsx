@@ -60,7 +60,7 @@ export function TaskDetails({
         </Text>
       </View>
 
-      <View className="flex-row items-center justify-between">
+      <View className="flex-col items-start justify-between">
         <View>
           <Text className="text-sm font-medium">Set-based Task</Text>
           <Text className="text-sm text-muted-foreground">

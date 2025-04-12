@@ -2,7 +2,7 @@ import React from "react";
 
 import { formatTime } from "@acme/utils";
 
-import ProgressCircle from "../shared/progress-circle";
+import ProgressCircle from "./progress-circle";
 
 interface TimeDisplayProps {
   time: number;

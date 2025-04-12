@@ -5,9 +5,9 @@ import React from "react";
 import type { RouterOutputs } from "@acme/api";
 import { formatTime, TaskCompletionTypes } from "@acme/utils";
 
-import type { TaskCompletionInfo } from "./TaskCompletionTable";
+import type { TaskCompletionInfo } from "./task-completion-table";
 import { api } from "~/trpc/react";
-import { TaskCompletionTable } from "./TaskCompletionTable";
+import { TaskCompletionTable } from "./task-completion-table";
 
 interface SubtaskListProps {
   initialTask: RouterOutputs["task"]["getTask"];

@@ -7,7 +7,7 @@ import { Button } from "@acme/ui/button";
 
 import { useTaskCompletion } from "~/hooks/useTaskCompletion";
 import { api } from "~/trpc/react";
-import { NumericInputWithButtons } from "./NumericInputWithButtons";
+import { NumericInputWithButtons } from "../../shared/numeric-input-with-buttons";
 
 interface CompleteWeightRepsTaskButtonProps {
   taskId: string;

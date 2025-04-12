@@ -16,11 +16,11 @@ import { Input } from "@acme/ui/input";
 import { TaskCompletionTypes } from "@acme/utils";
 
 import { api } from "~/trpc/react";
-import { CompleteTaskButton } from "./complete-task-button";
-import { CompleteTimedTaskButton } from "./complete-timed-task-button";
-import { CompleteWeightRepsTaskButton } from "./complete-weight-reps-task-button";
-import { OverdueBadge } from "./overdue-badge";
-import { TimeUntilOverdueBadge } from "./time-until-overdue-badge";
+import { OverdueBadge } from "./badges/overdue-badge";
+import { TimeUntilOverdueBadge } from "./badges/time-until-overdue-badge";
+import { CompleteTaskButton } from "./complete-buttons/complete-task-button";
+import { CompleteTimedTaskButton } from "./complete-buttons/complete-timed-task-button";
+import { CompleteWeightRepsTaskButton } from "./complete-buttons/complete-weight-reps-task-button";
 
 interface TaskHeaderProps {
   initialTask: RouterOutputs["task"]["getTask"];

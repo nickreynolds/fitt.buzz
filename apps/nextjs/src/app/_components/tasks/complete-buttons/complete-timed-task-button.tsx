@@ -9,7 +9,7 @@ import { parseEditValue } from "@acme/utils";
 
 import { useTaskCompletion } from "~/hooks/useTaskCompletion";
 import { api } from "~/trpc/react";
-import { TimerDialog } from "./timer-dialog";
+import { TimerDialog } from "../../shared/timer-dialog";
 
 interface CompleteTimedTaskButtonProps {
   taskId: string;

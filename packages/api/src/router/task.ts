@@ -903,6 +903,11 @@ const shouldCompleteParentSet = async (
         }
       }
 
+      console.log(
+        "groupedChildrenCompletionData: ",
+        groupedChildrenCompletionData,
+      );
+
       const allOtherChildrenCompletionNum = [];
       for (const [childId, completionData] of groupedChildrenCompletionData) {
         if (childId === task.id) {
@@ -921,6 +926,19 @@ const shouldCompleteParentSet = async (
           }
         }
       }
+
+      console.log(
+        "allOtherChildrenCompletionNum: ",
+        allOtherChildrenCompletionNum,
+      );
+
+      if (
+        allOtherChildrenCompletionNum.length === 0 &&
+        parentTask.childTasks.length > 1
+      ) {
+        completeParentSet = false;
+      }
+
       for (const num of allOtherChildrenCompletionNum) {
         console.log("num: ", num);
         if (

@@ -34,7 +34,6 @@ export function TaskChildrenCompletionData({
         );
 
         completionData?.forEach((data) => {
-          console.log("parsing completion data: ", data);
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           const parsedData = JSON.parse(data);
           if (parsedData) {
@@ -65,8 +64,6 @@ export function TaskChildrenCompletionData({
       });
     }
     data1 = data1.flat();
-
-    console.log("data: ", data1);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return Array.isArray(data1) ? data1 : [];

@@ -9,7 +9,7 @@ import { Switch } from "@acme/ui/switch";
 import { TaskBlockingTypes } from "@acme/utils";
 
 import { api } from "~/trpc/react";
-import { TaskChildrenPrevCompletionData } from "./task-children-prev-completion-data";
+import { TaskChildrenPrevCompletionData } from "./completion-data/task-children-prev-completion-data";
 
 interface TaskDetailsProps {
   isRecurring: boolean;

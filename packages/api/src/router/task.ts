@@ -398,8 +398,12 @@ export const taskRouter = {
           if (!task.frequencyHours) {
             throw new Error("Recurring task has no frequencyHours set");
           }
-          const minimumNextDueDate =
+          let minimumNextDueDate =
             new Date().getTime() + task.frequencyHours * 60 * 60 * 1000 * 0.7;
+
+          if (task.frequencyHours < 25) {
+            minimumNextDueDate = new Date().getTime();
+          }
 
           let dueDate =
             task.nextDue.getTime() + task.frequencyHours * 60 * 60 * 1000;

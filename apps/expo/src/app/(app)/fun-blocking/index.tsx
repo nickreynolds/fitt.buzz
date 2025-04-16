@@ -38,13 +38,15 @@ export default function FunBlockingPage() {
           title: "Fun Blocking",
         }}
       />
-      <ScrollView className="min-h-full p-4">
-        <Text className="mb-4 text-lg font-semibold">Installed Apps</Text>
+      <ScrollView className="min-h-full bg-background p-4">
+        <Text className="mb-4 text-lg font-semibold text-primary">
+          Installed Apps
+        </Text>
         {installedPackages.map((packageName) => (
           <TouchableOpacity
             key={packageName}
             onPress={() => handlePackageToggle(packageName)}
-            className="flex-row items-center py-2"
+            className="flex-row items-center rounded-md bg-background py-2"
           >
             <Checkbox
               status={
@@ -52,7 +54,7 @@ export default function FunBlockingPage() {
               }
               onPress={() => handlePackageToggle(packageName)}
             />
-            <Text className="ml-4 flex-1">{packageName}</Text>
+            <Text className="ml-4 flex-1 text-foreground">{packageName}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>

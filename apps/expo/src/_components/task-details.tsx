@@ -1,11 +1,12 @@
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
-import * as SwitchPrimitive from "@rn-primitives/switch";
 import { format } from "date-fns";
 import { Trash2 } from "lucide-react-native";
 
 import type { RouterOutputs } from "@acme/api";
+import { TaskBlockingTypes } from "@acme/utils";
 
+import { Switch } from "~/components/ui/switch";
 import { api } from "~/utils/api";
 
 interface TaskDetailsProps {
@@ -51,6 +52,34 @@ export function TaskDetails({
     },
   });
 
+  const updateBlocking = api.task.updateBlocking.useMutation({
+    onMutate: ({ blocking }) => {
+      const previousTask = utils.task.getTask.getData({ id: taskId });
+      if (previousTask) {
+        utils.task.getTask.setData(
+          { id: taskId },
+          { ...previousTask, blocking },
+        );
+      }
+    },
+    onSettled: async () => {
+      await utils.task.getTask.invalidate({ id: taskId });
+    },
+  });
+
+  const getBlockingLabel = (blocking: TaskBlockingTypes) => {
+    switch (blocking) {
+      case TaskBlockingTypes.BLOCK_WHEN_OVERDUE:
+        return "Block when overdue";
+      case TaskBlockingTypes.NEVER_BLOCK:
+        return "Never block";
+      case TaskBlockingTypes.BLOCK_WHEN_TWICE_OVERDUE:
+        return "Block when twice overdue";
+      default:
+        return "Unknown";
+    }
+  };
+
   return (
     <View className="space-y-4">
       <View>
@@ -60,21 +89,49 @@ export function TaskDetails({
         </Text>
       </View>
 
-      <View className="flex-row items-center justify-between">
+      <View className="flex-col items-start justify-between">
         <View>
           <Text className="text-sm font-medium">Set-based Task</Text>
           <Text className="text-sm text-muted-foreground">
             Enable if this task should be completed in sets
           </Text>
         </View>
-        <SwitchPrimitive.Root
+        <Switch
           checked={initialTask?.isSet ? true : false}
           onCheckedChange={(checked) =>
             updateIsSet.mutate({ id: taskId, isSet: checked })
           }
-        >
-          <SwitchPrimitive.Thumb className="h-6 w-6 bg-white" />
-        </SwitchPrimitive.Root>
+        />
+      </View>
+
+      <View className="flex-col items-start justify-between">
+        <View>
+          <Text className="text-sm font-medium">Blocking Behavior</Text>
+          <Text className="text-sm text-muted-foreground">
+            Controls how this task blocks other tasks when overdue
+          </Text>
+        </View>
+        <View className="mt-2 w-full space-y-2">
+          {Object.values(TaskBlockingTypes).map((blockingType) => (
+            <View
+              key={blockingType}
+              className="flex-row items-center justify-between"
+            >
+              <Text className="text-sm">{getBlockingLabel(blockingType)}</Text>
+              <Switch
+                checked={initialTask?.blocking === blockingType}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    updateBlocking.mutate({
+                      id: taskId,
+                      blocking: blockingType,
+                    });
+                  }
+                }}
+              />
+            </View>
+          ))}
+        </View>
       </View>
 
       <View>

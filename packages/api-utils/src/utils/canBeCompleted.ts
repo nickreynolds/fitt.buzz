@@ -9,12 +9,28 @@ export default function canBeCompleted(
   parentTask?: RouterOutputs["task"]["getTask"],
 ): boolean {
   const inCompletion = inCompletionPeriod(task);
-  console.log("canBeCompleted", task);
   if (parentTask) {
     if (parentTask.isSet) {
       if (parentTask.numCompletedSets === parentTask.numSets) {
         return false;
       }
+
+      // if current task has more completions than other children, return false
+      const numCompletedThisChild =
+        parentTask.childTaskCompletionDataMap?.get(task.id)?.length ?? 0;
+
+      for (const [
+        key,
+        value,
+      ] of parentTask.childTaskCompletionDataMap?.entries() ?? []) {
+        if (key === task.id) {
+          continue;
+        }
+        if (value.length < numCompletedThisChild) {
+          return false;
+        }
+      }
+
       return true;
     }
   }

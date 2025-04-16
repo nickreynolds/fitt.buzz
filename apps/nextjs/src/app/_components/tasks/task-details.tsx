@@ -9,7 +9,7 @@ import { Switch } from "@acme/ui/switch";
 import { TaskBlockingTypes } from "@acme/utils";
 
 import { api } from "~/trpc/react";
-import { TaskChildrenPrevCompletionData } from "./task-children-prev-completion-data";
+import { TaskChildrenPrevCompletionData } from "./completion-data/task-children-prev-completion-data";
 
 interface TaskDetailsProps {
   isRecurring: boolean;
@@ -120,7 +120,7 @@ export function TaskDetails({
       <div>
         <h3 className="text-sm font-medium">Blocking Behavior</h3>
         <p className="text-sm text-muted-foreground">
-          Controls how this task blocks other tasks when overdue
+          Controls how this task blocks apps when overdue
         </p>
         <div className="mt-2 flex flex-col gap-2">
           {Object.values(TaskBlockingTypes).map((blockingType) => (

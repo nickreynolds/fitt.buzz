@@ -398,8 +398,12 @@ export const taskRouter = {
           if (!task.frequencyHours) {
             throw new Error("Recurring task has no frequencyHours set");
           }
-          const minimumNextDueDate =
+          let minimumNextDueDate =
             new Date().getTime() + task.frequencyHours * 60 * 60 * 1000 * 0.7;
+
+          if (task.frequencyHours < 25) {
+            minimumNextDueDate = new Date().getTime();
+          }
 
           let dueDate =
             task.nextDue.getTime() + task.frequencyHours * 60 * 60 * 1000;
@@ -899,6 +903,11 @@ const shouldCompleteParentSet = async (
         }
       }
 
+      console.log(
+        "groupedChildrenCompletionData: ",
+        groupedChildrenCompletionData,
+      );
+
       const allOtherChildrenCompletionNum = [];
       for (const [childId, completionData] of groupedChildrenCompletionData) {
         if (childId === task.id) {
@@ -917,6 +926,19 @@ const shouldCompleteParentSet = async (
           }
         }
       }
+
+      console.log(
+        "allOtherChildrenCompletionNum: ",
+        allOtherChildrenCompletionNum,
+      );
+
+      if (
+        allOtherChildrenCompletionNum.length === 0 &&
+        parentTask.childTasks.length > 1
+      ) {
+        completeParentSet = false;
+      }
+
       for (const num of allOtherChildrenCompletionNum) {
         console.log("num: ", num);
         if (

@@ -45,6 +45,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   plugins: [
     "expo-router",
+    "expo-secure-store",
     ["./plugin/android/withAndroidXMLResource.js", "./assets/xml"],
     ["./plugin/android/withAndroidValuesResource.js", "./assets/values"],
     "./plugin/android/withAndroidCustomActivity.js",

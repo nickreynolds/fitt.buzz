@@ -12,13 +12,15 @@ export interface TaskCompletionTableProps {
 export const TaskCompletionTable: React.FC<TaskCompletionTableProps> = ({
   data,
 }) => {
+  if (data.length === 0) {
+    return null;
+  }
+
   return (
     <div className="p-2">
       {data.map((row, i) => {
         return <div key={i}>{row.result}</div>;
       })}
-
-      <div className="h-4" />
     </div>
   );
 };

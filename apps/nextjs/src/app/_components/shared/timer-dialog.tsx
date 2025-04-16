@@ -48,6 +48,7 @@ export function TimerDialog({
   } = useTimer({
     onTimerComplete: () => {
       onTimerComplete(originalTime);
+      resetTimer();
       onOpenChange(false);
     },
     initialTime,
@@ -78,10 +79,10 @@ export function TimerDialog({
     <Dialog
       open={open}
       onOpenChange={(open) => {
-        onOpenChange(open);
         if (!open) {
           resetTimer();
         }
+        onOpenChange(open);
       }}
     >
       <DialogContent className="sm:max-w-[425px]">

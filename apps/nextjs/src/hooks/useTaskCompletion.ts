@@ -1,4 +1,4 @@
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { api } from "~/trpc/react";
 
@@ -23,7 +23,7 @@ export function useTaskCompletion({
 }: UseTaskCompletionProps) {
   const utils = api.useUtils();
   const router = useRouter();
-
+  const pathname = usePathname();
   const handleOptimisticUpdate = async (completionData: TaskCompletionData) => {
     const task = utils.task.getTask.getData({ id: taskId });
     const existingTaskCompletionData = task?.taskCompletionData ?? [];
@@ -65,15 +65,31 @@ export function useTaskCompletion({
           JSON.stringify(completionData),
         ]);
 
+        let shouldIncrementParentSet = true;
+        for (const [
+          key,
+          value,
+        ] of existingChildTaskCompletionDataMap?.entries() ?? []) {
+          if (key !== taskId) {
+            if (
+              value.length !==
+              existingChildTaskCompletionDataMap?.get(taskId)?.length
+            ) {
+              shouldIncrementParentSet = false;
+            }
+          }
+        }
+
         utils.task.getTask.setData(
           { id: parentTaskId },
           {
             ...parentTask,
             childTasks: updatedChildTasks,
             childTaskCompletionDataMap: existingChildTaskCompletionDataMap,
-            numCompletedSets: parentTask.isSet
-              ? parentTask.numCompletedSets + 1
-              : parentTask.numCompletedSets,
+            numCompletedSets:
+              parentTask.isSet && shouldIncrementParentSet
+                ? parentTask.numCompletedSets + 1
+                : parentTask.numCompletedSets,
           },
         );
       }
@@ -105,21 +121,25 @@ export function useTaskCompletion({
     promises.push(utils.task.getTask.cancel({ id: taskId }));
     promises.push(utils.task.getAllMyActiveTasks.cancel());
 
-    const promises2 = [];
     if (parentTaskId) {
-      promises2.push(utils.task.getTask.invalidate({ id: parentTaskId }));
+      promises.push(utils.task.getTask.invalidate({ id: parentTaskId }));
     }
-    promises2.push(utils.task.getTask.invalidate({ id: taskId }));
-    promises2.push(utils.task.getAllMyActiveTasks.invalidate());
+    promises.push(utils.task.getTask.invalidate({ id: taskId }));
+    promises.push(utils.task.getAllMyActiveTasks.invalidate());
 
-    await Promise.all(promises2);
+    promises.push(utils.task.shouldBlockFun.invalidate());
+
+    await Promise.all(promises);
 
     onComplete?.();
 
-    if (parentTaskId) {
-      router.push(`/task/${parentTaskId}`);
-    } else {
-      router.push("/");
+    // if we're still looking at the task page, redirect
+    if (pathname.includes(`/task/${taskId}`)) {
+      if (parentTaskId) {
+        router.push(`/task/${parentTaskId}`);
+      } else {
+        router.push("/");
+      }
     }
   };
 

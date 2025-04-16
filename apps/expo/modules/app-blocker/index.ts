@@ -1,5 +1,4 @@
 /* eslint-disable */
-import type { Subscription } from "expo-modules-core";
 import { EventEmitter, NativeModulesProxy } from "expo-modules-core";
 
 import type {
@@ -40,15 +39,6 @@ export function block(): void {
 
 export function unblock(): void {
   AppBlockerModule.unblock();
-}
-const emitter = new EventEmitter(
-  AppBlockerModule ?? NativeModulesProxy.AppBlocker,
-);
-
-export function addChangeListener(
-  listener: (event: ChangeEventPayload) => void,
-): Subscription {
-  return emitter.addListener<ChangeEventPayload>("onChange", listener);
 }
 
 export { AppBlockerView };

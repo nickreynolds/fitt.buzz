@@ -4,9 +4,9 @@ import { useRouter } from "next/navigation";
 
 import { Layout } from "~/app/_components/Layout";
 import BackButton from "~/app/_components/tasks/back-button";
-import { CreateSubtaskButton } from "~/app/_components/tasks/create-subtask-button";
+import { TaskChildrenCompletionData } from "~/app/_components/tasks/completion-data/task-children-completion-data";
+import { CreateSubtaskButton } from "~/app/_components/tasks/create-task/create-subtask-button";
 import { SubtaskList } from "~/app/_components/tasks/subtask-list";
-import { TaskChildrenCompletionData } from "~/app/_components/tasks/task-children-completion-data";
 import { TaskDetails } from "~/app/_components/tasks/task-details";
 import { TaskDetailsDialog } from "~/app/_components/tasks/task-details-dialog";
 import TaskHeader from "~/app/_components/tasks/task-header";

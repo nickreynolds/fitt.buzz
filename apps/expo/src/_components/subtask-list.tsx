@@ -100,7 +100,7 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
   }
 
   return (
-    <SafeAreaView className="mt-4 flex h-1/2 space-y-2">
+    <SafeAreaView className="mt-4 flex h-full space-y-2">
       <DraggableFlatList
         data={listData}
         renderItem={renderItem}

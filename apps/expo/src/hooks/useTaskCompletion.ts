@@ -104,14 +104,15 @@ export function useTaskCompletion({
     promises.push(utils.task.getTask.cancel({ id: taskId }));
     promises.push(utils.task.getAllMyActiveTasks.cancel());
 
-    const promises2 = [];
     if (parentTaskId) {
-      promises2.push(utils.task.getTask.invalidate({ id: parentTaskId }));
+      promises.push(utils.task.getTask.invalidate({ id: parentTaskId }));
     }
-    promises2.push(utils.task.getTask.invalidate({ id: taskId }));
-    promises2.push(utils.task.getAllMyActiveTasks.invalidate());
+    promises.push(utils.task.getTask.invalidate({ id: taskId }));
+    promises.push(utils.task.getAllMyActiveTasks.invalidate());
 
-    await Promise.all(promises2);
+    promises.push(utils.task.shouldBlockFun.invalidate());
+
+    await Promise.all(promises);
 
     onComplete?.();
 

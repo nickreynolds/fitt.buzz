@@ -6,7 +6,7 @@ import { Button } from "@acme/ui/button";
 
 import { CreateTaskDialogForm } from "./create-task-dialog-form";
 
-export function CreateTaskForm() {
+export function CreateTaskButton() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   return (

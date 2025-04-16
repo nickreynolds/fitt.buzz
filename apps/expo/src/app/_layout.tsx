@@ -56,9 +56,9 @@ async function registerBackgroundTaskAsync() {
 // 3. (Optional) Unregister tasks by specifying the task name
 // This will cancel any future background task calls that match the given name
 // Note: This does NOT need to be in the global scope and CAN be used in your React components!
-async function unregisterBackgroundTaskAsync() {
-  return BackgroundTask.unregisterTaskAsync(BACKGROUND_TASK_IDENTIFIER);
-}
+// async function unregisterBackgroundTaskAsync() {
+//   return BackgroundTask.unregisterTaskAsync(BACKGROUND_TASK_IDENTIFIER);
+// }
 
 if (Platform.OS === "android") {
   if (UIManager.setLayoutAnimationEnabledExperimental) {

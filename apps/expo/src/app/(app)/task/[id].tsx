@@ -1,12 +1,9 @@
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useLocalSearchParams } from "expo-router";
-import * as DialogPrimitive from "@rn-primitives/dialog";
 
 import CreateSubtaskButton from "~/_components/create-task/create-subtask-button";
-import { CreateSubtaskDialog } from "~/_components/create-task/create-subtask-dialog";
-import Icon from "~/_components/icon";
 import { SubtaskList } from "~/_components/subtask-list";
 import { TaskCompletionTable } from "~/_components/task-completion-table";
 import { TaskDetailsDialog } from "~/_components/task-details-dialog";

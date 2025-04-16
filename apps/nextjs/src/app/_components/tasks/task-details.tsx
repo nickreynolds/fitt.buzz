@@ -29,7 +29,6 @@ export function TaskDetails({
   initialTask,
   taskId,
   onClose,
-  z,
 }: TaskDetailsProps) {
   const utils = api.useUtils();
 

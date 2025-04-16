@@ -1,6 +1,5 @@
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
-import * as SwitchPrimitive from "@rn-primitives/switch";
 import { format } from "date-fns";
 import { Trash2 } from "lucide-react-native";
 

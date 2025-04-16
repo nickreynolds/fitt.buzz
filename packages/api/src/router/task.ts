@@ -414,14 +414,20 @@ export const taskRouter = {
 
           const prevDue = task.nextDue;
 
+          let completionPeriodBegins = getCompletionPeriodBegins(
+            new Date(dueDate),
+            task.frequencyHours,
+          );
+
+          if (completionPeriodBegins < new Date()) {
+            completionPeriodBegins = new Date(Date.now() + 10);
+          }
+
           res = await trx
             .update(Task)
             .set({
               lastCompleted: new Date(),
-              completionPeriodBegins: getCompletionPeriodBegins(
-                new Date(dueDate),
-                task.frequencyHours,
-              ),
+              completionPeriodBegins,
               nextDue: new Date(dueDate),
               numCompletedSets: 0,
               prevDues: sql`array_append(${Task.prevDues}, ${prevDue})`,

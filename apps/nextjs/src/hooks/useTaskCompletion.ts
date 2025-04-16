@@ -65,15 +65,31 @@ export function useTaskCompletion({
           JSON.stringify(completionData),
         ]);
 
+        let shouldIncrementParentSet = true;
+        for (const [
+          key,
+          value,
+        ] of existingChildTaskCompletionDataMap?.entries() ?? []) {
+          if (key !== taskId) {
+            if (
+              value.length !==
+              existingChildTaskCompletionDataMap?.get(taskId)?.length
+            ) {
+              shouldIncrementParentSet = false;
+            }
+          }
+        }
+
         utils.task.getTask.setData(
           { id: parentTaskId },
           {
             ...parentTask,
             childTasks: updatedChildTasks,
             childTaskCompletionDataMap: existingChildTaskCompletionDataMap,
-            numCompletedSets: parentTask.isSet
-              ? parentTask.numCompletedSets + 1
-              : parentTask.numCompletedSets,
+            numCompletedSets:
+              parentTask.isSet && shouldIncrementParentSet
+                ? parentTask.numCompletedSets + 1
+                : parentTask.numCompletedSets,
           },
         );
       }

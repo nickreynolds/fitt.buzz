@@ -398,12 +398,12 @@ export const taskRouter = {
           if (!task.frequencyHours) {
             throw new Error("Recurring task has no frequencyHours set");
           }
-          let minimumNextDueDate =
+          const minimumNextDueDate =
             new Date().getTime() + task.frequencyHours * 60 * 60 * 1000 * 0.7;
 
-          if (task.frequencyHours < 25) {
-            minimumNextDueDate = new Date().getTime();
-          }
+          // if (task.frequencyHours < 25) {
+          //   minimumNextDueDate = new Date().getTime();
+          // }
 
           let dueDate =
             task.nextDue.getTime() + task.frequencyHours * 60 * 60 * 1000;
@@ -414,14 +414,20 @@ export const taskRouter = {
 
           const prevDue = task.nextDue;
 
+          let completionPeriodBegins = getCompletionPeriodBegins(
+            new Date(dueDate),
+            task.frequencyHours,
+          );
+
+          if (completionPeriodBegins < new Date()) {
+            completionPeriodBegins = new Date(Date.now() + 10);
+          }
+
           res = await trx
             .update(Task)
             .set({
               lastCompleted: new Date(),
-              completionPeriodBegins: getCompletionPeriodBegins(
-                new Date(dueDate),
-                task.frequencyHours,
-              ),
+              completionPeriodBegins,
               nextDue: new Date(dueDate),
               numCompletedSets: 0,
               prevDues: sql`array_append(${Task.prevDues}, ${prevDue})`,

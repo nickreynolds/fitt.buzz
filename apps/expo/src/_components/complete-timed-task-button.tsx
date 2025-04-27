@@ -4,7 +4,7 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import { Audio } from "expo-av";
 
 import { canBeCompleted, isCompleted } from "@acme/api-utils";
-import { parseEditValue } from "@acme/utils";
+import { formatEditValueFromSeconds, parseEditValue } from "@acme/utils";
 
 import { useTaskCompletion } from "~/hooks/useTaskCompletion";
 import { api } from "~/utils/api";
@@ -52,7 +52,7 @@ export function CompleteTimedTaskButton({
           const prevCompletion = JSON.parse(prevCompletion1) as {
             time: number;
           };
-          setEditValue(formatEditValue(prevCompletion.time.toString()));
+          setEditValue(formatEditValueFromSeconds(prevCompletion.time));
         }
       }
     }

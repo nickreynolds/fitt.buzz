@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { Pressable, Text, View } from "react-native";
+import { useKeepAwake } from "expo-keep-awake";
 import * as DialogPrimitive from "@rn-primitives/dialog";
 
 import { useTimer } from "@acme/hooks";
@@ -33,6 +34,8 @@ export function TimerDialog({
     },
     initialTime,
   });
+
+  useKeepAwake();
 
   // Set initial time when dialog opens
   useEffect(() => {

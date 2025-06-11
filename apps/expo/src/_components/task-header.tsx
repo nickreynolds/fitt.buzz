@@ -31,7 +31,7 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
   const utils = api.useUtils();
   const { data } = api.task.getTask.useQuery(
     { id: taskId },
-    { initialData: initialTask },
+    { initialData: initialTask, refetchInterval: 120 * 1000 },
   );
 
   const task = data ?? initialTask;

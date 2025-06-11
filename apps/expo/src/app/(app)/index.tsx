@@ -30,7 +30,9 @@ function MobileAuth({ children }: PropsWithChildren<object>) {
 }
 
 export function MyTasks() {
-  const { data: tasks } = api.task.getAllMyActiveTasks.useQuery();
+  const { data: tasks } = api.task.getAllMyActiveTasks.useQuery(undefined, {
+    refetchInterval: 30 * 1000,
+  });
 
   return (
     <View className="relative h-full grow">

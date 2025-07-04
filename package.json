@@ -31,7 +31,8 @@
     "typescript": "catalog:"
   },
   "resolutions": {
-    "typescript": "5.8.2"
+    "typescript": "5.8.2",
+    "react-native-renderer": "19.1.0"
   },
   "prettier": "@acme/prettier-config"
 }

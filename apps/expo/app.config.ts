@@ -42,10 +42,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   experiments: {
     tsconfigPaths: true,
     typedRoutes: true,
+    reactCanary: true,
   },
   plugins: [
     "expo-router",
     "expo-secure-store",
+    "expo-background-task",
+    "expo-web-browser",
     ["./plugin/android/withAndroidXMLResource.js", "./assets/xml"],
     ["./plugin/android/withAndroidValuesResource.js", "./assets/values"],
     "./plugin/android/withAndroidCustomActivity.js",

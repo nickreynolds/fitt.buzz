@@ -31,7 +31,7 @@ function MobileAuth({ children }: PropsWithChildren<object>) {
 
 export function MyTasks() {
   const { data: tasks } = api.task.getAllMyActiveTasks.useQuery(undefined, {
-    refetchInterval: 30 * 1000,
+    refetchInterval: 5 * 60 * 1000,
   });
 
   return (

@@ -102,7 +102,7 @@ export function CreateTaskDialogForm({
         parentTaskId: null,
         childTasks: [],
         sortIndex: 0,
-        completionDataType: TaskCompletionTypes.Boolean,
+        completionDataType: data.completionDataType,
         isSet: false,
         numSets: 1,
         numCompletedSets: 0,

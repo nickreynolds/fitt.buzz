@@ -30,6 +30,7 @@ export function TimerDialog({
   } = useTimer({
     onTimerComplete: () => {
       onTimerComplete(originalTime);
+      resetTimer();
       onOpenChange(false);
     },
     initialTime,

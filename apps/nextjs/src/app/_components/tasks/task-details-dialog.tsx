@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Info } from "lucide-react";
 
 import type { RouterOutputs } from "@acme/api";

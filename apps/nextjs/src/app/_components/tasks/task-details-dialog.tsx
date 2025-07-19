@@ -35,7 +35,7 @@ export function TaskDetailsDialog({
 }: TaskDetailsDialogProps) {
   const [open, setOpen] = useState(false);
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <Button
         variant="ghost"
         className="flex items-center gap-2 xl:hidden"

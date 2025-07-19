@@ -7,10 +7,11 @@ interface TaskCompletionTableProps {
   task: RouterOutputs["task"]["getTask"];
 }
 
-interface WeightRepsCompletionData {
+interface CompletionData {
   weight: number;
   weightUnit: string;
   reps: number;
+  time: number;
 }
 
 export function TaskCompletionTable({ task }: TaskCompletionTableProps) {
@@ -23,17 +24,30 @@ export function TaskCompletionTable({ task }: TaskCompletionTableProps) {
 
   const renderCompletionData = (data: string) => {
     try {
-      const parsed = JSON.parse(data) as WeightRepsCompletionData;
-      if (parsed.weight && parsed.weightUnit && parsed.reps) {
+      const parsed = JSON.parse(data) as CompletionData;
+      const keys = Object.keys(parsed);
+      if (
+        keys.includes("weight") &&
+        keys.includes("weightUnit") &&
+        keys.includes("reps")
+      ) {
         return `${parsed.weight}${parsed.weightUnit} × ${parsed.reps}`;
       }
-      return String(JSON.stringify(parsed));
+
+      if (keys.includes("time")) {
+        return `${parsed.time}s`;
+      }
     } catch {
-      return String(data);
+      return JSON.stringify(data);
     }
   };
 
   const allCompletionData = [];
+  const firstTaskTitle = task.childTasks?.[0]?.title;
+
+  const doAllChildrenHaveSameTitle = task.childTasks?.every(
+    (childTask) => childTask.title === firstTaskTitle,
+  );
 
   for (const childTask of task.childTasks ?? []) {
     const completionData = task.childTaskCompletionDataMap?.get(childTask.id);
@@ -73,9 +87,11 @@ export function TaskCompletionTable({ task }: TaskCompletionTableProps) {
                   key={childTask.key}
                   className="flex-row rounded-md bg-secondary p-2"
                 >
-                  <Text className="text-sm text-foreground">
-                    {childTask.title}{" "}
-                  </Text>
+                  {!doAllChildrenHaveSameTitle && (
+                    <Text className="text-sm text-foreground">
+                      {childTask.title}{" "}
+                    </Text>
+                  )}
                   <Text className="text-sm text-primary">
                     {renderCompletionData(childTask.cd)}
                   </Text>

@@ -26,6 +26,6 @@
   "prettier": "@acme/prettier-config",
   "dependencies": {
     "@acme/utils": "workspace:*",
-    "react": "catalog:react18"
+    "react": "^19.1.0"
   }
 }

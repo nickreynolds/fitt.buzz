@@ -6,8 +6,7 @@ import { api } from "~/trpc/react";
 
 export function BlockingMonitor() {
   const { data: shouldBlock } = api.task.shouldBlockFun.useQuery(undefined, {
-    refetchInterval: 30 * 1000, // for testing
-    // refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
+    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
   });
 
   const { data: blockedDomains } = api.domainBlocking.getAll.useQuery(

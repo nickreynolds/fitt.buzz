@@ -19,7 +19,7 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
   const utils = api.useUtils();
   const { data: task } = api.task.getTask.useQuery(
     { id: parentTaskId },
-    { initialData: initialTask, refetchInterval: 30 * 1000 },
+    { initialData: initialTask, refetchInterval: 5 * 60 * 1000 },
   );
 
   const [listData, setListData] = React.useState<

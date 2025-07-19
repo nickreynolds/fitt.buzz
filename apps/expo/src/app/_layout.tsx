@@ -24,6 +24,7 @@ const BACKGROUND_TASK_IDENTIFIER = "background-task";
 // (a React component defined later in this example) is not visible.
 // Note: This needs to be called in the global scope, not in a React component.
 TaskManager.defineTask(BACKGROUND_TASK_IDENTIFIER, async () => {
+  console.log("task.");
   try {
     const now = Date.now();
     console.log(
@@ -48,9 +49,14 @@ TaskManager.defineTask(BACKGROUND_TASK_IDENTIFIER, async () => {
 // Note: This does NOT need to be in the global scope and CAN be used in your React components!
 async function registerBackgroundTaskAsync() {
   console.log("registerBackgroundTaskAsync");
-  return BackgroundTask.registerTaskAsync(BACKGROUND_TASK_IDENTIFIER, {
-    minimumInterval: 15,
-  });
+  const isRegistered = await TaskManager.isTaskRegisteredAsync(
+    BACKGROUND_TASK_IDENTIFIER,
+  );
+  if (!isRegistered) {
+    await BackgroundTask.registerTaskAsync(BACKGROUND_TASK_IDENTIFIER, {
+      minimumInterval: 15, // Try to repeat every 15 minutes while backgrounded
+    });
+  }
 }
 
 // 3. (Optional) Unregister tasks by specifying the task name

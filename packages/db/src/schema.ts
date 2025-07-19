@@ -31,8 +31,8 @@ export const Task = pgTable("task", (t) => ({
   title: t.text().notNull(),
   description: t.text(),
   recurring: t.boolean().notNull().default(false),
-  // Hours between occurrences
-  frequencyHours: t.integer(),
+  // Minutes between occurrences
+  frequencyMinutes: t.integer(),
   lastCompleted: t.timestamp({ mode: "date", withTimezone: true }),
   completionPeriodBegins: t.timestamp({ mode: "date", withTimezone: true }),
   nextDue: t.timestamp({ mode: "date", withTimezone: true }).notNull(),
@@ -87,7 +87,7 @@ export const CreateTaskSchema = z.object({
   title: z.string().max(256),
   description: z.string().max(256),
   recurring: z.boolean(),
-  frequencyHours: z.number().optional(),
+  frequencyMinutes: z.number().optional(),
   nextDue: z.date(),
   completionDataType: z.enum([
     TaskCompletionTypes.Boolean,

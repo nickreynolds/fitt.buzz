@@ -55,13 +55,13 @@ export function CreateTaskDialog({
       }
 
       const task = {
-        id: data.id,
+        id: data.id || "1",
         title: data.title,
         description: data.description,
         nextDue: data.nextDue,
         lastCompleted: null,
         recurring: data.recurring,
-        frequencyHours: data.frequencyHours ?? null,
+        frequencyMinutes: data.frequencyMinutes ?? null,
         completionPeriodBegins: null,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -108,7 +108,7 @@ export function CreateTaskDialog({
       description,
       nextDue: new Date(dueDate.toDateString() + " " + dueTime.toTimeString()),
       recurring: isRecurring,
-      frequencyHours: isRecurring ? parseInt(frequency) : undefined,
+      frequencyMinutes: isRecurring ? parseInt(frequency) : undefined,
       completionDataType: completionType,
     });
   };
@@ -247,14 +247,14 @@ export function CreateTaskDialog({
               {isRecurring && (
                 <View>
                   <Text className="mb-1 text-sm text-muted-foreground">
-                    Frequency (hours)
+                    Frequency (minutes)
                   </Text>
                   <TextInput
                     className="rounded-md border border-input bg-background px-3 py-2 text-foreground"
                     value={frequency}
                     onChangeText={setFrequency}
                     keyboardType="numeric"
-                    placeholder="24"
+                    placeholder="1440"
                     placeholderTextColor="#666"
                   />
                 </View>

@@ -40,12 +40,12 @@ import {
 import { api } from "~/trpc/react";
 
 const FREQUENCY_OPTIONS = [
-  { value: "1", label: "Hourly" },
-  { value: "12", label: "Twice daily" },
-  { value: "24", label: "Daily" },
-  { value: "168", label: "Weekly" },
-  { value: "336", label: "Bi-weekly" },
-  { value: "720", label: "Monthly" },
+  { value: "60", label: "Hourly" },
+  { value: "720", label: "Twice daily" },
+  { value: "1440", label: "Daily" },
+  { value: "10080", label: "Weekly" },
+  { value: "20160", label: "Bi-weekly" },
+  { value: "43200", label: "Monthly" },
 ];
 
 interface CreateTaskDialogFormProps {
@@ -73,7 +73,7 @@ export function CreateTaskDialogForm({
       nextDueString: new Date(new Date().getTime() + 16 * 60 * 60 * 1000)
         .toISOString()
         .substring(0, 19),
-      frequencyHours: 24,
+      frequencyMinutes: 1440,
     },
   });
 
@@ -84,8 +84,8 @@ export function CreateTaskDialogForm({
       if (!data.id) {
         throw new Error("Task ID is required");
       }
-      const completionPeriodBegins = data.frequencyHours
-        ? getCompletionPeriodBegins(data.nextDue, data.frequencyHours)
+      const completionPeriodBegins = data.frequencyMinutes
+        ? getCompletionPeriodBegins(data.nextDue, data.frequencyMinutes)
         : null;
       const task = {
         id: data.id || "1",
@@ -94,7 +94,7 @@ export function CreateTaskDialogForm({
         nextDue: data.nextDue,
         lastCompleted: null,
         recurring: data.recurring,
-        frequencyHours: data.frequencyHours ?? null,
+        frequencyMinutes: data.frequencyMinutes ?? null,
         completionPeriodBegins,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -102,7 +102,7 @@ export function CreateTaskDialogForm({
         parentTaskId: null,
         childTasks: [],
         sortIndex: 0,
-        completionDataType: TaskCompletionTypes.Boolean,
+        completionDataType: data.completionDataType,
         isSet: false,
         numSets: 1,
         numCompletedSets: 0,
@@ -137,7 +137,7 @@ export function CreateTaskDialogForm({
       title: data.title,
       description: data.description,
       nextDue: new Date(data.nextDueString),
-      frequencyHours: isRecurring ? data.frequencyHours : undefined,
+      frequencyMinutes: isRecurring ? data.frequencyMinutes : undefined,
       recurring: isRecurring,
       completionDataType: TaskCompletionTypes.Boolean,
     });
@@ -216,7 +216,7 @@ export function CreateTaskDialogForm({
             {isRecurring && (
               <FormField
                 control={form.control}
-                name="frequencyHours"
+                name="frequencyMinutes"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Frequency</FormLabel>

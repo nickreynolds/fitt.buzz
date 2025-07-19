@@ -18,7 +18,7 @@ interface TaskDetailsDialogProps {
   isRecurring: boolean;
   description: string | null;
   nextDue: Date;
-  frequencyHours: number | null;
+  frequencyMinutes: number | null;
   lastCompleted: Date | null;
   initialTask: RouterOutputs["task"]["getTask"];
   taskId: string;
@@ -28,19 +28,18 @@ export function TaskDetailsDialog({
   isRecurring,
   description,
   nextDue,
-  frequencyHours,
+  frequencyMinutes,
   lastCompleted,
   initialTask,
   taskId,
 }: TaskDetailsDialogProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
+  const [open, setOpen] = useState(false);
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <Button
         variant="ghost"
         className="flex items-center gap-2 xl:hidden"
-        onClick={() => setIsOpen(true)}
+        onClick={() => setOpen(true)}
       >
         <Info className="h-4 w-4" />
         Details
@@ -55,7 +54,7 @@ export function TaskDetailsDialog({
           isRecurring={isRecurring}
           description={description}
           nextDue={nextDue}
-          frequencyHours={frequencyHours}
+          frequencyMinutes={frequencyMinutes}
           lastCompleted={lastCompleted}
           initialTask={initialTask}
           taskId={taskId}

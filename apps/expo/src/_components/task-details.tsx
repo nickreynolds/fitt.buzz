@@ -147,11 +147,11 @@ export function TaskDetails({
             <Text className="text-sm font-medium text-primary">Frequency</Text>
             <Text className="mt-1 text-muted-foreground">
               Every{" "}
-              {initialTask.frequencyHours === 24
+              {initialTask.frequencyMinutes === 1440
                 ? "day"
-                : initialTask.frequencyHours === 168
+                : initialTask.frequencyMinutes === 10080
                   ? "week"
-                  : initialTask.frequencyHours === 336
+                  : initialTask.frequencyMinutes === 20160
                     ? "two weeks"
                     : "month"}
             </Text>

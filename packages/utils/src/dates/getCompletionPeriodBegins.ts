@@ -1,9 +1,9 @@
 export const getCompletionPeriodBegins = (
   nextDue: Date,
-  frequencyHours: number,
+  frequencyMinutes: number,
 ): Date => {
   return new Date(
     nextDue.getTime() -
-      Math.min(8 * 60 * 60 * 1000, frequencyHours * 60 * 60 * 1000 * 0.2),
+      Math.min(8 * 60 * 60 * 1000, frequencyMinutes * 60 * 1000 * 0.2),
   );
 };

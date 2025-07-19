@@ -24,7 +24,7 @@ const BACKGROUND_TASK_IDENTIFIER = "background-task";
 // (a React component defined later in this example) is not visible.
 // Note: This needs to be called in the global scope, not in a React component.
 TaskManager.defineTask(BACKGROUND_TASK_IDENTIFIER, async () => {
-  console.log("task.");
+  console.log("task. executing background task");
   try {
     const now = Date.now();
     console.log(

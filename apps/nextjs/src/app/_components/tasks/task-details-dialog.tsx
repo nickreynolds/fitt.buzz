@@ -15,32 +15,34 @@ import {
 import { TaskDetails } from "./task-details";
 
 interface TaskDetailsDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   isRecurring: boolean;
   description: string | null;
   nextDue: Date;
-  frequencyHours: number | null;
+  frequencyMinutes: number | null;
   lastCompleted: Date | null;
   initialTask: RouterOutputs["task"]["getTask"];
   taskId: string;
 }
 
 export function TaskDetailsDialog({
+  open,
+  onOpenChange,
   isRecurring,
   description,
   nextDue,
-  frequencyHours,
+  frequencyMinutes,
   lastCompleted,
   initialTask,
   taskId,
 }: TaskDetailsDialogProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <Button
         variant="ghost"
         className="flex items-center gap-2 xl:hidden"
-        onClick={() => setIsOpen(true)}
+        onClick={() => onOpenChange(true)}
       >
         <Info className="h-4 w-4" />
         Details
@@ -55,10 +57,11 @@ export function TaskDetailsDialog({
           isRecurring={isRecurring}
           description={description}
           nextDue={nextDue}
-          frequencyHours={frequencyHours}
+          frequencyMinutes={frequencyMinutes}
           lastCompleted={lastCompleted}
           initialTask={initialTask}
           taskId={taskId}
+          onClose={() => onOpenChange(false)}
         />
       </DialogContent>
     </Dialog>

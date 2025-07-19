@@ -37,7 +37,7 @@ export default function TaskPage({ params }: { params: { id: string } }) {
                 isRecurring={task.recurring}
                 description={task.description}
                 nextDue={task.nextDue}
-                frequencyHours={task.frequencyHours}
+                frequencyMinutes={task.frequencyMinutes}
                 lastCompleted={task.lastCompleted}
                 initialTask={task}
                 taskId={task.id}
@@ -64,7 +64,7 @@ export default function TaskPage({ params }: { params: { id: string } }) {
               isRecurring={task.recurring}
               description={task.description}
               nextDue={task.nextDue}
-              frequencyHours={task.frequencyHours}
+              frequencyMinutes={task.frequencyMinutes}
               lastCompleted={task.lastCompleted}
               initialTask={task}
               taskId={task.id}

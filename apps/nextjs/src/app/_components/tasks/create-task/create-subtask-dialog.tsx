@@ -73,10 +73,10 @@ export function CreateSubtaskDialogForm({
       }
 
       console.log("on mutate. data: ", data);
-      const completionPeriodBegins = parentTask.frequencyHours
+      const completionPeriodBegins = parentTask.frequencyMinutes
         ? getCompletionPeriodBegins(
             parentTask.nextDue,
-            parentTask.frequencyHours,
+            parentTask.frequencyMinutes,
           )
         : null;
 
@@ -84,28 +84,22 @@ export function CreateSubtaskDialogForm({
 
       console.log("onMutate data", data);
       const task = {
-        id: data.id,
+        id: data.id || "1",
         title: data.title,
         description: data.description,
         nextDue: parentTask.nextDue,
         lastCompleted: null,
         recurring: parentTask.recurring,
-        frequencyHours: parentTask.frequencyHours ?? null,
+        frequencyMinutes: parentTask.frequencyMinutes ?? null,
         completionPeriodBegins,
         createdAt: new Date(),
         updatedAt: new Date(),
         creatorId: "1",
-        parentTaskId: data.parentTaskId,
+        parentTaskId: parentTask.id,
         childTasks: [],
-        sortIndex: numSiblingTasks,
-        // horrible
-        completionDataType:
-          data.completionDataType === TaskCompletionTypes.Boolean
-            ? TaskCompletionTypes.Boolean
-            : data.completionDataType === TaskCompletionTypes.WeightReps
-              ? TaskCompletionTypes.WeightReps
-              : TaskCompletionTypes.Time,
-        isSet: data.isSet,
+        sortIndex: data.sortIndex ?? 0,
+        completionDataType: TaskCompletionTypes.Boolean,
+        isSet: false,
         numSets: 1,
         numCompletedSets: 0,
         blocking: TaskBlockingTypes.NEVER_BLOCK,

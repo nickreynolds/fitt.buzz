@@ -36,8 +36,8 @@ const baseTaskOutputSchema = z.object({
   title: z.string(),
   description: z.string().nullable(),
   recurring: z.boolean(),
-  // Hours between occurrences
-  frequencyHours: z.number().nullable(),
+  // Minutes between occurrences
+  frequencyMinutes: z.number().nullable(),
   lastCompleted: z.date().nullable(),
   completionPeriodBegins: z.date().nullable(),
   nextDue: z.date(),
@@ -85,10 +85,10 @@ export const taskSchema: z.ZodType<TaskOutput> = baseTaskOutputSchema.extend({
 export const taskRouter = {
   bootstrapTasks: protectedProcedure.mutation(async ({ ctx }) => {
     const tasksWithCreatorAndCompletionPeriod = bootstrapTasks.map((task) => {
-      if (task.recurring && task.frequencyHours) {
+      if (task.recurring && task.frequencyMinutes) {
         const completionPeriodBegins: Date = getCompletionPeriodBegins(
           task.nextDue,
-          task.frequencyHours,
+          task.frequencyMinutes,
         );
         return {
           ...task,
@@ -108,15 +108,18 @@ export const taskRouter = {
   createTask: protectedProcedure
     .input(CreateTaskSchema)
     .mutation(async ({ ctx, input }) => {
-      if (input.frequencyHours && input.frequencyHours > 0) {
+      if (input.frequencyMinutes && input.frequencyMinutes > 0) {
         const inserted = await ctx.db
           .insert(Task)
           .values({
             ...input,
             creatorId: ctx.session.user.id,
             completionPeriodBegins:
-              input.recurring && input.frequencyHours
-                ? getCompletionPeriodBegins(input.nextDue, input.frequencyHours)
+              input.recurring && input.frequencyMinutes
+                ? getCompletionPeriodBegins(
+                    input.nextDue,
+                    input.frequencyMinutes,
+                  )
                 : null,
           })
           .returning();
@@ -150,7 +153,7 @@ export const taskRouter = {
       const inserted = await ctx.db.insert(Task).values({
         ...input,
         recurring: parent.recurring,
-        frequencyHours: parent.frequencyHours ?? null,
+        frequencyMinutes: parent.frequencyMinutes ?? null,
         nextDue: parent.nextDue,
         completionPeriodBegins: parent.completionPeriodBegins,
         creatorId: ctx.session.user.id,
@@ -395,28 +398,28 @@ export const taskRouter = {
         }
 
         if (!task.parentTaskId && task.recurring) {
-          if (!task.frequencyHours) {
-            throw new Error("Recurring task has no frequencyHours set");
+          if (!task.frequencyMinutes) {
+            throw new Error("Recurring task has no frequencyMinutes set");
           }
           const minimumNextDueDate =
-            new Date().getTime() + task.frequencyHours * 60 * 60 * 1000 * 0.7;
+            new Date().getTime() + task.frequencyMinutes * 60 * 1000 * 0.7;
 
-          // if (task.frequencyHours < 25) {
+          // if (task.frequencyMinutes < 25) {
           //   minimumNextDueDate = new Date().getTime();
           // }
 
           let dueDate =
-            task.nextDue.getTime() + task.frequencyHours * 60 * 60 * 1000;
+            task.nextDue.getTime() + task.frequencyMinutes * 60 * 1000;
 
           while (dueDate < minimumNextDueDate) {
-            dueDate += task.frequencyHours * 60 * 60 * 1000;
+            dueDate += task.frequencyMinutes * 60 * 1000;
           }
 
           const prevDue = task.nextDue;
 
           let completionPeriodBegins = getCompletionPeriodBegins(
             new Date(dueDate),
-            task.frequencyHours,
+            task.frequencyMinutes,
           );
 
           if (completionPeriodBegins < new Date()) {

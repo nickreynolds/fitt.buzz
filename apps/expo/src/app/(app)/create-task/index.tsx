@@ -34,24 +34,24 @@ export default function CreateTask() {
     onMutate: (data) => {
       if (!isRecurring) {
         const task = {
-          id: data.id,
-          creatorId: "temp",
+          id: data.id || "1",
           title: data.title,
           description: data.description,
           nextDue: data.nextDue,
-          recurring: data.recurring,
-          frequencyHours: data.frequencyHours ?? null,
-          completionPeriodBegins: null,
           lastCompleted: null,
+          recurring: data.recurring,
+          frequencyMinutes: data.frequencyMinutes ?? null,
+          completionPeriodBegins: null,
           createdAt: new Date(),
           updatedAt: new Date(),
+          creatorId: "1",
           parentTaskId: null,
           childTasks: [],
           sortIndex: 0,
-          isSet: false,
-          numSets: 0,
-          numCompletedSets: 0,
           completionDataType: TaskCompletionTypes.Boolean,
+          isSet: false,
+          numSets: 1,
+          numCompletedSets: 0,
           blocking: TaskBlockingTypes.NEVER_BLOCK,
         };
 
@@ -81,7 +81,7 @@ export default function CreateTask() {
       description,
       nextDue: new Date(dueDate.toDateString() + " " + dueTime.toTimeString()),
       recurring: isRecurring,
-      frequencyHours: isRecurring ? parseInt(frequency) : undefined,
+      frequencyMinutes: isRecurring ? parseInt(frequency) : undefined,
       completionDataType: TaskCompletionTypes.Boolean,
     });
   };
@@ -219,14 +219,14 @@ export default function CreateTask() {
             {isRecurring && (
               <View>
                 <Text className="mb-1 text-sm text-muted-foreground">
-                  Frequency (hours)
+                  Frequency (minutes)
                 </Text>
                 <TextInput
                   className="rounded-md border border-input bg-background px-3 py-2 text-foreground"
                   value={frequency}
                   onChangeText={setFrequency}
                   keyboardType="numeric"
-                  placeholder="24"
+                  placeholder="1440"
                   placeholderTextColor="#666"
                 />
               </View>

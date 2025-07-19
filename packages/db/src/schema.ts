@@ -71,6 +71,7 @@ export const TaskCompletion = pgTable("task_completion", (t) => ({
   nextDue: t.timestamp({ mode: "date", withTimezone: true }).notNull(),
   completionDataType: completionDataTypeEnum().notNull(),
   completionData: t.jsonb(),
+  createdAt: t.timestamp().notNull().defaultNow(),
 }));
 
 export const TaskRelations = relations(Task, ({ one, many }) => ({

@@ -84,7 +84,7 @@ export function CreateSubtaskDialogForm({
 
       console.log("onMutate data", data);
       const task = {
-        id: data.id || "1",
+        id: data.id,
         title: data.title,
         description: data.description,
         nextDue: parentTask.nextDue,
@@ -97,11 +97,10 @@ export function CreateSubtaskDialogForm({
         creatorId: "1",
         parentTaskId: parentTask.id,
         childTasks: [],
-        sortIndex: data.sortIndex ?? 0,
+        sortIndex: numSiblingTasks,
         completionDataType: data.completionDataType,
-        numSiblingTasks,
-        isSet: false,
-        numSets: 1,
+        isSet: data.isSet,
+        numSets: data.isSet ? 1 : 0,
         numCompletedSets: 0,
         blocking: TaskBlockingTypes.NEVER_BLOCK,
       };

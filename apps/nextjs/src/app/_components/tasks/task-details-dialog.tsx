@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Info } from "lucide-react";
 
 import type { RouterOutputs } from "@acme/api";
@@ -14,8 +15,6 @@ import {
 import { TaskDetails } from "./task-details";
 
 interface TaskDetailsDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   isRecurring: boolean;
   description: string | null;
   nextDue: Date;
@@ -26,8 +25,6 @@ interface TaskDetailsDialogProps {
 }
 
 export function TaskDetailsDialog({
-  open,
-  onOpenChange,
   isRecurring,
   description,
   nextDue,
@@ -36,12 +33,13 @@ export function TaskDetailsDialog({
   initialTask,
   taskId,
 }: TaskDetailsDialogProps) {
+  const [open, setOpen] = useState(false);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <Button
         variant="ghost"
         className="flex items-center gap-2 xl:hidden"
-        onClick={() => onOpenChange(true)}
+        onClick={() => setOpen(true)}
       >
         <Info className="h-4 w-4" />
         Details
@@ -60,7 +58,6 @@ export function TaskDetailsDialog({
           lastCompleted={lastCompleted}
           initialTask={initialTask}
           taskId={taskId}
-          onClose={() => onOpenChange(false)}
         />
       </DialogContent>
     </Dialog>

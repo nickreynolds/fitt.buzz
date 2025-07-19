@@ -404,10 +404,6 @@ export const taskRouter = {
           const minimumNextDueDate =
             new Date().getTime() + task.frequencyMinutes * 60 * 1000 * 0.7;
 
-          // if (task.frequencyMinutes < 25) {
-          //   minimumNextDueDate = new Date().getTime();
-          // }
-
           let dueDate =
             task.nextDue.getTime() + task.frequencyMinutes * 60 * 1000;
 

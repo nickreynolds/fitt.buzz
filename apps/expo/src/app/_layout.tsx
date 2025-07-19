@@ -49,7 +49,7 @@ TaskManager.defineTask(BACKGROUND_TASK_IDENTIFIER, async () => {
 // Note: This does NOT need to be in the global scope and CAN be used in your React components!
 async function registerBackgroundTaskAsync() {
   console.log("registerBackgroundTaskAsync");
-  const isRegistered = TaskManager.isTaskRegisteredAsync(
+  const isRegistered = await TaskManager.isTaskRegisteredAsync(
     BACKGROUND_TASK_IDENTIFIER,
   );
   if (!isRegistered) {

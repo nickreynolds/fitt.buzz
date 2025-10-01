@@ -16,6 +16,7 @@ export function CompleteWeightRepsTaskButton({
 }: CompleteWeightRepsTaskButtonProps) {
   const [weight, setWeight] = React.useState("0");
   const [reps, setReps] = React.useState("0");
+  const [hasSetValues, setHasSetValues] = React.useState(false);
   const { handleOptimisticUpdate, handleSettled } = useTaskCompletion({
     taskId,
     parentTaskId,
@@ -25,7 +26,7 @@ export function CompleteWeightRepsTaskButton({
 
   const parentTask = utils.task.getTask.getData({ id: parentTaskId ?? "" });
   React.useEffect(() => {
-    if (parentTask) {
+    if (parentTask && !hasSetValues) {
       const numCompletedSets = parentTask.numCompletedSets;
       const prevCompletions =
         parentTask.prevChildTaskCompletionDataMap?.get(taskId);
@@ -41,13 +42,15 @@ export function CompleteWeightRepsTaskButton({
           };
           setWeight(prevCompletion.weight.toString());
           setReps(prevCompletion.reps.toString());
+          setHasSetValues(true);
         }
       }
     }
-  }, [parentTask, taskId]);
+  }, [parentTask, taskId, hasSetValues]);
 
   const completeTask = api.task.completeWeightRepsTask.useMutation({
     onMutate: async () => {
+      setHasSetValues(false);
       await handleOptimisticUpdate({
         result: true,
         weight: parseFloat(weight),

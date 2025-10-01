@@ -80,6 +80,30 @@ export function TaskDetails({
     },
   });
 
+  const updateNextDue = api.task.updateNextDue.useMutation({
+    onMutate: ({ nextDue, completionPeriodBegins }) => {
+      const previousTask = utils.task.getTask.getData({ id: taskId });
+      if (previousTask) {
+        utils.task.getTask.setData(
+          { id: taskId },
+          {
+            ...previousTask,
+            nextDue,
+            completionPeriodBegins:
+              completionPeriodBegins ?? previousTask.completionPeriodBegins,
+          },
+        );
+      }
+    },
+    onSettled: async () => {
+      await Promise.all([
+        utils.task.getTask.invalidate({ id: taskId }),
+        utils.task.getAllMyActiveTasks.invalidate(),
+        utils.task.getAllMyTasks.invalidate(),
+      ]);
+    },
+  });
+
   const getBlockingLabel = (blocking: TaskBlockingTypes) => {
     switch (blocking) {
       case TaskBlockingTypes.BLOCK_WHEN_OVERDUE:
@@ -181,6 +205,15 @@ export function TaskDetails({
         >
           <Trash2 className="h-4 w-4" />
           Delete
+        </Button>
+        <Button
+          variant="default"
+          onClick={() =>
+            updateNextDue.mutate({ id: taskId, nextDue: new Date() })
+          }
+          className="flex items-center gap-2"
+        >
+          Reset to Now
         </Button>
       </div>
     </div>

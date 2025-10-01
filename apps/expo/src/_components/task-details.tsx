@@ -67,6 +67,30 @@ export function TaskDetails({
     },
   });
 
+  const updateNextDue = api.task.updateNextDue.useMutation({
+    onMutate: ({ nextDue, completionPeriodBegins }) => {
+      const previousTask = utils.task.getTask.getData({ id: taskId });
+      if (previousTask) {
+        utils.task.getTask.setData(
+          { id: taskId },
+          {
+            ...previousTask,
+            nextDue,
+            completionPeriodBegins:
+              completionPeriodBegins ?? previousTask.completionPeriodBegins,
+          },
+        );
+      }
+    },
+    onSettled: async () => {
+      await Promise.all([
+        utils.task.getTask.invalidate({ id: taskId }),
+        utils.task.getAllMyActiveTasks.invalidate(),
+        utils.task.getAllMyTasks.invalidate(),
+      ]);
+    },
+  });
+
   const getBlockingLabel = (blocking: TaskBlockingTypes) => {
     switch (blocking) {
       case TaskBlockingTypes.BLOCK_WHEN_OVERDUE:
@@ -184,10 +208,18 @@ export function TaskDetails({
       <View className="mt-6 flex-row gap-2">
         <TouchableOpacity
           onPress={() => deleteTask.mutate({ id: taskId })}
-          className="bg-red flex-row items-center gap-2 rounded-lg"
+          className="bg-red flex-row items-center gap-2 rounded-lg px-4 py-2"
         >
           <Trash2 size={16} color="currentColor" />
           <Text className="text-destructive-foreground">Delete</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() =>
+            updateNextDue.mutate({ id: taskId, nextDue: new Date() })
+          }
+          className="flex-row items-center gap-2 rounded-lg bg-primary px-4 py-2"
+        >
+          <Text className="text-primary-foreground">Reset to Now</Text>
         </TouchableOpacity>
       </View>
     </View>

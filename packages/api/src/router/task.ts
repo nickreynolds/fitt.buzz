@@ -5,7 +5,7 @@ import type {
 import Pusher from "pusher";
 import { z } from "zod";
 
-import { and, desc, eq, inArray, isNull, lte, or, sql } from "@acme/db";
+import { and, asc, desc, eq, inArray, isNull, lte, or, sql } from "@acme/db";
 import {
   CreateSubtaskSchema,
   CreateTaskSchema,
@@ -500,6 +500,10 @@ export const taskRouter = {
             ),
             eq(TaskCompletion.nextDue, task.nextDue),
           ),
+          orderBy: [
+            desc(TaskCompletion.nextDue),
+            asc(TaskCompletion.createdAt),
+          ],
         });
 
       const taskCompletionData = allTaskCompletionDataPoints
@@ -523,7 +527,10 @@ export const taskRouter = {
                   eq(TaskCompletion.taskId, input.id),
                   lte(TaskCompletion.nextDue, task.nextDue),
                 ),
-                orderBy: [desc(TaskCompletion.nextDue)],
+                orderBy: [
+                  desc(TaskCompletion.nextDue),
+                  asc(TaskCompletion.createdAt),
+                ],
               })
             )?.nextDue;
 
@@ -829,6 +836,73 @@ export const taskRouter = {
       await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
         tasks: [input.id, task.parentTaskId],
       });
+      return updated;
+    }),
+  updateNextDue: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        nextDue: z.date(),
+        completionPeriodBegins: z.date().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const task = await ctx.db.query.Task.findFirst({
+        where: eq(Task.id, input.id),
+        with: {
+          childTasks: true,
+        },
+      });
+
+      if (!task) {
+        throw new Error("Task not found");
+      }
+
+      if (task.creatorId !== ctx.session.user.id) {
+        throw new Error("You are not the owner of this task");
+      }
+
+      // Calculate completionPeriodBegins if not provided
+      let completionPeriodBegins = input.completionPeriodBegins;
+      if (!completionPeriodBegins && task.recurring && task.frequencyMinutes) {
+        completionPeriodBegins = getCompletionPeriodBegins(
+          input.nextDue,
+          task.frequencyMinutes,
+        );
+      }
+
+      // Collect all child task IDs recursively
+      const allChildrenIDs: string[] = [];
+      let nextChildren = task.childTasks.map((child) => child.id);
+
+      while (nextChildren.length > 0) {
+        allChildrenIDs.push(...nextChildren);
+
+        const fullChildren = await ctx.db.query.Task.findMany({
+          where: inArray(Task.id, nextChildren),
+          with: {
+            childTasks: true,
+          },
+        });
+
+        nextChildren = fullChildren
+          .map((child) => child.childTasks.map((c) => c.id))
+          .flat();
+      }
+
+      // Update the task and all child tasks
+      const updated = await ctx.db
+        .update(Task)
+        .set({
+          nextDue: input.nextDue,
+          completionPeriodBegins: completionPeriodBegins ?? null,
+        })
+        .where(inArray(Task.id, [input.id, ...allChildrenIDs]));
+
+      await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
+        tasks: [input.id, task.parentTaskId, ...allChildrenIDs],
+      });
+
       return updated;
     }),
   shouldBlockFun: protectedProcedure

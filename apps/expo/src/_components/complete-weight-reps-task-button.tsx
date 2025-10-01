@@ -4,6 +4,7 @@ import { Dumbbell } from "lucide-react-native";
 
 import { useTaskCompletion } from "~/hooks/useTaskCompletion";
 import { api } from "~/utils/api";
+import Icon from "./icon";
 
 interface CompleteWeightRepsTaskButtonProps {
   taskId: string;
@@ -16,7 +17,7 @@ export function CompleteWeightRepsTaskButton({
 }: CompleteWeightRepsTaskButtonProps) {
   const [weight, setWeight] = React.useState("0");
   const [reps, setReps] = React.useState("0");
-  const [hasSetValues, setHasSetValues] = React.useState(false);
+  const [firstRender, setFirstRender] = React.useState(true);
   const { handleOptimisticUpdate, handleSettled } = useTaskCompletion({
     taskId,
     parentTaskId,
@@ -26,7 +27,7 @@ export function CompleteWeightRepsTaskButton({
 
   const parentTask = utils.task.getTask.getData({ id: parentTaskId ?? "" });
   React.useEffect(() => {
-    if (parentTask && !hasSetValues) {
+    if (parentTask && firstRender) {
       const numCompletedSets = parentTask.numCompletedSets;
       const prevCompletions =
         parentTask.prevChildTaskCompletionDataMap?.get(taskId);
@@ -42,46 +43,99 @@ export function CompleteWeightRepsTaskButton({
           };
           setWeight(prevCompletion.weight.toString());
           setReps(prevCompletion.reps.toString());
-          setHasSetValues(true);
+          setFirstRender(false);
         }
       }
     }
-  }, [parentTask, taskId, hasSetValues]);
+  }, [parentTask, taskId, firstRender]);
 
   const completeTask = api.task.completeWeightRepsTask.useMutation({
     onMutate: async () => {
-      setHasSetValues(false);
       await handleOptimisticUpdate({
-        result: true,
+        weightUnit: "lbs",
         weight: parseFloat(weight),
         reps: parseInt(reps),
       });
     },
-    onSettled: handleSettled,
+    onSettled: async () => {
+      await handleSettled();
+    },
   });
 
+  const handleWeightIncrement = () => {
+    const currentWeight = parseFloat(weight) || 0;
+    setWeight((currentWeight + 2.5).toString());
+  };
+
+  const handleWeightDecrement = () => {
+    const currentWeight = parseFloat(weight) || 0;
+    const newWeight = Math.max(0, currentWeight - 2.5);
+    setWeight(newWeight.toString());
+  };
+
+  const handleRepsIncrement = () => {
+    const currentReps = parseInt(reps) || 0;
+    setReps((currentReps + 1).toString());
+  };
+
+  const handleRepsDecrement = () => {
+    const currentReps = parseInt(reps) || 0;
+    const newReps = Math.max(0, currentReps - 1);
+    setReps(newReps.toString());
+  };
+
   return (
-    <View className="flex-row items-center gap-2">
-      <View className="w-20">
+    <View className="flex-row items-center gap-3">
+      {/* Weight Input with Increment/Decrement */}
+      <View className="flex-row items-center">
+        <TouchableOpacity
+          onPress={handleWeightDecrement}
+          className="h-10 w-8 items-center justify-center rounded-l-md border border-input bg-background"
+        >
+          <Icon name="Minus" className="h-4 w-4 text-foreground" />
+        </TouchableOpacity>
+
         <TextInput
-          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm text-primary"
+          className="h-10 w-16 border-t border-b border-input bg-background px-2 text-center text-sm text-primary"
           keyboardType="numeric"
           value={weight}
           onChangeText={setWeight}
-          placeholder="Weight"
+          placeholder="0"
         />
+
+        <TouchableOpacity
+          onPress={handleWeightIncrement}
+          className="h-10 w-8 items-center justify-center rounded-r-md border border-input bg-background"
+        >
+          <Icon name="Plus" className="h-4 w-4 text-foreground" />
+        </TouchableOpacity>
       </View>
 
       <Text className="text-foreground">lbs</Text>
 
-      <View className="w-16">
+      {/* Reps Input with Increment/Decrement */}
+      <View className="flex-row items-center">
+        <TouchableOpacity
+          onPress={handleRepsDecrement}
+          className="h-10 w-8 items-center justify-center rounded-l-md border border-input bg-background"
+        >
+          <Icon name="Minus" className="h-4 w-4 text-foreground" />
+        </TouchableOpacity>
+
         <TextInput
-          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm text-primary"
+          className="h-10 w-12 border-t border-b border-input bg-background px-2 text-center text-sm text-primary"
           keyboardType="numeric"
           value={reps}
           onChangeText={setReps}
-          placeholder="Reps"
+          placeholder="0"
         />
+
+        <TouchableOpacity
+          onPress={handleRepsIncrement}
+          className="h-10 w-8 items-center justify-center rounded-r-md border border-input bg-background"
+        >
+          <Icon name="Plus" className="h-4 w-4 text-foreground" />
+        </TouchableOpacity>
       </View>
 
       <Text className="text-foreground">reps</Text>

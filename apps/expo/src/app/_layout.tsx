@@ -17,21 +17,35 @@ import * as TaskManager from "expo-task-manager";
 import { useColorScheme } from "nativewind";
 
 import { block, unblock } from "../../modules/app-blocker";
+import { getBaseUrl } from "~/utils/base-url";
+import { getToken } from "~/utils/session-store";
 
-const BACKGROUND_TASK_IDENTIFIER = "background-task";
+const BACKGROUND_TASK_IDENTIFIER = "background-task-2";
 
 // Register and create the task so that it is available also when the background task screen
 // (a React component defined later in this example) is not visible.
 // Note: This needs to be called in the global scope, not in a React component.
 TaskManager.defineTask(BACKGROUND_TASK_IDENTIFIER, async () => {
   console.log("task.");
+  console.log("task task task");
   try {
     const now = Date.now();
     console.log(
       `Got background task call at date: ${new Date(now).toISOString()}`,
     );
 
-    const shouldBlock = await api.useUtils().task.shouldBlockFun.fetch();
+    // NEW (works in background tasks):
+    const baseUrl = getBaseUrl();
+    const token = getToken();
+    const response = await fetch(`${baseUrl}/api/trpc/task.shouldBlockFun`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Authorization": `Bearer ${token}`,
+      },
+    });
+    const data = await response.json();
+    const shouldBlock = data.result?.data ?? false;
     console.log("shouldBlock: ", shouldBlock);
     if (shouldBlock) {
       block();
@@ -53,6 +67,7 @@ async function registerBackgroundTaskAsync() {
     BACKGROUND_TASK_IDENTIFIER,
   );
   if (!isRegistered) {
+    console.log("really registerBackgroundTaskAsync");
     await BackgroundTask.registerTaskAsync(BACKGROUND_TASK_IDENTIFIER, {
       minimumInterval: 15, // Try to repeat every 15 minutes while backgrounded
     });
@@ -66,11 +81,11 @@ async function registerBackgroundTaskAsync() {
 //   return BackgroundTask.unregisterTaskAsync(BACKGROUND_TASK_IDENTIFIER);
 // }
 
-if (Platform.OS === "android") {
-  if (UIManager.setLayoutAnimationEnabledExperimental) {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
-  }
-}
+// if (Platform.OS === "android") {
+//   if (UIManager.setLayoutAnimationEnabledExperimental) {
+//     UIManager.setLayoutAnimationEnabledExperimental(true);
+//   }
+// }
 
 // This is the main layout of the app
 // It wraps your pages with the providers they need

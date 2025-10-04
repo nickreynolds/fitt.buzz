@@ -8,6 +8,8 @@ import { useTaskCompletion } from "~/hooks/useTaskCompletion";
 import { api } from "~/utils/api";
 import { TimerDialog } from "./timer-dialog";
 
+import { useAudioPlayer } from "expo-audio";
+
 interface CompleteTimedTaskButtonProps {
   taskId: string;
   parentTaskId: string | null;
@@ -23,6 +25,12 @@ export function CompleteTimedTaskButton({
   const task = utils.task.getTask.getData({ id: taskId });
   const parentTask = utils.task.getTask.getData({ id: parentTaskId ?? "" });
 
+  const audioPlayer = useAudioPlayer(
+    // eslint-disable-next-line
+    require("./assets/sounds/meditation-bell.mp3"),
+  );
+
+  console.log("audioPlayer", audioPlayer);
   const { handleOptimisticUpdate, handleSettled } = useTaskCompletion({
     taskId,
     parentTaskId,
@@ -82,6 +90,12 @@ export function CompleteTimedTaskButton({
   };
 
   const handleTimerComplete = (time: number) => {
+    console.log("handleTimerComplete", audioPlayer);
+    // eslint-disable-next-line
+    (async () => {
+      await audioPlayer.seekTo(0);
+      audioPlayer.play();
+    })();
     completeTask.mutate({ id: taskId, time });
   };
 

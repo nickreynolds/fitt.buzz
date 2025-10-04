@@ -114,6 +114,20 @@ export const CreateSubtaskSchema = CreateTaskSchema.extend({
   isSet: z.boolean(),
 });
 
+export const CreateSubtaskSetSchema = z.object({
+  setTaskId: z.string().uuid(),
+  childTaskId: z.string().uuid(),
+  parentTaskId: z.string().uuid(),
+  title: z.string().max(256),
+  description: z.string().max(256),
+  sortIndex: z.number().optional(),
+  completionDataType: z.enum([
+    TaskCompletionTypes.Boolean,
+    TaskCompletionTypes.WeightReps,
+    TaskCompletionTypes.Time,
+  ]),
+});
+
 export const User = pgTable("user", (t) => ({
   id: t.uuid().notNull().primaryKey().defaultRandom(),
   name: t.varchar({ length: 255 }),

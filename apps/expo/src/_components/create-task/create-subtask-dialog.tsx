@@ -32,22 +32,36 @@ export function CreateSubtaskDialog({
   const [completionType, setCompletionType] = useState<TaskCompletionTypes>(
     TaskCompletionTypes.Boolean,
   );
+  const [createAsSet, setCreateAsSet] = useState(false);
   const utils = api.useUtils();
 
   const createTask = api.task.createSubtask.useMutation({
+    onMutate: () => {
+      setTitle("");
+      setDescription("");
+      setCompletionType(TaskCompletionTypes.Boolean);
+      setCreateAsSet(false);
+      onClose();
+    },
+    onSettled: async () => {
+      await utils.task.getAllMyActiveTasks.invalidate();
+      await utils.task.getTask.invalidate({ id: parentTaskId });
+    },
+  });
+
+  const createTaskSet = api.task.createSubtaskSet.useMutation({
     onMutate: (data) => {
       const parentTask = utils.task.getTask.getData({ id: parentTaskId });
       if (!parentTask) {
         throw new Error("Parent task not found");
       }
-      if (!data.id) {
-        throw new Error("Task ID is required");
-      }
 
       const numSiblingTasks = parentTask.childTasks?.length ?? 0;
-      const task = {
-        id: data.id,
-        title: data.title,
+
+      // Create the set parent task
+      const setTask = {
+        id: data.setTaskId,
+        title: `${data.title} (set)`,
         description: data.description,
         nextDue: parentTask.nextDue,
         lastCompleted: null,
@@ -60,40 +74,59 @@ export function CreateSubtaskDialog({
         parentTaskId: parentTask.id,
         childTasks: [],
         sortIndex: numSiblingTasks,
-        // horrible
-        completionDataType:
-          data.completionDataType === TaskCompletionTypes.Boolean
-            ? TaskCompletionTypes.Boolean
-            : data.completionDataType === TaskCompletionTypes.WeightReps
-              ? TaskCompletionTypes.WeightReps
-              : TaskCompletionTypes.Time,
+        completionDataType: TaskCompletionTypes.Boolean,
+        isSet: true,
+        numSets: 1,
+        numCompletedSets: 0,
+        blocking: TaskBlockingTypes.NEVER_BLOCK,
+      };
+
+      // Create the child exercise task
+      const childTask = {
+        id: data.childTaskId,
+        title: data.title,
+        description: data.description,
+        nextDue: parentTask.nextDue,
+        lastCompleted: null,
+        recurring: parentTask.recurring,
+        frequencyMinutes: parentTask.frequencyMinutes ?? null,
+        completionPeriodBegins: parentTask.completionPeriodBegins,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        creatorId: "1",
+        parentTaskId: data.setTaskId,
+        childTasks: [],
+        sortIndex: 0,
+        completionDataType: data.completionDataType,
         isSet: false,
         numSets: 1,
         numCompletedSets: 0,
         blocking: TaskBlockingTypes.NEVER_BLOCK,
       };
 
+      // Add child task to set task
+      setTask.childTasks = [childTask];
+
+      // Optimistically update parent task with the new set task
       utils.task.getTask.setData(
         { id: parentTaskId },
         {
           ...parentTask,
           childTasks: parentTask.childTasks
-            ? [...parentTask.childTasks, task]
-            : [task],
+            ? [...parentTask.childTasks, setTask]
+            : [setTask],
         },
       );
 
       setTitle("");
       setDescription("");
-      // setIsRecurring(false);
-      // setFrequency("24");
-      // setDueDate(new Date());
-      // setDueTime(new Date());
       setCompletionType(TaskCompletionTypes.Boolean);
+      setCreateAsSet(false);
       onClose();
     },
     onSettled: async () => {
       await utils.task.getAllMyActiveTasks.invalidate();
+      await utils.task.getTask.invalidate({ id: parentTaskId });
     },
   });
 
@@ -104,41 +137,75 @@ export function CreateSubtaskDialog({
     }
 
     const numSiblingTasks = parentTask.childTasks?.length ?? 0;
-    createTask.mutate({
-      id: uuid.v4(),
-      parentTaskId,
-      title: title,
-      description: description,
-      sortIndex: numSiblingTasks,
-      completionDataType:
-        completionType === TaskCompletionTypes.Boolean
-          ? TaskCompletionTypes.Boolean
-          : completionType === TaskCompletionTypes.WeightReps
-            ? TaskCompletionTypes.WeightReps
-            : TaskCompletionTypes.Time,
-      isSet: false,
-      recurring: parentTask.recurring,
-      nextDue: parentTask.nextDue,
-    });
+
+    if (createAsSet) {
+      // Create set with both parent and child tasks in a single transaction
+      createTaskSet.mutate({
+        setTaskId: uuid.v4() as string,
+        childTaskId: uuid.v4() as string,
+        parentTaskId,
+        title: title,
+        description: description,
+        sortIndex: numSiblingTasks,
+        completionDataType:
+          completionType === TaskCompletionTypes.Boolean
+            ? TaskCompletionTypes.Boolean
+            : completionType === TaskCompletionTypes.WeightReps
+              ? TaskCompletionTypes.WeightReps
+              : TaskCompletionTypes.Time,
+      });
+    } else {
+      // Regular subtask creation
+      createTask.mutate({
+        id: uuid.v4() as string,
+        parentTaskId,
+        title: title,
+        description: description,
+        sortIndex: numSiblingTasks,
+        completionDataType:
+          completionType === TaskCompletionTypes.Boolean
+            ? TaskCompletionTypes.Boolean
+            : completionType === TaskCompletionTypes.WeightReps
+              ? TaskCompletionTypes.WeightReps
+              : TaskCompletionTypes.Time,
+        isSet: false,
+        recurring: parentTask.recurring,
+        nextDue: parentTask.nextDue,
+      });
+    }
   };
 
   return (
-    <View>
-      <View className="w-full space-y-4 rounded-lg bg-card p-4">
+    <View className="w-full flex-col space-y-12 gap-4 py-4">
+      <View className="w-full space-y-5 rounded-lg bg-card p-4 py-12">
         <Text className="text-xl font-semibold text-foreground">
           Create Subtask for{" "}
           <Text className="text-primary">{parentTaskTitle}</Text>
         </Text>
 
         <TextInput
-          className="rounded-md border border-input bg-background px-3 py-2 text-foreground"
+          className="rounded-lg border border-input bg-background px-4 py-3 text-base text-foreground"
           placeholder="Task name"
           value={title}
           onChangeText={setTitle}
           placeholderTextColor="#666"
         />
 
-        <View className="space-y-2">
+        <Pressable
+          onPress={() => setCreateAsSet(!createAsSet)}
+          className="flex-row items-center justify-between rounded-lg border border-input bg-background p-4"
+        >
+          <Text className="font-medium text-foreground">Create as set</Text>
+          <View
+            className={`h-6 w-11 flex-row items-center rounded-full px-0.5 ${
+              createAsSet ? "justify-end bg-primary" : "justify-start bg-input"
+            }`}
+          >
+            <View className="h-5 w-5 rounded-full bg-background shadow-sm" />
+          </View>
+        </Pressable>
+
+        <View className="space-y-3">
           <Text className="font-medium text-foreground">Completion Type</Text>
           <ToggleGroup
             type="single"
@@ -182,12 +249,22 @@ export function CreateSubtaskDialog({
           </ToggleGroup>
         </View>
 
-        <View className="flex-row justify-end space-x-2">
+        <View className="flex-row gap-3 pt-4">
+          <Pressable
+            onPress={onClose}
+            className="flex-1 rounded-lg border border-input bg-background px-6 py-4"
+          >
+            <Text className="text-center text-base font-medium text-foreground">
+              Cancel
+            </Text>
+          </Pressable>
           <Pressable
             onPress={handleCreate}
-            className="rounded-md bg-primary px-4 py-2"
+            className="flex-1 rounded-lg bg-primary px-6 py-4"
           >
-            <Text className="text-foreground">Create</Text>
+            <Text className="text-center text-base font-semibold text-primary-foreground">
+              Create
+            </Text>
           </Pressable>
         </View>
       </View>

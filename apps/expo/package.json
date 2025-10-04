@@ -37,6 +37,7 @@
     "@trpc/server": "catalog:",
     "date-fns": "^4.1.0",
     "expo": "~54.0.12",
+    "expo-audio": "~1.0.13",
     "expo-background-task": "^1.0.8",
     "expo-constants": "~18.0.9",
     "expo-dev-client": "~6.0.13",
@@ -79,5 +80,8 @@
     "tailwindcss": "3.4.17",
     "typescript": "5.9.3"
   },
-  "prettier": "@acme/prettier-config"
+  "prettier": "@acme/prettier-config",
+  "resolutions": {
+    "react-native-reanimated": "3.19"
+  }
 }

@@ -5,7 +5,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: "fitt-buzz-mobile",
   slug: "fitt-buzz-mobile",
   scheme: "fitt-buzz-mobile",
-  version: "0.1.3",
+  version: "0.1.4",
   orientation: "portrait",
   icon: "./assets/icon.png",
   userInterfaceStyle: "automatic",
@@ -45,6 +45,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     reactCanary: true,
   },
   plugins: [
+    "expo-audio",
     "expo-router",
     "expo-secure-store",
     "expo-background-task",

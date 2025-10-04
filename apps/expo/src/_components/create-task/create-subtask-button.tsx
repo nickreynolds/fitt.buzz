@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import * as DialogPrimitive from "@rn-primitives/dialog";
 
 import Icon from "~/_components/icon";

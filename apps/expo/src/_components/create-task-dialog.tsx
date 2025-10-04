@@ -42,7 +42,7 @@ export function CreateTaskDialog({
   );
 
   const utils = api.useUtils();
-  const { mutate, error } = api.task.createTask.useMutation({
+  const { mutate } = api.task.createTask.useMutation({
     onMutate: (data) => {
       if (!data.id) {
         throw new Error("Task ID is required");

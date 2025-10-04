@@ -95,7 +95,8 @@ export default function AppLayout() {
             borderTopColor: colorScheme === "dark" ? "#27272A" : "#E4E4E7",
           },
           tabBarActiveTintColor: "#f472b6",
-          tabBarInactiveTintColor: colorScheme === "dark" ? "#A1A1AA" : "#71717A",
+          tabBarInactiveTintColor:
+            colorScheme === "dark" ? "#A1A1AA" : "#71717A",
         }}
       >
         <Tabs.Screen
@@ -122,7 +123,9 @@ export default function AppLayout() {
           name="fun-blocking/index"
           options={{
             title: "Fun Blocking",
-            tabBarIcon: ({ color, size }) => <Shield size={size} color={color} />,
+            tabBarIcon: ({ color, size }) => (
+              <Shield size={size} color={color} />
+            ),
           }}
         />
         <Tabs.Screen

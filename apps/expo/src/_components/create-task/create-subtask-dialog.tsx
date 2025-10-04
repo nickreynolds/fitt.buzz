@@ -141,8 +141,8 @@ export function CreateSubtaskDialog({
     if (createAsSet) {
       // Create set with both parent and child tasks in a single transaction
       createTaskSet.mutate({
-        setTaskId: uuid.v4() as string,
-        childTaskId: uuid.v4() as string,
+        setTaskId: uuid.v4(),
+        childTaskId: uuid.v4(),
         parentTaskId,
         title: title,
         description: description,
@@ -157,7 +157,7 @@ export function CreateSubtaskDialog({
     } else {
       // Regular subtask creation
       createTask.mutate({
-        id: uuid.v4() as string,
+        id: uuid.v4(),
         parentTaskId,
         title: title,
         description: description,
@@ -176,7 +176,7 @@ export function CreateSubtaskDialog({
   };
 
   return (
-    <View className="w-full flex-col space-y-12 gap-4 py-4">
+    <View className="w-full flex-col gap-4 space-y-12 py-4">
       <View className="w-full space-y-5 rounded-lg bg-card p-4 py-12">
         <Text className="text-xl font-semibold text-foreground">
           Create Subtask for{" "}

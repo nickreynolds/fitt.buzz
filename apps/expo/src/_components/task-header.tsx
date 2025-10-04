@@ -1,5 +1,5 @@
-import React, { useState } from "react";
 import type { LayoutChangeEvent } from "react-native";
+import React, { useState } from "react";
 import { Text, View } from "react-native";
 import { Link, router } from "expo-router";
 
@@ -133,10 +133,10 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
   console.log("textWidth", textWidth);
 
   return (
-    <View className="flex-col max-w-full">
-      <View className="min-w-full flex-col max-w-full">
+    <View className="max-w-full flex-col">
+      <View className="min-w-full max-w-full flex-col">
         <Link href={`/task/${taskId}`} className="min-w-fullmax-w-full">
-          <View className="w-full flex-row justify-between items-center">
+          <View className="w-full flex-row items-center justify-between">
             <Text
               className="font-semibold text-primary"
               onPress={() => router.push(`/task/${taskId}`)}

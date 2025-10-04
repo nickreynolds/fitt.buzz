@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
+import { useAudioPlayer } from "expo-audio";
 
 import { canBeCompleted, isCompleted } from "@acme/api-utils";
 import { formatEditValueFromSeconds, parseEditValue } from "@acme/utils";
@@ -7,8 +8,6 @@ import { formatEditValueFromSeconds, parseEditValue } from "@acme/utils";
 import { useTaskCompletion } from "~/hooks/useTaskCompletion";
 import { api } from "~/utils/api";
 import { TimerDialog } from "./timer-dialog";
-
-import { useAudioPlayer } from "expo-audio";
 
 interface CompleteTimedTaskButtonProps {
   taskId: string;

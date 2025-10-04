@@ -28,7 +28,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       foregroundImage: "./assets/icon.png",
       backgroundColor: "#1F104A",
     },
-    versionCode: 2,
     permissions: [
       "android.permission.QUERY_ALL_PACKAGES",
       "android.permission.RECEIVE_BOOT_COMPLETED",

@@ -1,12 +1,11 @@
 import "@bacons/text-decoder/install";
 
-import { Platform, UIManager } from "react-native";
 import { Slot } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { PortalHost } from "@rn-primitives/portal";
 
 import { AppBlockingMonitor } from "~/_components/app-blocking-monitor";
-import { api, TRPCProvider } from "~/utils/api";
+import { TRPCProvider } from "~/utils/api";
 
 import "../styles.css";
 
@@ -16,9 +15,9 @@ import * as BackgroundTask from "expo-background-task";
 import * as TaskManager from "expo-task-manager";
 import { useColorScheme } from "nativewind";
 
-import { block, unblock } from "../../modules/app-blocker";
 import { getBaseUrl } from "~/utils/base-url";
 import { getToken } from "~/utils/session-store";
+import { block, unblock } from "../../modules/app-blocker";
 
 const BACKGROUND_TASK_IDENTIFIER = "background-task-2";
 
@@ -44,7 +43,9 @@ TaskManager.defineTask(BACKGROUND_TASK_IDENTIFIER, async () => {
         "X-Authorization": `Bearer ${token}`,
       },
     });
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const data = await response.json();
+    // eslint-disable-next-line
     const shouldBlock = data.result?.data ?? false;
     console.log("shouldBlock: ", shouldBlock);
     if (shouldBlock) {

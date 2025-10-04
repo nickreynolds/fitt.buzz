@@ -1,15 +1,17 @@
 import type { PusherEvent } from "@pusher/pusher-websocket-react-native";
-import React from "react";
+import React, { useState } from "react";
 import { Text } from "react-native";
 import { Redirect, Tabs } from "expo-router";
 import { Pusher } from "@pusher/pusher-websocket-react-native";
 import { Home, Plus, SettingsIcon, Shield } from "lucide-react-native";
 import { useColorScheme } from "nativewind";
 
+import { CreateTaskDialog } from "~/_components/create-task-dialog";
 import { api } from "~/utils/api";
 import { useUser } from "~/utils/auth";
 
 export default function AppLayout() {
+  const [createTaskDialogOpen, setCreateTaskDialogOpen] = useState(false);
   const pusher = Pusher.getInstance();
   pusher.init({
     apiKey: "b257f4198d06902e6bca",
@@ -84,50 +86,62 @@ export default function AppLayout() {
 
   // This layout can be deferred because it's not the root layout.
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: colorScheme === "dark" ? "#09090B" : "#FFFFFF",
-          borderTopColor: colorScheme === "dark" ? "#27272A" : "#E4E4E7",
-        },
-        tabBarActiveTintColor: "#f472b6",
-        tabBarInactiveTintColor: colorScheme === "dark" ? "#A1A1AA" : "#71717A",
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "Home",
-          tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
+    <>
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarStyle: {
+            backgroundColor: colorScheme === "dark" ? "#09090B" : "#FFFFFF",
+            borderTopColor: colorScheme === "dark" ? "#27272A" : "#E4E4E7",
+          },
+          tabBarActiveTintColor: "#f472b6",
+          tabBarInactiveTintColor: colorScheme === "dark" ? "#A1A1AA" : "#71717A",
         }}
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: "Home",
+            tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
+          }}
+        />
+        <Tabs.Screen
+          name="create-task/index"
+          options={{
+            title: "Create Task",
+            tabBarIcon: ({ color, size }) => <Plus size={size} color={color} />,
+          }}
+          listeners={{
+            tabPress: (e) => {
+              e.preventDefault();
+              setCreateTaskDialogOpen(true);
+            },
+          }}
+        />
+        <Tabs.Screen
+          name="fun-blocking/index"
+          options={{
+            title: "Fun Blocking",
+            tabBarIcon: ({ color, size }) => <Shield size={size} color={color} />,
+          }}
+        />
+        <Tabs.Screen
+          name="settings"
+          options={{
+            title: "Settings",
+            tabBarIcon: ({ color, size }) => (
+              <SettingsIcon size={size} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen name="login-redirect/index" options={{ href: null }} />
+        <Tabs.Screen name="task/[id]" options={{ href: null }} />
+      </Tabs>
+      <CreateTaskDialog
+        open={createTaskDialogOpen}
+        onOpenChange={setCreateTaskDialogOpen}
       />
-      <Tabs.Screen
-        name="create-task/index"
-        options={{
-          title: "Create Task",
-          tabBarIcon: ({ color, size }) => <Plus size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="fun-blocking/index"
-        options={{
-          title: "Fun Blocking",
-          tabBarIcon: ({ color, size }) => <Shield size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: "Settings",
-          tabBarIcon: ({ color, size }) => (
-            <SettingsIcon size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen name="login-redirect/index" options={{ href: null }} />
-      <Tabs.Screen name="task/[id]" options={{ href: null }} />
-    </Tabs>
+    </>
   );
   // return (
   //   <AppBlockerView

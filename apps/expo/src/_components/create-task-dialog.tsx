@@ -4,27 +4,21 @@ import React, { useState } from "react";
 import {
   Platform,
   Pressable,
-  Switch,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from "react-native";
-import { TouchableOpacity } from "react-native-gesture-handler";
 import uuid from "react-native-uuid";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Picker } from "@react-native-picker/picker";
 import * as DialogPrimitive from "@rn-primitives/dialog";
 import { format } from "date-fns";
 
 import { TaskBlockingTypes, TaskCompletionTypes } from "@acme/utils";
 
+import { ToggleGroup, ToggleGroupItem } from "~/components/ui/toggle-group";
 import { api } from "~/utils/api";
-
-const COMPLETION_TYPE_OPTIONS = [
-  { value: TaskCompletionTypes.Boolean, label: "Simple Completion" },
-  { value: TaskCompletionTypes.WeightReps, label: "Weight & Reps" },
-  { value: TaskCompletionTypes.Time, label: "Time" },
-];
+import Icon from "./icon";
 
 interface CreateTaskDialogProps {
   open: boolean;
@@ -116,159 +110,191 @@ export function CreateTaskDialog({
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="absolute inset-0 bottom-16 left-16 right-16 top-16 z-50 bg-black/50 p-4">
-          <DialogPrimitive.Content className="rounded-lg bg-background p-4">
-            <DialogPrimitive.Title>
-              <Text className="text-lg font-semibold text-primary">
-                Create New Task
-              </Text>
-            </DialogPrimitive.Title>
-
-            <View className="mt-4 space-y-4">
-              <View>
-                <Text className="mb-1 text-sm text-muted-foreground">
-                  Title
+        <DialogPrimitive.Overlay className="absolute inset-0 h-full w-full rounded-md bg-background">
+          <DialogPrimitive.Content>
+            <View className="pt-12">
+              <View className="w-full space-y-5 rounded-lg bg-card p-4 py-12">
+                <Text className="text-xl font-semibold text-foreground">
+                  Create New Task
                 </Text>
+
                 <TextInput
-                  className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+                  className="rounded-lg border border-input bg-background px-4 py-3 text-base text-foreground"
+                  placeholder="Task name"
                   value={title}
                   onChangeText={setTitle}
+                  placeholderTextColor="#666"
                 />
-                {error?.data?.zodError?.fieldErrors.title && (
-                  <Text className="mt-1 text-destructive">
-                    {error.data.zodError.fieldErrors.title}
+
+                <View className="space-y-3">
+                  <Text className="font-medium text-foreground">
+                    Completion Type
                   </Text>
-                )}
-              </View>
-
-              <View>
-                <Text className="mb-1 text-sm text-muted-foreground">
-                  Description
-                </Text>
-                <TextInput
-                  className="h-20 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
-                  value={description}
-                  onChangeText={setDescription}
-                  multiline
-                />
-              </View>
-
-              <View>
-                <Text className="mb-1 text-sm text-muted-foreground">
-                  Completion Type
-                </Text>
-                <View className="rounded-md border border-input">
-                  <Picker
-                    selectedValue={completionType}
-                    onValueChange={(value) =>
-                      setCompletionType(value as TaskCompletionTypes)
-                    }
-                    style={{ color: "hsl(var(--foreground))" }}
+                  <ToggleGroup
+                    type="single"
+                    value={completionType}
+                    onValueChange={(value) => {
+                      if (value) {
+                        setCompletionType(value as TaskCompletionTypes);
+                      }
+                    }}
+                    className="w-full"
                   >
-                    {COMPLETION_TYPE_OPTIONS.map((option) => (
-                      <Picker.Item
-                        key={option.value}
-                        label={option.label}
-                        value={option.value}
-                      />
-                    ))}
-                  </Picker>
-                </View>
-              </View>
+                    <ToggleGroupItem
+                      value={TaskCompletionTypes.Boolean}
+                      className="flex-1"
+                    >
+                      <View className="flex-row items-center justify-center space-x-2">
+                        <Icon
+                          name="Check"
+                          className="h-4 w-4 text-foreground"
+                        />
+                        <Text className="text-foreground">Manual</Text>
+                      </View>
+                    </ToggleGroupItem>
 
-              <View>
-                <Text className="mb-1 text-sm text-muted-foreground">
-                  Due Date
-                </Text>
+                    <ToggleGroupItem
+                      value={TaskCompletionTypes.WeightReps}
+                      className="flex-1"
+                    >
+                      <View className="flex-row items-center justify-center space-x-2">
+                        <Icon
+                          name="Dumbbell"
+                          className="h-4 w-4 text-foreground"
+                        />
+                        <Text className="text-foreground">Weight & Reps</Text>
+                      </View>
+                    </ToggleGroupItem>
+
+                    <ToggleGroupItem
+                      value={TaskCompletionTypes.Time}
+                      className="flex-1"
+                    >
+                      <View className="flex-row items-center justify-center space-x-2">
+                        <Icon
+                          name="Clock"
+                          className="h-4 w-4 text-foreground"
+                        />
+                        <Text className="text-foreground">Time</Text>
+                      </View>
+                    </ToggleGroupItem>
+                  </ToggleGroup>
+                </View>
+
+                <View className="space-y-3">
+                  <Text className="font-medium text-foreground">Due Date</Text>
+                  <Pressable
+                    className="rounded-lg border border-input bg-background px-4 py-3"
+                    onPress={() => setShow(true)}
+                  >
+                    <Text className="text-base text-foreground">
+                      {format(dueDate, "MM/dd/yyyy")}
+                    </Text>
+                  </Pressable>
+                  {show && (
+                    <DateTimePicker
+                      value={dueDate}
+                      mode="date"
+                      onChange={(event, date) => {
+                        if (Platform.OS === "android") {
+                          setShow(false);
+                        }
+                        if (date) {
+                          setDueDate(date);
+                        }
+                      }}
+                    />
+                  )}
+                </View>
+
+                <View className="space-y-3">
+                  <Text className="font-medium text-foreground">Due Time</Text>
+                  <Pressable
+                    className="rounded-lg border border-input bg-background px-4 py-3"
+                    onPress={() => setShowTime(true)}
+                  >
+                    <Text className="text-base text-foreground">
+                      {format(dueTime, "HH:mm a")}
+                    </Text>
+                  </Pressable>
+                  {showTime && (
+                    <DateTimePicker
+                      value={dueTime}
+                      mode="time"
+                      onChange={(event, date) => {
+                        if (Platform.OS === "android") {
+                          setShowTime(false);
+                        }
+                        if (date) {
+                          setDueTime(date);
+                        }
+                      }}
+                    />
+                  )}
+                </View>
 
                 <Pressable
-                  className="rounded-md border border-input bg-background px-3 py-2 text-foreground"
-                  onPress={() => setShow(true)}
+                  onPress={() => setIsRecurring(!isRecurring)}
+                  className="flex-row items-center justify-between rounded-lg border border-input bg-background p-4"
                 >
-                  <Text className="text-foreground">
-                    {format(dueDate, "MM/dd/yyyy")}
+                  <Text className="font-medium text-foreground">
+                    Recurring Task
                   </Text>
+                  <View
+                    className={`h-6 w-11 flex-row items-center rounded-full px-0.5 ${
+                      isRecurring
+                        ? "justify-end bg-primary"
+                        : "justify-start bg-input"
+                    }`}
+                  >
+                    <View className="h-5 w-5 rounded-full bg-background shadow-sm" />
+                  </View>
                 </Pressable>
-                {show && (
-                  <DateTimePicker
-                    value={dueDate}
-                    mode="date"
-                    onChange={(event, date) => {
-                      if (Platform.OS === "android") {
-                        setShow(false);
-                      }
-                      console.log("event: ", event);
-                      if (date) {
-                        setDueDate(date);
-                      }
-                    }}
-                  />
+
+                {isRecurring && (
+                  <View className="space-y-3">
+                    <Text className="font-medium text-foreground">
+                      Frequency (hours)
+                    </Text>
+                    <TextInput
+                      className="rounded-lg border border-input bg-background px-4 py-3 text-base text-foreground"
+                      value={frequency}
+                      onChangeText={setFrequency}
+                      keyboardType="numeric"
+                      placeholder="24"
+                      placeholderTextColor="#666"
+                    />
+                  </View>
                 )}
-              </View>
-              <View>
-                <Text className="mb-1 text-sm text-muted-foreground">
-                  at Time
-                </Text>
 
-                <Pressable
-                  className="rounded-md border border-input bg-background px-3 py-2 text-foreground"
-                  onPress={() => setShowTime(true)}
-                >
-                  <Text className="text-foreground">
-                    {format(dueTime, "HH:mm a")}
-                  </Text>
-                </Pressable>
-                {showTime && (
-                  <DateTimePicker
-                    value={dueTime}
-                    mode="time"
-                    onChange={(event, date) => {
-                      if (Platform.OS === "android") {
-                        setShowTime(false);
-                      }
-                      console.log("time event: ", event);
-                      if (date) {
-                        setDueTime(date);
-                      }
-                    }}
-                  />
-                )}
-              </View>
-
-              <View className="flex-row items-center justify-between">
-                <Text className="text-sm text-foreground">Recurring Task?</Text>
-                <Switch
-                  value={isRecurring}
-                  onValueChange={setIsRecurring}
-                  trackColor={{ false: "#666", true: "#5B65E9" }}
-                />
-              </View>
-
-              {isRecurring && (
-                <View>
-                  <Text className="mb-1 text-sm text-muted-foreground">
-                    Frequency (minutes)
-                  </Text>
-                  <TextInput
-                    className="rounded-md border border-input bg-background px-3 py-2 text-foreground"
-                    value={frequency}
-                    onChangeText={setFrequency}
-                    keyboardType="numeric"
-                    placeholder="1440"
-                    placeholderTextColor="#666"
-                  />
+                <View className="flex-row gap-3 pt-4">
+                  <Pressable
+                    onPress={() => onOpenChange(false)}
+                    className="flex-1 rounded-lg border border-input bg-background px-6 py-4"
+                  >
+                    <Text className="text-center text-base font-medium text-foreground">
+                      Cancel
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={handleSubmit}
+                    className="flex-1 rounded-lg bg-primary px-6 py-4"
+                  >
+                    <Text className="text-center text-base font-semibold text-primary-foreground">
+                      Create
+                    </Text>
+                  </Pressable>
                 </View>
-              )}
-
-              <View className="flex-row justify-end gap-2">
-                <TouchableOpacity onPress={() => onOpenChange(false)}>
-                  <Text>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={handleSubmit}>
-                  <Text>Create</Text>
-                </TouchableOpacity>
               </View>
             </View>
+
+            <DialogPrimitive.Close asChild>
+              <TouchableOpacity className="absolute right-6 top-20">
+                <View className="rounded-full bg-muted p-3">
+                  <Icon name="X" className="h-6 w-6 text-foreground" />
+                </View>
+              </TouchableOpacity>
+            </DialogPrimitive.Close>
           </DialogPrimitive.Content>
         </DialogPrimitive.Overlay>
       </DialogPrimitive.Portal>

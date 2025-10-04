@@ -5,7 +5,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: "fitt-buzz-mobile",
   slug: "fitt-buzz-mobile",
   scheme: "fitt-buzz-mobile",
-  version: "0.1.3",
+  version: "0.1.4",
   orientation: "portrait",
   icon: "./assets/icon.png",
   userInterfaceStyle: "automatic",
@@ -28,7 +28,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       foregroundImage: "./assets/icon.png",
       backgroundColor: "#1F104A",
     },
-    versionCode: 2,
     permissions: [
       "android.permission.QUERY_ALL_PACKAGES",
       "android.permission.RECEIVE_BOOT_COMPLETED",
@@ -45,6 +44,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     reactCanary: true,
   },
   plugins: [
+    "expo-audio",
     "expo-router",
     "expo-secure-store",
     "expo-background-task",

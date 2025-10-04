@@ -1,9 +1,7 @@
 import React from "react";
-import { SafeAreaView, Text, View } from "react-native";
-import DraggableFlatList, {
-  ScaleDecorator,
-} from "react-native-draggable-flatlist";
-import { TouchableOpacity } from "react-native-gesture-handler";
+import { Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { FlashList } from "@shopify/flash-list";
 
 import type { RouterOutputs } from "@acme/api";
 
@@ -16,80 +14,28 @@ interface SubtaskListProps {
 }
 
 export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
-  const utils = api.useUtils();
   const { data: task } = api.task.getTask.useQuery(
     { id: parentTaskId },
     { initialData: initialTask, refetchInterval: 5 * 60 * 1000 },
   );
 
-  const [listData, setListData] = React.useState<
-    RouterOutputs["task"]["getTask"][]
-  >(task?.childTasks?.concat().sort((a, b) => a.sortIndex - b.sortIndex) ?? []);
+  const tasks =
+    task?.childTasks
+      ?.concat()
+      .sort(
+        (
+          a: RouterOutputs["task"]["getTask"],
+          b: RouterOutputs["task"]["getTask"],
+        ) => (a?.sortIndex ?? 0) - (b?.sortIndex ?? 0),
+      ) ?? [];
 
-  React.useEffect(() => {
-    setListData(
-      task?.childTasks?.concat().sort((a, b) => a.sortIndex - b.sortIndex) ??
-        [],
-    );
-  }, [task]);
-
-  const tasks = task?.childTasks ?? [];
-
-  const renderItem = ({
-    item,
-    drag,
-    isActive,
-  }: {
-    item: RouterOutputs["task"]["getTask"];
-    drag: () => void;
-    isActive: boolean;
-  }) => {
+  const renderItem = ({ item }: { item: RouterOutputs["task"]["getTask"] }) => {
     return (
-      <ScaleDecorator>
-        <TouchableOpacity onLongPress={drag} activeOpacity={0.8}>
-          <View
-            className={`flex flex-row rounded-lg ${isActive ? "bg-secondary" : "bg-muted"}`}
-          >
-            <TaskCard key={item?.id} task={item} />
-          </View>
-        </TouchableOpacity>
-      </ScaleDecorator>
+      <View className="flex flex-row rounded-lg bg-muted">
+        <TaskCard task={item} />
+      </View>
     );
   };
-
-  const mutateTaskOrder = api.task.reorderTasks.useMutation({
-    onMutate: (data) => {
-      const oldChildTasks = utils.task.getTask.getData({ id: parentTaskId });
-      const dataMapping = new Map<string, number>();
-      for (const order of data) {
-        dataMapping.set(order.id, order.sortIndex);
-      }
-
-      const newChildTasks = oldChildTasks?.childTasks?.map((t) => {
-        return {
-          ...t,
-          sortIndex: dataMapping.get(t.id) ?? t.sortIndex,
-        };
-      });
-
-      const sortedChildTasks = newChildTasks?.sort(
-        (a, b) => a.sortIndex - b.sortIndex,
-      );
-
-      if (task) {
-        utils.task.getTask.setData(
-          { id: parentTaskId },
-          {
-            ...task,
-            childTasks: sortedChildTasks,
-          },
-        );
-      }
-    },
-    onSettled: async () => {
-      await utils.task.getTask.invalidate({ id: parentTaskId });
-    },
-  });
 
   if (tasks.length === 0) {
     return (
@@ -100,22 +46,13 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
   }
 
   return (
-    <SafeAreaView className="mt-4 flex h-full space-y-2">
-      <DraggableFlatList
-        data={listData}
+    <SafeAreaView className="mt-0 flex h-full space-y-2">
+      <FlashList
+        data={tasks}
         renderItem={renderItem}
-        keyExtractor={(item) => item?.id ?? ""}
-        onDragEnd={({ data }) => {
-          setListData(data);
-          const taskOrder: { id: string; sortIndex: number }[] = [];
-          data.forEach((task, index) => {
-            if (task?.id && task.sortIndex !== index) {
-              taskOrder.push({ id: task.id, sortIndex: index });
-            }
-          });
-          mutateTaskOrder.mutate(taskOrder);
-        }}
-        scrollEnabled={true}
+        keyExtractor={(item: RouterOutputs["task"]["getTask"]) =>
+          item?.id ?? ""
+        }
       />
     </SafeAreaView>
   );

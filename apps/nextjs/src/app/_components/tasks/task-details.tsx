@@ -207,7 +207,7 @@ export function TaskDetails({
           Delete
         </Button>
         <Button
-          variant="default"
+          variant="primary"
           onClick={() =>
             updateNextDue.mutate({ id: taskId, nextDue: new Date() })
           }

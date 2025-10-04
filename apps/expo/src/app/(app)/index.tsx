@@ -1,6 +1,5 @@
 import type { PropsWithChildren } from "react";
-import { Button, Text, View } from "react-native";
-import Animated, { LinearTransition } from "react-native-reanimated";
+import { Button, FlatList, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
 
@@ -36,17 +35,15 @@ export function MyTasks() {
 
   return (
     <View className="relative h-full grow">
-      <Animated.FlatList
+      <FlatList
         data={tasks}
-        // estimatedItemSize={20}
         ItemSeparatorComponent={() => <View className="h-2" />}
         renderItem={(p) => (
-          <View className="animate-slideIn">
+          <View>
             <TaskCard task={p.item} />
           </View>
         )}
         contentContainerStyle={{ minHeight: "100%" }}
-        itemLayoutAnimation={LinearTransition}
       />
     </View>
   );

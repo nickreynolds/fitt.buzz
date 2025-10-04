@@ -1,7 +1,6 @@
-import type { AVPlaybackSource } from "expo-av";
 import React, { useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
-import { Audio } from "expo-av";
+import { useAudioPlayer } from "expo-audio";
 
 import { canBeCompleted, isCompleted } from "@acme/api-utils";
 import { formatEditValueFromSeconds, parseEditValue } from "@acme/utils";
@@ -21,11 +20,16 @@ export function CompleteTimedTaskButton({
 }: CompleteTimedTaskButtonProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editValue, setEditValue] = useState("0100");
-  const [sound, setSound] = useState<Audio.Sound>();
   const utils = api.useUtils();
   const task = utils.task.getTask.getData({ id: taskId });
   const parentTask = utils.task.getTask.getData({ id: parentTaskId ?? "" });
 
+  const audioPlayer = useAudioPlayer(
+    // eslint-disable-next-line
+    require("./assets/sounds/meditation-bell.mp3"),
+  );
+
+  console.log("audioPlayer", audioPlayer);
   const { handleOptimisticUpdate, handleSettled } = useTaskCompletion({
     taskId,
     parentTaskId,
@@ -58,28 +62,6 @@ export function CompleteTimedTaskButton({
     }
   }, [parentTask, taskId, setEditValue]);
 
-  React.useEffect(() => {
-    return sound
-      ? () => {
-          console.log("Unloading Sound");
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          sound.unloadAsync();
-        }
-      : undefined;
-  }, [sound]);
-
-  async function playSound() {
-    console.log("Loading Sound");
-    const { sound } = await Audio.Sound.createAsync(
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      require("../../assets/sounds/meditation-bell.mp3") as AVPlaybackSource,
-    );
-    setSound(sound);
-
-    console.log("Playing Sound");
-    await sound.playAsync();
-  }
-
   if (!task) {
     return null;
   }
@@ -106,9 +88,14 @@ export function CompleteTimedTaskButton({
     }
   };
 
-  const handleTimerComplete = async (time: number) => {
+  const handleTimerComplete = (time: number) => {
+    console.log("handleTimerComplete", audioPlayer);
+    // eslint-disable-next-line
+    (async () => {
+      await audioPlayer.seekTo(0);
+      audioPlayer.play();
+    })();
     completeTask.mutate({ id: taskId, time });
-    await playSound();
   };
 
   return (

@@ -8,6 +8,7 @@ import { z } from "zod";
 import { and, asc, desc, eq, inArray, isNull, lte, or, sql } from "@acme/db";
 import {
   CreateSubtaskSchema,
+  CreateSubtaskSetSchema,
   CreateTaskSchema,
   Task,
   TaskCompletion,
@@ -162,6 +163,62 @@ export const taskRouter = {
         tasks: [input.parentTaskId],
       });
       return inserted;
+    }),
+  createSubtaskSet: protectedProcedure
+    .input(CreateSubtaskSetSchema)
+    .mutation(async ({ ctx, input }) => {
+      const parent = await ctx.db.query.Task.findFirst({
+        where: eq(Task.id, input.parentTaskId),
+      });
+      if (!parent) {
+        throw new Error("Parent task not found");
+      }
+      if (parent.creatorId !== ctx.session.user.id) {
+        throw new Error("You are not the owner of the parent task");
+      }
+
+      // Create both tasks in a transaction
+      const result = await ctx.db.transaction(async (trx) => {
+        // First create the set parent task
+        const setTask = await trx.insert(Task).values({
+          id: input.setTaskId,
+          title: `${input.title} (set)`,
+          description: input.description,
+          parentTaskId: input.parentTaskId,
+          sortIndex: input.sortIndex ?? 0,
+          completionDataType: TaskCompletionTypes.Boolean,
+          isSet: true,
+          numSets: 1,
+          recurring: parent.recurring,
+          frequencyMinutes: parent.frequencyMinutes ?? null,
+          nextDue: parent.nextDue,
+          completionPeriodBegins: parent.completionPeriodBegins,
+          creatorId: ctx.session.user.id,
+        });
+
+        // Then create the child exercise task
+        const childTask = await trx.insert(Task).values({
+          id: input.childTaskId,
+          title: input.title,
+          description: input.description,
+          parentTaskId: input.setTaskId,
+          sortIndex: 0,
+          completionDataType: input.completionDataType,
+          isSet: false,
+          recurring: parent.recurring,
+          frequencyMinutes: parent.frequencyMinutes ?? null,
+          nextDue: parent.nextDue,
+          completionPeriodBegins: parent.completionPeriodBegins,
+          creatorId: ctx.session.user.id,
+        });
+
+        return { setTask, childTask };
+      });
+
+      await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
+        tasks: [input.parentTaskId],
+      });
+      return result;
     }),
   completeWeightRepsTask: protectedProcedure
     .input(

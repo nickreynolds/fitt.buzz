@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import type { LayoutChangeEvent } from "react-native";
 import { Text, View } from "react-native";
 import { Link, router } from "expo-router";
 
@@ -25,6 +26,8 @@ interface TaskHeaderProps {
 }
 
 export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
+  const [textWidth, setTextWidth] = useState(0);
+  const [fontSize, setFontSize] = useState(24);
   if (!initialTask) {
     return null;
   }
@@ -119,23 +122,39 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
     }
   };
 
+  const handleTextLayout = (event: LayoutChangeEvent) => {
+    const { width } = event.nativeEvent.layout;
+    setTextWidth(width);
+    if (width > 300) {
+      setFontSize(fontSize - 1);
+    }
+  };
+
+  console.log("textWidth", textWidth);
+
   return (
-    <View className="flex-col">
-      <View className="min-w-full flex-col">
-        <Link href={`/task/${taskId}`} className="w-full">
-          <Text
-            className="w-full text-2xl font-semibold text-primary"
-            onPress={() => router.push(`/task/${taskId}`)}
-          >
-            {task.title}
-            {task.recurring && (
-              <Text className="text-muted-foreground"> ↻</Text>
-            )}
-          </Text>
-          {isTaskOverdue && <OverdueBadge />}
-          {!task.parentTaskId && !isTaskOverdue && (
-            <TimeUntilOverdueBadge nextDue={task.nextDue} />
-          )}
+    <View className="flex-col max-w-full">
+      <View className="min-w-full flex-col max-w-full">
+        <Link href={`/task/${taskId}`} className="min-w-fullmax-w-full">
+          <View className="w-full flex-row justify-between items-center">
+            <Text
+              className="font-semibold text-primary"
+              onPress={() => router.push(`/task/${taskId}`)}
+              onLayout={handleTextLayout}
+              style={{ fontSize }}
+            >
+              {task.title}
+              {task.recurring && (
+                <Text className="text-muted-foreground">↻</Text>
+              )}
+            </Text>
+            <View>
+              {isTaskOverdue && <OverdueBadge />}
+              {!task.parentTaskId && !isTaskOverdue && (
+                <TimeUntilOverdueBadge nextDue={task.nextDue} />
+              )}
+            </View>
+          </View>
         </Link>
         <View className="flex flex-row items-center gap-4 self-end">
           {status()}

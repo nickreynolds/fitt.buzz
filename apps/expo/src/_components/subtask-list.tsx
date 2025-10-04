@@ -26,7 +26,7 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
         (
           a: RouterOutputs["task"]["getTask"],
           b: RouterOutputs["task"]["getTask"],
-        ) => a.sortIndex - b.sortIndex,
+        ) => (a?.sortIndex ?? 0) - (b?.sortIndex ?? 0),
       ) ?? [];
 
   const renderItem = ({ item }: { item: RouterOutputs["task"]["getTask"] }) => {
@@ -50,8 +50,9 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
       <FlashList
         data={tasks}
         renderItem={renderItem}
-        keyExtractor={(item: RouterOutputs["task"]["getTask"]) => item.id}
-        estimatedItemSize={100}
+        keyExtractor={(item: RouterOutputs["task"]["getTask"]) =>
+          item?.id ?? ""
+        }
       />
     </SafeAreaView>
   );

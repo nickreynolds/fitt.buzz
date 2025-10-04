@@ -135,7 +135,7 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
   return (
     <View className="max-w-full flex-col">
       <View className="min-w-full max-w-full flex-col">
-        <Link href={`/task/${taskId}`} className="min-w-fullmax-w-full">
+        <Link href={`/task/${taskId}`} className="min-w-full max-w-full">
           <View className="w-full flex-row items-center justify-between">
             <Text
               className="font-semibold text-primary"

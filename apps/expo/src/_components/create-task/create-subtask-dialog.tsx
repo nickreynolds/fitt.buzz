@@ -72,7 +72,7 @@ export function CreateSubtaskDialog({
         updatedAt: new Date(),
         creatorId: "1",
         parentTaskId: parentTask.id,
-        childTasks: [],
+        childTasks: [] as typeof parentTask.childTasks,
         sortIndex: numSiblingTasks,
         completionDataType: TaskCompletionTypes.Boolean,
         isSet: true,

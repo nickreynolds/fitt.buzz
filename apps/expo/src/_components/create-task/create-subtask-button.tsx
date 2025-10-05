@@ -21,7 +21,7 @@ export default function CreateSubtaskButton({
       onOpenChange={setIsSubtaskDialogOpen}
     >
       <DialogPrimitive.Trigger asChild>
-        <TouchableOpacity className="p-2">
+        <TouchableOpacity className="">
           <Icon name="Plus" className="h-6 w-6 text-primary" />
         </TouchableOpacity>
       </DialogPrimitive.Trigger>

@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useLocalSearchParams } from "expo-router";
 
 import CreateSubtaskButton from "~/_components/create-task/create-subtask-button";
+import { SetsInput } from "~/_components/sets-input";
 import { SubtaskList } from "~/_components/subtask-list";
 import { TaskCompletionTable } from "~/_components/task-completion-table";
 import { TaskDetailsDialog } from "~/_components/task-details-dialog";
@@ -22,9 +23,14 @@ export default function Index() {
   return (
     <SafeAreaView className="bg-background">
       <Stack.Screen options={{ title: "Task", headerShown: false }} />
-      <View className="h-full w-full bg-background p-4">
+      <View className="h-full w-full bg-background p-2">
         <TaskHeader initialTask={task} taskId={id as string} />
-        <TaskDetailsDialog initialTask={task} taskId={id as string} />
+        <View className="flex-row justify-between py-2 items-center">
+          {task.isSet && (
+            <SetsInput taskId={id as string} numSets={task.numSets} />
+          )}
+          <TaskDetailsDialog initialTask={task} taskId={id as string} />
+        </View>
         <TaskCompletionTable task={task} />
         <CreateSubtaskButton
           taskId={id as string}

@@ -6,7 +6,7 @@ export const useTimer = ({
   onTimerComplete,
   initialTime,
 }: {
-  onTimerComplete: () => void;
+  onTimerComplete: () => void | Promise<void>;
   initialTime: number;
 }) => {
   const [time, setTime] = useState<number>(initialTime); // Start at 1 minute (60 seconds)

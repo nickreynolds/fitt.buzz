@@ -2,6 +2,8 @@ import React from "react";
 import { Text, View } from "react-native";
 
 import type { RouterOutputs } from "@acme/api";
+import { TaskCompletionTypes } from "@acme/utils";
+import { formatTime } from "@acme/utils";
 
 interface TaskCompletionTableProps {
   task: RouterOutputs["task"]["getTask"];
@@ -13,6 +15,10 @@ interface WeightRepsCompletionData {
   reps: number;
 }
 
+interface TimedCompletionData {
+  time: number;
+}
+
 export function TaskCompletionTable({ task }: TaskCompletionTableProps) {
   if (
     !task?.taskCompletionData?.length &&
@@ -21,11 +27,30 @@ export function TaskCompletionTable({ task }: TaskCompletionTableProps) {
     return null;
   }
 
-  const renderCompletionData = (data: string) => {
+  const renderCompletionData = (data: string, completionDataType: string) => {
     try {
-      const parsed = JSON.parse(data) as WeightRepsCompletionData;
-      if (parsed.weight && parsed.weightUnit && parsed.reps) {
-        return `${parsed.weight}${parsed.weightUnit} × ${parsed.reps}`;
+      const parsed = JSON.parse(data) as
+        | WeightRepsCompletionData
+        | TimedCompletionData
+        | Record<string, unknown>;
+      if (
+        (completionDataType as TaskCompletionTypes) ===
+        TaskCompletionTypes.WeightReps
+      ) {
+        const parsedData = parsed as WeightRepsCompletionData;
+        if (parsedData.weight && parsedData.weightUnit && parsedData.reps) {
+          return `${parsedData.weight}${parsedData.weightUnit} × ${parsedData.reps}`;
+        }
+      } else if (
+        (completionDataType as TaskCompletionTypes) === TaskCompletionTypes.Time
+      ) {
+        const parsedData = parsed as TimedCompletionData;
+        return formatTime(parsedData.time);
+      } else if (
+        (completionDataType as TaskCompletionTypes) ===
+        TaskCompletionTypes.Boolean
+      ) {
+        return "Completed.";
       }
       return String(JSON.stringify(parsed));
     } catch {
@@ -40,7 +65,12 @@ export function TaskCompletionTable({ task }: TaskCompletionTableProps) {
     if (!completionData?.length) continue;
     allCompletionData.push(
       ...completionData.map((cd, index) => {
-        return { key: `${childTask.id}-${index}`, cd, title: childTask.title };
+        return {
+          key: `${childTask.id}-${index}`,
+          cd,
+          title: childTask.title,
+          completionDataType: childTask.completionDataType,
+        };
       }),
     );
   }
@@ -48,7 +78,7 @@ export function TaskCompletionTable({ task }: TaskCompletionTableProps) {
   console.log(allCompletionData);
 
   return (
-    <View className="mt-4 min-w-full max-w-full">
+    <View className="min-w-full max-w-full">
       <View>
         {/* Main task row */}
         {task.taskCompletionData && task.taskCompletionData.length > 0 && (
@@ -58,7 +88,9 @@ export function TaskCompletionTable({ task }: TaskCompletionTableProps) {
             </View>
             {task.taskCompletionData.map((data, i) => (
               <View key={i} className="w-24 p-2">
-                <Text className="text-sm">{renderCompletionData(data)}</Text>
+                <Text className="text-sm">
+                  {renderCompletionData(data, task.completionDataType)}
+                </Text>
               </View>
             ))}
           </View>
@@ -68,16 +100,24 @@ export function TaskCompletionTable({ task }: TaskCompletionTableProps) {
           {/* Child task rows */}
           {allCompletionData.length > 0 &&
             allCompletionData.map((childTask) => {
+              // Don't display child task title if it's identical to the parent task title
+              const shouldShowTitle = childTask.title !== task.title;
+
               return (
                 <View
                   key={childTask.key}
                   className="flex-row rounded-md bg-secondary p-2"
                 >
-                  <Text className="text-sm text-foreground">
-                    {childTask.title}{" "}
-                  </Text>
+                  {shouldShowTitle && (
+                    <Text className="text-sm text-foreground">
+                      {childTask.title}{" "}
+                    </Text>
+                  )}
                   <Text className="text-sm text-primary">
-                    {renderCompletionData(childTask.cd)}
+                    {renderCompletionData(
+                      childTask.cd,
+                      childTask.completionDataType,
+                    )}
                   </Text>
                 </View>
               );

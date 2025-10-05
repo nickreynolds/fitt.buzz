@@ -130,7 +130,7 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
     }
   };
 
-  console.log("textWidth", textWidth);
+  // console.log("textWidth", textWidth);
 
   return (
     <View className="max-w-full flex-col">

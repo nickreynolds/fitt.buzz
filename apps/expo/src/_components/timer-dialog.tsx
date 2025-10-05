@@ -10,7 +10,7 @@ interface TimerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialTime: number;
-  onTimerComplete: (time: number) => void;
+  onTimerComplete: (time: number) => void | Promise<void>;
 }
 
 export function TimerDialog({
@@ -28,8 +28,8 @@ export function TimerDialog({
     togglePause,
     resetTimer,
   } = useTimer({
-    onTimerComplete: () => {
-      onTimerComplete(originalTime);
+    onTimerComplete: async () => {
+      await onTimerComplete(originalTime);
       resetTimer();
       onOpenChange(false);
     },

@@ -5,6 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import { PortalHost } from "@rn-primitives/portal";
 
 import { AppBlockingMonitor } from "~/_components/app-blocking-monitor";
+import { AudioProvider } from "~/contexts/AudioContext";
 import { TRPCProvider } from "~/utils/api";
 
 import "../styles.css";
@@ -101,15 +102,17 @@ export default function RootLayout() {
   const { colorScheme } = useColorScheme();
   return (
     <TRPCProvider>
-      <StatusBar
-        style="light"
-        backgroundColor={colorScheme === "dark" ? "#000000" : "#FFFFFF"}
-      />
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <Slot />
-        <PortalHost />
-        <AppBlockingMonitor />
-      </GestureHandlerRootView>
+      <AudioProvider>
+        <StatusBar
+          style="light"
+          backgroundColor={colorScheme === "dark" ? "#000000" : "#FFFFFF"}
+        />
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <Slot />
+          <PortalHost />
+          <AppBlockingMonitor />
+        </GestureHandlerRootView>
+      </AudioProvider>
     </TRPCProvider>
   );
 }

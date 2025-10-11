@@ -52,6 +52,8 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
   const numSets = task.numSets;
   const numCompletedSets = task.numCompletedSets;
 
+  console.log("numChildTasks", numChildTasks);
+
   const status = () => {
     if (canComplete) {
       if (task.completionDataType === TaskCompletionTypes.WeightReps) {
@@ -75,6 +77,14 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
     }
 
     if (numSets > 1) {
+      if (numSets > 6) {
+        return (
+          <Text className="text-lg text-foreground">
+            {numCompletedSets}/{numSets}
+          </Text>
+        );
+      }
+
       const completedSets = Array(numCompletedSets).fill(1);
       const incompleteSets = Array(numSets - numCompletedSets).fill(1);
       const incompleteElements = incompleteSets.map((t, i) => (
@@ -95,6 +105,14 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
     }
 
     if (numCompletedChildTasks < numChildTasks) {
+      if (numChildTasks > 6) {
+        return (
+          <Text className="text-lg text-foreground">
+            {numCompletedChildTasks}/{numChildTasks}
+          </Text>
+        );
+      }
+
       const incompleteTaskElements = undoneTasks.map((t, i) => (
         <Icon
           name="Circle"
@@ -130,7 +148,7 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
     }
   };
 
-  console.log("textWidth", textWidth);
+  // console.log("textWidth", textWidth);
 
   return (
     <View className="max-w-full flex-col">

@@ -61,7 +61,7 @@ export function CreateSubtaskDialog({
       // Create the set parent task
       const setTask = {
         id: data.setTaskId,
-        title: `${data.title} (set)`,
+        title: `${data.title}`,
         description: data.description,
         nextDue: parentTask.nextDue,
         lastCompleted: null,

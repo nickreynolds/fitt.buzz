@@ -46,7 +46,7 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
   }
 
   return (
-    <SafeAreaView className="mt-0 flex h-full space-y-2">
+    <SafeAreaView className="flex h-full space-y-2">
       <FlashList
         data={tasks}
         renderItem={renderItem}

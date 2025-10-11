@@ -182,7 +182,7 @@ export const taskRouter = {
         // First create the set parent task
         const setTask = await trx.insert(Task).values({
           id: input.setTaskId,
-          title: `${input.title} (set)`,
+          title: `${input.title}`,
           description: input.description,
           parentTaskId: input.parentTaskId,
           sortIndex: input.sortIndex ?? 0,

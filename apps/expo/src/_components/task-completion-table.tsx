@@ -20,6 +20,20 @@ interface TimedCompletionData {
 }
 
 export function TaskCompletionTable({ task }: TaskCompletionTableProps) {
+  console.log("CLIENT - task.taskCompletionData:", task?.taskCompletionData);
+  console.log(
+    "CLIENT - task.childTaskCompletionDataMap:",
+    task?.childTaskCompletionDataMap,
+  );
+  console.log(
+    "CLIENT - task.taskCompletionDataWithTimestamps:",
+    task?.taskCompletionDataWithTimestamps,
+  );
+  console.log(
+    "CLIENT - task.childTaskCompletionDataMapWithTimestamps:",
+    task?.childTaskCompletionDataMapWithTimestamps,
+  );
+
   if (
     !task?.taskCompletionData?.length &&
     !task?.childTaskCompletionDataMap?.size
@@ -60,19 +74,67 @@ export function TaskCompletionTable({ task }: TaskCompletionTableProps) {
 
   const allCompletionData = [];
 
-  for (const childTask of task.childTasks ?? []) {
-    const completionData = task.childTaskCompletionDataMap?.get(childTask.id);
-    if (!completionData?.length) continue;
-    allCompletionData.push(
-      ...completionData.map((cd, index) => {
-        return {
-          key: `${childTask.id}-${index}`,
-          cd,
-          title: childTask.title,
-          completionDataType: childTask.completionDataType,
-        };
-      }),
+  // Sort child tasks by the createdAt of their first completion data item
+  const sortedChildTasks = (task.childTasks ?? []).sort((a, b) => {
+    const aCompletionData = task.childTaskCompletionDataMapWithTimestamps?.get(
+      a.id,
     );
+    const bCompletionData = task.childTaskCompletionDataMapWithTimestamps?.get(
+      b.id,
+    );
+
+    if (!aCompletionData?.length && !bCompletionData?.length) return 0;
+    if (!aCompletionData?.length) return 1;
+    if (!bCompletionData?.length) return -1;
+
+    const aFirstCompletion = aCompletionData[0];
+    const bFirstCompletion = bCompletionData[0];
+
+    if (!aFirstCompletion || !bFirstCompletion) return 0;
+
+    return (
+      aFirstCompletion.createdAt.getTime() -
+      bFirstCompletion.createdAt.getTime()
+    );
+  });
+
+  for (const childTask of sortedChildTasks) {
+    // Use timestamp data if available, otherwise fall back to regular data
+    const completionDataWithTimestamps =
+      task.childTaskCompletionDataMapWithTimestamps?.get(childTask.id);
+    const completionData = task.childTaskCompletionDataMap?.get(childTask.id);
+
+    if (completionDataWithTimestamps?.length) {
+      // Sort by createdAt in ascending order (oldest first)
+      const sortedCompletionData = completionDataWithTimestamps.sort(
+        (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
+      );
+
+      console.log("CLIENT - sortedCompletionData:", sortedCompletionData);
+
+      allCompletionData.push(
+        ...sortedCompletionData.map((item, index) => {
+          return {
+            key: `${childTask.id}-${index}`,
+            cd: item.data,
+            title: childTask.title,
+            completionDataType: childTask.completionDataType,
+          };
+        }),
+      );
+    } else if (completionData?.length) {
+      // Fallback to regular data if timestamp data not available
+      allCompletionData.push(
+        ...completionData.map((cd, index) => {
+          return {
+            key: `${childTask.id}-${index}`,
+            cd,
+            title: childTask.title,
+            completionDataType: childTask.completionDataType,
+          };
+        }),
+      );
+    }
   }
 
   console.log(allCompletionData);
@@ -80,7 +142,8 @@ export function TaskCompletionTable({ task }: TaskCompletionTableProps) {
   return (
     <View className="mt-4 w-full">
       {/* Main task row */}
-      {task.taskCompletionData && task.taskCompletionData.length > 0 && (
+      {(task.taskCompletionDataWithTimestamps?.length ??
+        task.taskCompletionData?.length) && (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -90,13 +153,28 @@ export function TaskCompletionTable({ task }: TaskCompletionTableProps) {
             <View className="w-32 p-2">
               <Text className="text-sm">{task.title}</Text>
             </View>
-            {task.taskCompletionData.map((data, i) => (
-              <View key={i} className="w-24 p-2">
-                <Text className="text-sm">
-                  {renderCompletionData(data, task.completionDataType)}
-                </Text>
-              </View>
-            ))}
+            {task.taskCompletionDataWithTimestamps?.length
+              ? // Use timestamp data if available
+                task.taskCompletionDataWithTimestamps
+                  .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+                  .map((item, i) => (
+                    <View key={i} className="w-24 p-2">
+                      <Text className="text-sm">
+                        {renderCompletionData(
+                          item.data,
+                          task.completionDataType,
+                        )}
+                      </Text>
+                    </View>
+                  ))
+              : // Fallback to regular data
+                task.taskCompletionData?.map((data, i) => (
+                  <View key={i} className="w-24 p-2">
+                    <Text className="text-sm">
+                      {renderCompletionData(data, task.completionDataType)}
+                    </Text>
+                  </View>
+                ))}
           </View>
         </ScrollView>
       )}

@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 
 import type { RouterOutputs } from "@acme/api";
 import { TaskCompletionTypes } from "@acme/utils";
@@ -78,10 +78,14 @@ export function TaskCompletionTable({ task }: TaskCompletionTableProps) {
   console.log(allCompletionData);
 
   return (
-    <View className="min-w-full max-w-full">
-      <View>
-        {/* Main task row */}
-        {task.taskCompletionData && task.taskCompletionData.length > 0 && (
+    <View className="mt-4 w-full">
+      {/* Main task row */}
+      {task.taskCompletionData && task.taskCompletionData.length > 0 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          className="mb-2"
+        >
           <View className="flex-row border-b border-border">
             <View className="w-32 p-2">
               <Text className="text-sm">{task.title}</Text>
@@ -94,23 +98,25 @@ export function TaskCompletionTable({ task }: TaskCompletionTableProps) {
               </View>
             ))}
           </View>
-        )}
+        </ScrollView>
+      )}
 
-        <View className="wrap flex w-full max-w-full flex-row">
-          {/* Child task rows */}
-          {allCompletionData.length > 0 &&
-            allCompletionData.map((childTask) => {
+      {/* Child task rows */}
+      {allCompletionData.length > 0 && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View className="flex-row">
+            {allCompletionData.map((childTask) => {
               // Don't display child task title if it's identical to the parent task title
               const shouldShowTitle = childTask.title !== task.title;
 
               return (
                 <View
                   key={childTask.key}
-                  className="flex-row rounded-md bg-secondary p-2"
+                  className="rounded-md bg-secondary p-2 mr-2 min-w-24"
                 >
                   {shouldShowTitle && (
-                    <Text className="text-sm text-foreground">
-                      {childTask.title}{" "}
+                    <Text className="text-sm text-foreground mb-1">
+                      {childTask.title}
                     </Text>
                   )}
                   <Text className="text-sm text-primary">
@@ -122,8 +128,9 @@ export function TaskCompletionTable({ task }: TaskCompletionTableProps) {
                 </View>
               );
             })}
-        </View>
-      </View>
+          </View>
+        </ScrollView>
+      )}
     </View>
   );
 }

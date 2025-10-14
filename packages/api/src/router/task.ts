@@ -61,10 +61,48 @@ const baseTaskOutputSchema = z.object({
     TaskBlockingTypes.BLOCK_WHEN_TWICE_OVERDUE,
   ]),
   taskCompletionData: z.array(z.string()).optional(),
+  taskCompletionDataWithTimestamps: z
+    .array(
+      z.object({
+        data: z.string(),
+        createdAt: z.date(),
+      }),
+    )
+    .optional(),
   childTaskCompletionDataMap: z.map(z.string(), z.array(z.string())).optional(),
+  childTaskCompletionDataMapWithTimestamps: z
+    .map(
+      z.string(),
+      z.array(
+        z.object({
+          data: z.string(),
+          createdAt: z.date(),
+        }),
+      ),
+    )
+    .optional(),
   prevTaskCompletionData: z.array(z.string()).optional(),
+  prevTaskCompletionDataWithTimestamps: z
+    .array(
+      z.object({
+        data: z.string(),
+        createdAt: z.date(),
+      }),
+    )
+    .optional(),
   prevChildTaskCompletionDataMap: z
     .map(z.string(), z.array(z.string()))
+    .optional(),
+  prevChildTaskCompletionDataMapWithTimestamps: z
+    .map(
+      z.string(),
+      z.array(
+        z.object({
+          data: z.string(),
+          createdAt: z.date(),
+        }),
+      ),
+    )
     .optional(),
 });
 
@@ -563,15 +601,63 @@ export const taskRouter = {
           ],
         });
 
-      const taskCompletionData = allTaskCompletionDataPoints
+      const taskCompletionDataWithTimestamps = allTaskCompletionDataPoints
         .filter((point) => point.taskId === input.id)
-        .map((point) => JSON.stringify(point.completionData));
+        .map((point) => ({
+          data: JSON.stringify(point.completionData),
+          createdAt: point.createdAt,
+        }))
+        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
+      console.log(
+        "API - taskCompletionDataWithTimestamps:",
+        taskCompletionDataWithTimestamps.map((p) => ({
+          data: p.data,
+          createdAt: p.createdAt.toISOString(),
+        })),
+      );
+
+      const taskCompletionData = taskCompletionDataWithTimestamps.map(
+        (point) => point.data,
+      );
+
+      console.log("API - final taskCompletionData:", taskCompletionData);
+
+      const childTaskCompletionDataMapWithTimestamps = new Map<
+        string,
+        { data: string; createdAt: Date }[]
+      >();
       const childTaskCompletionDataMap = new Map<string, string[]>();
       for (const child of task.childTasks) {
-        const childTaskCompletionData = allTaskCompletionDataPoints
-          .filter((point) => point.taskId === child.id)
-          .map((point) => JSON.stringify(point.completionData));
+        const childTaskCompletionDataWithTimestamps =
+          allTaskCompletionDataPoints
+            .filter((point) => point.taskId === child.id)
+            .map((point) => ({
+              data: JSON.stringify(point.completionData),
+              createdAt: point.createdAt,
+            }))
+            .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+
+        console.log(
+          `API - childTask ${child.id} completionDataWithTimestamps:`,
+          childTaskCompletionDataWithTimestamps.map((p) => ({
+            data: p.data,
+            createdAt: p.createdAt.toISOString(),
+          })),
+        );
+
+        const childTaskCompletionData =
+          childTaskCompletionDataWithTimestamps.map((point) => point.data);
+
+        console.log(
+          `API - childTask ${child.id} final completionData:`,
+          childTaskCompletionData,
+        );
+
+        childTaskCompletionDataMapWithTimestamps.set(
+          child.id,
+          childTaskCompletionDataWithTimestamps,
+        );
         childTaskCompletionDataMap.set(child.id, childTaskCompletionData);
       }
 
@@ -592,7 +678,15 @@ export const taskRouter = {
             )?.nextDue;
 
       let prevTaskCompletionData: string[] = [];
+      let prevTaskCompletionDataWithTimestamps: {
+        data: string;
+        createdAt: Date;
+      }[] = [];
       let prevChildTaskCompletionDataMap = new Map<string, string[]>();
+      let prevChildTaskCompletionDataMapWithTimestamps = new Map<
+        string,
+        { data: string; createdAt: Date }[]
+      >();
 
       if (prevTaskCompletionNextDue) {
         const allPrevTaskCompletionDataPoints =
@@ -609,15 +703,39 @@ export const taskRouter = {
             ),
           });
 
-        prevTaskCompletionData = allPrevTaskCompletionDataPoints
+        prevTaskCompletionDataWithTimestamps = allPrevTaskCompletionDataPoints
           .filter((point) => point.taskId === input.id)
-          .map((point) => JSON.stringify(point.completionData));
+          .map((point) => ({
+            data: JSON.stringify(point.completionData),
+            createdAt: point.createdAt,
+          }))
+          .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
+        prevTaskCompletionData = prevTaskCompletionDataWithTimestamps.map(
+          (point) => point.data,
+        );
+
+        prevChildTaskCompletionDataMapWithTimestamps = new Map<
+          string,
+          { data: string; createdAt: Date }[]
+        >();
         prevChildTaskCompletionDataMap = new Map<string, string[]>();
         for (const child of task.childTasks) {
-          const childTaskCompletionData = allPrevTaskCompletionDataPoints
-            .filter((point) => point.taskId === child.id)
-            .map((point) => JSON.stringify(point.completionData));
+          const childTaskCompletionDataWithTimestamps =
+            allPrevTaskCompletionDataPoints
+              .filter((point) => point.taskId === child.id)
+              .map((point) => ({
+                data: JSON.stringify(point.completionData),
+                createdAt: point.createdAt,
+              }))
+              .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+
+          const childTaskCompletionData =
+            childTaskCompletionDataWithTimestamps.map((point) => point.data);
+          prevChildTaskCompletionDataMapWithTimestamps.set(
+            child.id,
+            childTaskCompletionDataWithTimestamps,
+          );
           prevChildTaskCompletionDataMap.set(child.id, childTaskCompletionData);
         }
       }
@@ -625,9 +743,13 @@ export const taskRouter = {
       return {
         ...task,
         taskCompletionData,
+        taskCompletionDataWithTimestamps,
         childTaskCompletionDataMap,
+        childTaskCompletionDataMapWithTimestamps,
         prevTaskCompletionData,
+        prevTaskCompletionDataWithTimestamps,
         prevChildTaskCompletionDataMap,
+        prevChildTaskCompletionDataMapWithTimestamps,
       };
     }),
   getAllMyTasks: protectedProcedure

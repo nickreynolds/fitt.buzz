@@ -1,6 +1,5 @@
 import React from "react";
 import { Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
 
 import type { RouterOutputs } from "@acme/api";
@@ -46,14 +45,15 @@ export function SubtaskList({ initialTask, parentTaskId }: SubtaskListProps) {
   }
 
   return (
-    <SafeAreaView className="flex h-full space-y-2">
+    <View className="flex-1">
       <FlashList
         data={tasks}
         renderItem={renderItem}
         keyExtractor={(item: RouterOutputs["task"]["getTask"]) =>
           item?.id ?? ""
         }
+        contentContainerStyle={{ paddingVertical: 8 }}
       />
-    </SafeAreaView>
+    </View>
   );
 }

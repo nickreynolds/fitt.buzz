@@ -21,9 +21,9 @@ export default function Index() {
   }
 
   return (
-    <SafeAreaView className="relative bg-background">
+    <SafeAreaView className="relative bg-background flex-1">
       <Stack.Screen options={{ title: "Task", headerShown: false }} />
-      <View className="h-full w-full bg-background p-2">
+      <View className="flex-1 w-full bg-background p-2">
         <TaskHeader initialTask={task} taskId={id as string} />
         <View className="flex-row items-center justify-between py-2">
           {task.isSet && (
@@ -32,7 +32,9 @@ export default function Index() {
           <TaskDetailsDialog initialTask={task} taskId={id as string} />
         </View>
         <TaskCompletionTable task={task} />
-        <SubtaskList initialTask={task} parentTaskId={id as string} />
+        <View className="flex-1">
+          <SubtaskList initialTask={task} parentTaskId={id as string} />
+        </View>
       </View>
       <View className="absolute bottom-4 right-4 z-50">
         <CreateSubtaskButton

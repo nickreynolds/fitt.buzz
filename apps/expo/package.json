@@ -4,6 +4,7 @@
   "private": true,
   "main": "index.ts",
   "scripts": {
+    "build:": "eas build --local --platform android",
     "clean": "git clean -xdf .cache .expo .turbo android ios node_modules",
     "dev": "expo start --reset-cache",
     "dev:android": "expo start --android",

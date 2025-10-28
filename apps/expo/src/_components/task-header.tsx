@@ -26,7 +26,6 @@ interface TaskHeaderProps {
 }
 
 export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
-  const [textWidth, setTextWidth] = useState(0);
   const [fontSize, setFontSize] = useState(24);
   if (!initialTask) {
     return null;
@@ -142,7 +141,6 @@ export function TaskHeader({ initialTask, taskId }: TaskHeaderProps) {
 
   const handleTextLayout = (event: LayoutChangeEvent) => {
     const { width } = event.nativeEvent.layout;
-    setTextWidth(width);
     if (width > 300) {
       setFontSize(fontSize - 1);
     }

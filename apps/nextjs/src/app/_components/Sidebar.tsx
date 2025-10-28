@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Home, Settings, Shield } from "lucide-react";
+import { Home, Settings, Shield, Users } from "lucide-react";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -42,6 +42,18 @@ export function Sidebar({ isOpen }: SidebarProps) {
             {/* Tooltip for medium screens */}
             <span className="fixed left-16 ml-2 hidden scale-0 rounded bg-accent px-2 py-1 text-sm group-hover:scale-100 md:inline-block lg:hidden">
               Fun Blocking
+            </span>
+          </Link>
+
+          <Link
+            href="/users"
+            className="group flex items-center gap-2 rounded-md p-2 hover:bg-accent"
+          >
+            <Users className="h-5 w-5 shrink-0" />
+            <span className={textClass}>Users</span>
+            {/* Tooltip for medium screens */}
+            <span className="fixed left-16 ml-2 hidden scale-0 rounded bg-accent px-2 py-1 text-sm group-hover:scale-100 md:inline-block lg:hidden">
+              Users
             </span>
           </Link>
 

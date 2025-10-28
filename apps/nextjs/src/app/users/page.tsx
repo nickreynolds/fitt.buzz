@@ -49,7 +49,7 @@ export default function UsersPage() {
                   >
                     <td className="px-6 py-4">
                       <div className="font-medium">
-                        {user.name || "(No name)"}
+                        {user.name ?? "(No name)"}
                       </div>
                     </td>
                     <td className="px-6 py-4">

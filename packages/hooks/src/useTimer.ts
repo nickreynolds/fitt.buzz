@@ -44,6 +44,7 @@ export const useTimer = ({
         }, 1000 + diff);
       }
     } else if (isRunning && time === 0) {
+      // eslint-disable-next-line
       onTimerComplete();
       setIsRunning(false);
     }

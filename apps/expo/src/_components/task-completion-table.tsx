@@ -2,8 +2,7 @@ import React from "react";
 import { ScrollView, Text, View } from "react-native";
 
 import type { RouterOutputs } from "@acme/api";
-import { TaskCompletionTypes } from "@acme/utils";
-import { formatTime } from "@acme/utils";
+import { formatTime, TaskCompletionTypes } from "@acme/utils";
 
 interface TaskCompletionTableProps {
   task: RouterOutputs["task"]["getTask"];
@@ -190,10 +189,10 @@ export function TaskCompletionTable({ task }: TaskCompletionTableProps) {
               return (
                 <View
                   key={childTask.key}
-                  className="rounded-md bg-secondary p-2 mr-2 min-w-24"
+                  className="mr-2 min-w-24 rounded-md bg-secondary p-2"
                 >
                   {shouldShowTitle && (
-                    <Text className="text-sm text-foreground mb-1">
+                    <Text className="mb-1 text-sm text-foreground">
                       {childTask.title}
                     </Text>
                   )}

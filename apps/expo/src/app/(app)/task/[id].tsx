@@ -21,9 +21,9 @@ export default function Index() {
   }
 
   return (
-    <SafeAreaView className="relative bg-background flex-1">
+    <SafeAreaView className="relative flex-1 bg-background">
       <Stack.Screen options={{ title: "Task", headerShown: false }} />
-      <View className="flex-1 w-full bg-background p-2">
+      <View className="w-full flex-1 bg-background p-2">
         <TaskHeader initialTask={task} taskId={id as string} />
         <View className="flex-row items-center justify-between py-2">
           {task.isSet && (

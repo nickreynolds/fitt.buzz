@@ -1,6 +1,6 @@
 "use client";
 
-import { Users as UsersIcon, CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, Users as UsersIcon, XCircle } from "lucide-react";
 
 import { api } from "~/trpc/react";
 import { Layout } from "../_components/Layout";

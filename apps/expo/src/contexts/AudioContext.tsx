@@ -1,6 +1,6 @@
-import React, { createContext, useContext } from "react";
-import type { ReactNode } from "react";
 import type { AudioSource } from "expo-audio";
+import type { ReactNode } from "react";
+import React, { createContext, useContext } from "react";
 import { useAudioPlayer } from "expo-audio";
 
 // eslint-disable-next-line
@@ -17,8 +17,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
 
   const playTimerCompleteSound = async () => {
     console.log("playTimerCompleteSound");
-    // eslint-disable-next-line
-    audioPlayer.seekTo(0);
+
+    await audioPlayer.seekTo(0);
     audioPlayer.play();
   };
 

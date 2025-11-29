@@ -60,6 +60,8 @@ export const Task = pgTable("task", (t) => ({
     .notNull()
     .default(TaskCompletionConditions.AllSubtasks),
   blocking: blockingTypeEnum().notNull().default(TaskBlockingTypes.NEVER_BLOCK),
+  // Seconds to show timer after completing task
+  timeDelayAfterCompletion: t.integer().notNull().default(0),
 }));
 
 export const TaskCompletion = pgTable("task_completion", (t) => ({
@@ -98,6 +100,7 @@ export const CreateTaskSchema = z.object({
     TaskCompletionTypes.WeightReps,
     TaskCompletionTypes.Time,
   ]),
+  timeDelayAfterCompletion: z.number().optional(),
 });
 
 export const CreateSubtaskSchema = CreateTaskSchema.extend({
@@ -112,6 +115,7 @@ export const CreateSubtaskSchema = CreateTaskSchema.extend({
     TaskCompletionTypes.Time,
   ]),
   isSet: z.boolean(),
+  timeDelayAfterCompletion: z.number().optional(),
 });
 
 export const CreateSubtaskSetSchema = z.object({

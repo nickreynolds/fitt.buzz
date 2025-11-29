@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import { format } from "date-fns";
 import { Trash2 } from "lucide-react-native";
 
@@ -66,6 +66,22 @@ export function TaskDetails({
       await utils.task.getTask.invalidate({ id: taskId });
     },
   });
+
+  const updateTimeDelayAfterCompletion =
+    api.task.updateTimeDelayAfterCompletion.useMutation({
+      onMutate: ({ timeDelayAfterCompletion }) => {
+        const previousTask = utils.task.getTask.getData({ id: taskId });
+        if (previousTask) {
+          utils.task.getTask.setData(
+            { id: taskId },
+            { ...previousTask, timeDelayAfterCompletion },
+          );
+        }
+      },
+      onSettled: async () => {
+        await utils.task.getTask.invalidate({ id: taskId });
+      },
+    });
 
   const updateNextDue = api.task.updateNextDue.useMutation({
     onMutate: ({ nextDue, completionPeriodBegins }) => {
@@ -156,6 +172,26 @@ export function TaskDetails({
             </View>
           ))}
         </View>
+      </View>
+
+      <View>
+        <Text className="text-xs font-medium text-muted-foreground">
+          Timer delay after completion (seconds)
+        </Text>
+        <TextInput
+          className="mt-1 rounded-lg border border-input bg-background px-4 py-2 text-base text-foreground"
+          value={(initialTask?.timeDelayAfterCompletion ?? 0).toString()}
+          onChangeText={(text) => {
+            const value = parseInt(text) || 0;
+            updateTimeDelayAfterCompletion.mutate({
+              id: taskId,
+              timeDelayAfterCompletion: value,
+            });
+          }}
+          keyboardType="numeric"
+          placeholder="0"
+          placeholderTextColor="#666"
+        />
       </View>
 
       <View>

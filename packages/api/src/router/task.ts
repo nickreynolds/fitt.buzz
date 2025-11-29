@@ -60,6 +60,7 @@ const baseTaskOutputSchema = z.object({
     TaskBlockingTypes.NEVER_BLOCK,
     TaskBlockingTypes.BLOCK_WHEN_TWICE_OVERDUE,
   ]),
+  timeDelayAfterCompletion: z.number(),
   taskCompletionData: z.array(z.string()).optional(),
   taskCompletionDataWithTimestamps: z
     .array(
@@ -160,6 +161,7 @@ export const taskRouter = {
                     input.frequencyMinutes,
                   )
                 : null,
+            timeDelayAfterCompletion: input.timeDelayAfterCompletion ?? 0,
           })
           .returning();
         await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
@@ -169,7 +171,11 @@ export const taskRouter = {
       }
       const inserted = await ctx.db
         .insert(Task)
-        .values({ ...input, creatorId: ctx.session.user.id })
+        .values({
+          ...input,
+          creatorId: ctx.session.user.id,
+          timeDelayAfterCompletion: input.timeDelayAfterCompletion ?? 0,
+        })
         .returning();
       await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
         tasks: [],
@@ -196,6 +202,7 @@ export const taskRouter = {
         nextDue: parent.nextDue,
         completionPeriodBegins: parent.completionPeriodBegins,
         creatorId: ctx.session.user.id,
+        timeDelayAfterCompletion: input.timeDelayAfterCompletion ?? 0,
       });
       await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
         tasks: [input.parentTaskId],
@@ -232,6 +239,7 @@ export const taskRouter = {
           nextDue: parent.nextDue,
           completionPeriodBegins: parent.completionPeriodBegins,
           creatorId: ctx.session.user.id,
+          timeDelayAfterCompletion: 0,
         });
 
         // Then create the child exercise task
@@ -248,6 +256,7 @@ export const taskRouter = {
           nextDue: parent.nextDue,
           completionPeriodBegins: parent.completionPeriodBegins,
           creatorId: ctx.session.user.id,
+          timeDelayAfterCompletion: 0,
         });
 
         return { setTask, childTask };
@@ -1011,6 +1020,35 @@ export const taskRouter = {
       const updated = await ctx.db
         .update(Task)
         .set({ blocking: input.blocking })
+        .where(eq(Task.id, input.id));
+      await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
+        tasks: [input.id, task.parentTaskId],
+      });
+      return updated;
+    }),
+  updateTimeDelayAfterCompletion: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        timeDelayAfterCompletion: z.number().min(0),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const task = await ctx.db.query.Task.findFirst({
+        where: eq(Task.id, input.id),
+      });
+
+      if (!task) {
+        throw new Error("Task not found");
+      }
+
+      if (task.creatorId !== ctx.session.user.id) {
+        throw new Error("You are not the owner of this task");
+      }
+
+      const updated = await ctx.db
+        .update(Task)
+        .set({ timeDelayAfterCompletion: input.timeDelayAfterCompletion })
         .where(eq(Task.id, input.id));
       await pusher.trigger(`user-${ctx.session.user.id}`, "refresh-tasks", {
         tasks: [input.id, task.parentTaskId],

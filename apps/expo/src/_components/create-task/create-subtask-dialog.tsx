@@ -33,6 +33,7 @@ export function CreateSubtaskDialog({
     TaskCompletionTypes.Boolean,
   );
   const [createAsSet, setCreateAsSet] = useState(false);
+  const [timeDelayAfterCompletion, setTimeDelayAfterCompletion] = useState(0);
   const utils = api.useUtils();
 
   const createTask = api.task.createSubtask.useMutation({
@@ -41,6 +42,7 @@ export function CreateSubtaskDialog({
       setDescription("");
       setCompletionType(TaskCompletionTypes.Boolean);
       setCreateAsSet(false);
+      setTimeDelayAfterCompletion(0);
       onClose();
     },
     onSettled: async () => {
@@ -79,6 +81,7 @@ export function CreateSubtaskDialog({
         numSets: 1,
         numCompletedSets: 0,
         blocking: TaskBlockingTypes.NEVER_BLOCK,
+        timeDelayAfterCompletion: 0,
       };
 
       // Create the child exercise task
@@ -102,6 +105,7 @@ export function CreateSubtaskDialog({
         numSets: 1,
         numCompletedSets: 0,
         blocking: TaskBlockingTypes.NEVER_BLOCK,
+        timeDelayAfterCompletion: 0,
       };
 
       // Add child task to set task
@@ -122,6 +126,7 @@ export function CreateSubtaskDialog({
       setDescription("");
       setCompletionType(TaskCompletionTypes.Boolean);
       setCreateAsSet(false);
+      setTimeDelayAfterCompletion(0);
       onClose();
     },
     onSettled: async () => {
@@ -171,6 +176,7 @@ export function CreateSubtaskDialog({
         isSet: false,
         recurring: parentTask.recurring,
         nextDue: parentTask.nextDue,
+        timeDelayAfterCompletion: timeDelayAfterCompletion,
       });
     }
   };
@@ -247,6 +253,22 @@ export function CreateSubtaskDialog({
               </View>
             </ToggleGroupItem>
           </ToggleGroup>
+        </View>
+
+        <View className="space-y-3">
+          <Text className="text-xs text-muted-foreground">
+            Timer delay after completion (seconds)
+          </Text>
+          <TextInput
+            className="rounded-lg border border-input bg-background px-4 py-3 text-base text-foreground"
+            value={timeDelayAfterCompletion.toString()}
+            onChangeText={(text) =>
+              setTimeDelayAfterCompletion(parseInt(text) || 0)
+            }
+            keyboardType="numeric"
+            placeholder="0"
+            placeholderTextColor="#666"
+          />
         </View>
 
         <View className="flex-row gap-3 pt-4">

@@ -60,9 +60,11 @@ export function CreateTaskDialogForm({
   const router = useRouter();
   const [isRecurring, setIsRecurring] = useState(false);
 
-  const zodSchema = CreateTaskSchema.extend({ nextDueString: z.string() }).omit(
-    { nextDue: true, id: true, completionDataType: true },
-  );
+  const zodSchema = CreateTaskSchema.extend({ nextDueString: z.string() })
+    .omit({ nextDue: true, id: true, completionDataType: true })
+    .extend({
+      timeDelayAfterCompletion: z.number().min(0).optional(),
+    });
 
   const form = useForm({
     resolver: zodResolver(zodSchema),
@@ -74,6 +76,7 @@ export function CreateTaskDialogForm({
         .toISOString()
         .substring(0, 19),
       frequencyMinutes: 1440,
+      timeDelayAfterCompletion: 0,
     },
   });
 
@@ -107,6 +110,7 @@ export function CreateTaskDialogForm({
         numSets: 1,
         numCompletedSets: 0,
         blocking: TaskBlockingTypes.NEVER_BLOCK,
+        timeDelayAfterCompletion: data.timeDelayAfterCompletion ?? 0,
       };
 
       utils.task.getTask.setData({ id: data.id }, task);
@@ -140,6 +144,7 @@ export function CreateTaskDialogForm({
       frequencyMinutes: isRecurring ? data.frequencyMinutes : undefined,
       recurring: isRecurring,
       completionDataType: TaskCompletionTypes.Boolean,
+      timeDelayAfterCompletion: data.timeDelayAfterCompletion ?? 0,
     });
   }
 
@@ -244,6 +249,31 @@ export function CreateTaskDialogForm({
                 )}
               />
             )}
+
+            <FormField
+              control={form.control}
+              name="timeDelayAfterCompletion"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs text-muted-foreground">
+                    Timer delay after completion (seconds)
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="0"
+                      {...field}
+                      value={field.value}
+                      onChange={(e) =>
+                        field.onChange(parseInt(e.target.value) || 0)
+                      }
+                      className="h-8"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <Button type="submit">Create Task</Button>
           </form>

@@ -5,6 +5,7 @@ import { Trash2 } from "lucide-react";
 
 import type { RouterOutputs } from "@acme/api";
 import { Button } from "@acme/ui/button";
+import { Input } from "@acme/ui/input";
 import { Switch } from "@acme/ui/switch";
 import { TaskBlockingTypes } from "@acme/utils";
 
@@ -79,6 +80,22 @@ export function TaskDetails({
       await utils.task.getTask.invalidate({ id: taskId });
     },
   });
+
+  const updateTimeDelayAfterCompletion =
+    api.task.updateTimeDelayAfterCompletion.useMutation({
+      onMutate: ({ timeDelayAfterCompletion }) => {
+        const previousTask = utils.task.getTask.getData({ id: taskId });
+        if (previousTask) {
+          utils.task.getTask.setData(
+            { id: taskId },
+            { ...previousTask, timeDelayAfterCompletion },
+          );
+        }
+      },
+      onSettled: async () => {
+        await utils.task.getTask.invalidate({ id: taskId });
+      },
+    });
 
   const updateNextDue = api.task.updateNextDue.useMutation({
     onMutate: ({ nextDue, completionPeriodBegins }) => {
@@ -164,6 +181,25 @@ export function TaskDetails({
             </div>
           ))}
         </div>
+      </div>
+
+      <div>
+        <h3 className="text-xs font-medium text-muted-foreground">
+          Timer delay after completion (seconds)
+        </h3>
+        <Input
+          type="number"
+          min="0"
+          value={task?.timeDelayAfterCompletion ?? 0}
+          onChange={(e) => {
+            const value = parseInt(e.target.value) || 0;
+            updateTimeDelayAfterCompletion.mutate({
+              id: taskId,
+              timeDelayAfterCompletion: value,
+            });
+          }}
+          className="mt-1 h-8"
+        />
       </div>
 
       {isRecurring && (

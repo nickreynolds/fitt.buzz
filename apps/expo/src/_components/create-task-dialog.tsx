@@ -40,6 +40,7 @@ export function CreateTaskDialog({
   const [completionType, setCompletionType] = useState<TaskCompletionTypes>(
     TaskCompletionTypes.Boolean,
   );
+  const [timeDelayAfterCompletion, setTimeDelayAfterCompletion] = useState(0);
 
   const utils = api.useUtils();
   const { mutate } = api.task.createTask.useMutation({
@@ -74,6 +75,7 @@ export function CreateTaskDialog({
         numSets: 1,
         numCompletedSets: 0,
         blocking: TaskBlockingTypes.NEVER_BLOCK,
+        timeDelayAfterCompletion: timeDelayAfterCompletion,
       };
 
       const tasks = utils.task.getAllMyActiveTasks.getData();
@@ -88,6 +90,7 @@ export function CreateTaskDialog({
       setDueDate(new Date());
       setDueTime(new Date());
       setCompletionType(TaskCompletionTypes.Boolean);
+      setTimeDelayAfterCompletion(0);
       onOpenChange(false);
     },
     onSettled: async () => {
@@ -104,6 +107,7 @@ export function CreateTaskDialog({
       recurring: isRecurring,
       frequencyMinutes: isRecurring ? parseInt(frequency) : undefined,
       completionDataType: completionType,
+      timeDelayAfterCompletion: timeDelayAfterCompletion,
     });
   };
 
@@ -266,6 +270,22 @@ export function CreateTaskDialog({
                     />
                   </View>
                 )}
+
+                <View className="space-y-3">
+                  <Text className="text-xs text-muted-foreground">
+                    Timer delay after completion (seconds)
+                  </Text>
+                  <TextInput
+                    className="rounded-lg border border-input bg-background px-4 py-3 text-base text-foreground"
+                    value={timeDelayAfterCompletion.toString()}
+                    onChangeText={(text) =>
+                      setTimeDelayAfterCompletion(parseInt(text) || 0)
+                    }
+                    keyboardType="numeric"
+                    placeholder="0"
+                    placeholderTextColor="#666"
+                  />
+                </View>
 
                 <View className="flex-row gap-3 pt-4">
                   <Pressable

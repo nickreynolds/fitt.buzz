@@ -3,6 +3,7 @@ import "@bacons/text-decoder/install";
 import { Slot } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { PortalHost } from "@rn-primitives/portal";
+import axios from "axios";
 
 import { AppBlockingMonitor } from "~/_components/app-blocking-monitor";
 import { AudioProvider } from "~/contexts/AudioContext";
@@ -37,15 +38,17 @@ TaskManager.defineTask(BACKGROUND_TASK_IDENTIFIER, async () => {
     // NEW (works in background tasks):
     const baseUrl = getBaseUrl();
     const token = getToken();
-    const response = await fetch(`${baseUrl}/api/trpc/task.shouldBlockFun`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Authorization": `Bearer ${token}`,
+    const response = await axios.get(
+      `${baseUrl}/api/trpc/task.shouldBlockFun`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "X-Authorization": `Bearer ${token}`,
+        },
       },
-    });
+    );
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const data = await response.json();
+    const data = response.data;
     // eslint-disable-next-line
     const shouldBlock = data.result?.data ?? false;
     console.log("shouldBlock: ", shouldBlock);

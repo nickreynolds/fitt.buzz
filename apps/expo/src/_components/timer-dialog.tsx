@@ -28,8 +28,9 @@ export function TimerDialog({
     togglePause,
     resetTimer,
   } = useTimer({
-    onTimerComplete: async () => {
-      await onTimerComplete(originalTime);
+    onTimerComplete: async (completedTime) => {
+      // originalTime is now passed as a parameter, avoiding stale closure issues
+      await onTimerComplete(completedTime);
       resetTimer();
       onOpenChange(false);
     },

@@ -6,7 +6,7 @@ export const useTimer = ({
   onTimerComplete,
   initialTime,
 }: {
-  onTimerComplete: () => void | Promise<void>;
+  onTimerComplete: (originalTime: number) => void | Promise<void>;
   initialTime: number;
 }) => {
   const [time, setTime] = useState<number>(initialTime); // Start at 1 minute (60 seconds)
@@ -19,6 +19,11 @@ export const useTimer = ({
   //   const inputRef = useRef<HTMLInputElement>(null);
 
   const timerStartTime = useRef<number>(Date.now());
+  // Store callback in ref to avoid stale closure issues
+  const onTimerCompleteRef = useRef(onTimerComplete);
+  useEffect(() => {
+    onTimerCompleteRef.current = onTimerComplete;
+  }, [onTimerComplete]);
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
@@ -44,8 +49,8 @@ export const useTimer = ({
         }, 1000 + diff);
       }
     } else if (isRunning && time === 0) {
-      // eslint-disable-next-line
-      onTimerComplete();
+      // Pass originalTime as parameter to avoid stale closure issues
+      void onTimerCompleteRef.current(originalTime);
       setIsRunning(false);
     }
 
@@ -57,7 +62,7 @@ export const useTimer = ({
       clearTimeout(initialDelayId);
       //   }
     };
-  }, [isRunning, time]);
+  }, [isRunning, time, originalTime]);
 
   const startEditing = () => {
     setIsEditing(true);

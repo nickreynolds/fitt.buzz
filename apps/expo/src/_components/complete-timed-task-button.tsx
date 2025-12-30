@@ -7,6 +7,7 @@ import { formatEditValueFromSeconds, parseEditValue } from "@acme/utils";
 import { useAudio } from "~/contexts/AudioContext";
 import { useTaskCompletion } from "~/hooks/useTaskCompletion";
 import { api } from "~/utils/api";
+import { CompletionTimerDialog } from "./completion-timer-dialog";
 import { TimerDialog } from "./timer-dialog";
 
 interface CompleteTimedTaskButtonProps {
@@ -31,9 +32,16 @@ export function CompleteTimedTaskButton({
     parentTaskId,
   });
 
+  const [showCompletionTimer, setShowCompletionTimer] = useState(false);
+
   const completeTask = api.task.completeTimedTask.useMutation({
     onMutate: async () => {
       await handleOptimisticUpdate({ time: parseEditValue(editValue) });
+    },
+    onSuccess: () => {
+      if (task?.timeDelayAfterCompletion && task.timeDelayAfterCompletion > 0) {
+        setShowCompletionTimer(true);
+      }
     },
     onSettled: handleSettled,
   });
@@ -119,6 +127,13 @@ export function CompleteTimedTaskButton({
         initialTime={parseEditValue(editValue)}
         onTimerComplete={handleTimerComplete}
       />
+      {task.timeDelayAfterCompletion && task.timeDelayAfterCompletion > 0 && (
+        <CompletionTimerDialog
+          open={showCompletionTimer}
+          onOpenChange={setShowCompletionTimer}
+          initialSeconds={task.timeDelayAfterCompletion}
+        />
+      )}
     </>
   );
 }

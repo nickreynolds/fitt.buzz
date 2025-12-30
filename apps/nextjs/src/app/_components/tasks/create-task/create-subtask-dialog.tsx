@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import { z } from "zod";
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -47,6 +47,8 @@ export function CreateSubtaskDialogForm({
     id: true,
     recurring: true,
     nextDue: true,
+  }).extend({
+    timeDelayAfterCompletion: z.number().min(0).optional(),
   });
   const [isSet, setIsSet] = useState(false);
   const [completionType, setCompletionType] = useState(
@@ -61,6 +63,7 @@ export function CreateSubtaskDialogForm({
       parentTaskId,
       completionDataType: TaskCompletionTypes.Boolean,
       isSet: false,
+      timeDelayAfterCompletion: 0,
     },
   });
 
@@ -103,6 +106,7 @@ export function CreateSubtaskDialogForm({
         numSets: data.isSet ? 1 : 0,
         numCompletedSets: 0,
         blocking: TaskBlockingTypes.NEVER_BLOCK,
+        timeDelayAfterCompletion: data.timeDelayAfterCompletion ?? 0,
       };
 
       utils.task.getTask.setData(
@@ -148,6 +152,7 @@ export function CreateSubtaskDialogForm({
       isSet,
       recurring: parentTask.recurring,
       nextDue: parentTask.nextDue,
+      timeDelayAfterCompletion: data.timeDelayAfterCompletion ?? 0,
     });
   }
 
@@ -234,6 +239,32 @@ export function CreateSubtaskDialogForm({
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="timeDelayAfterCompletion"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs text-muted-foreground">
+                    Timer delay after completion (seconds)
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="0"
+                      {...field}
+                      value={field.value}
+                      onChange={(e) =>
+                        field.onChange(parseInt(e.target.value) || 0)
+                      }
+                      className="h-8"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <Button type="submit">Create Task</Button>
           </form>
         </Form>

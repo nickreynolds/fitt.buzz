@@ -46,8 +46,9 @@ export function TimerDialog({
     onForcedProgressChange,
     resetTimer,
   } = useTimer({
-    onTimerComplete: () => {
-      onTimerComplete(originalTime);
+    onTimerComplete: (completedTime) => {
+      // originalTime is now passed as a parameter, avoiding stale closure issues
+      onTimerComplete(completedTime);
       resetTimer();
       onOpenChange(false);
     },

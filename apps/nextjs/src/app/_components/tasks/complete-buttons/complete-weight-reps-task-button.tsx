@@ -1,12 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 
 import { canBeCompleted } from "@acme/api-utils";
 import { Button } from "@acme/ui/button";
 
 import { useTaskCompletion } from "~/hooks/useTaskCompletion";
 import { api } from "~/trpc/react";
+import { CompletionTimerDialog } from "../../shared/completion-timer-dialog";
 import { NumericInputWithButtons } from "../../shared/numeric-input-with-buttons";
 
 interface CompleteWeightRepsTaskButtonProps {
@@ -20,6 +21,7 @@ export function CompleteWeightRepsTaskButton({
 }: CompleteWeightRepsTaskButtonProps) {
   const [weight, setWeight] = React.useState(0);
   const [reps, setReps] = React.useState(0);
+  const [showTimer, setShowTimer] = useState(false);
   const { handleOptimisticUpdate, handleSettled } = useTaskCompletion({
     taskId,
     parentTaskId,
@@ -59,6 +61,11 @@ export function CompleteWeightRepsTaskButton({
         reps,
       });
     },
+    onSuccess: () => {
+      if (task?.timeDelayAfterCompletion && task.timeDelayAfterCompletion > 0) {
+        setShowTimer(true);
+      }
+    },
     onSettled: handleSettled,
   });
 
@@ -67,35 +74,44 @@ export function CompleteWeightRepsTaskButton({
   }
 
   return (
-    <div className="flex flex-row">
-      {canBeCompleted(task, parentTask) && (
-        <>
-          <NumericInputWithButtons
-            value={weight}
-            onChange={setWeight}
-            increment={2.5}
-          />
-          <NumericInputWithButtons
-            value={reps}
-            onChange={setReps}
-            increment={1}
-          />
-          <Button
-            variant="primary"
-            onClick={() =>
-              completeTask.mutate({
-                id: taskId,
-                weight: weight,
-                reps: reps,
-                weightUnit: "lbs",
-              })
-            }
-            className="motion-preset-bounce flex items-center gap-2"
-          >
-            Complete
-          </Button>
-        </>
+    <>
+      <div className="flex flex-row">
+        {canBeCompleted(task, parentTask) && (
+          <>
+            <NumericInputWithButtons
+              value={weight}
+              onChange={setWeight}
+              increment={2.5}
+            />
+            <NumericInputWithButtons
+              value={reps}
+              onChange={setReps}
+              increment={1}
+            />
+            <Button
+              variant="primary"
+              onClick={() =>
+                completeTask.mutate({
+                  id: taskId,
+                  weight: weight,
+                  reps: reps,
+                  weightUnit: "lbs",
+                })
+              }
+              className="motion-preset-bounce flex items-center gap-2"
+            >
+              Complete
+            </Button>
+          </>
+        )}
+      </div>
+      {task.timeDelayAfterCompletion && task.timeDelayAfterCompletion > 0 && (
+        <CompletionTimerDialog
+          open={showTimer}
+          onOpenChange={setShowTimer}
+          initialSeconds={task.timeDelayAfterCompletion}
+        />
       )}
-    </div>
+    </>
   );
 }

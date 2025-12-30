@@ -19,23 +19,16 @@ export function TimerDialog({
   initialTime,
   onTimerComplete,
 }: TimerDialogProps) {
-  const {
-    time,
-    setTime,
-    originalTime,
-    setOriginalTime,
-    isRunning,
-    togglePause,
-    resetTimer,
-  } = useTimer({
-    onTimerComplete: async (completedTime) => {
-      // originalTime is now passed as a parameter, avoiding stale closure issues
-      await onTimerComplete(completedTime);
-      resetTimer();
-      onOpenChange(false);
-    },
-    initialTime,
-  });
+  const { time, setTime, setOriginalTime, isRunning, togglePause, resetTimer } =
+    useTimer({
+      onTimerComplete: async (completedTime) => {
+        // originalTime is now passed as a parameter, avoiding stale closure issues
+        await onTimerComplete(completedTime);
+        resetTimer();
+        onOpenChange(false);
+      },
+      initialTime,
+    });
 
   useKeepAwake();
 

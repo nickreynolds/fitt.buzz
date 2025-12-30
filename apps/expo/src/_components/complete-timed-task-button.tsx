@@ -127,7 +127,7 @@ export function CompleteTimedTaskButton({
         initialTime={parseEditValue(editValue)}
         onTimerComplete={handleTimerComplete}
       />
-      {task?.timeDelayAfterCompletion && task.timeDelayAfterCompletion > 0 && (
+      {task.timeDelayAfterCompletion && task.timeDelayAfterCompletion > 0 && (
         <CompletionTimerDialog
           open={showCompletionTimer}
           onOpenChange={setShowCompletionTimer}

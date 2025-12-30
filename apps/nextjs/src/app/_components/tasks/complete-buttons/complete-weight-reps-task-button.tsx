@@ -105,7 +105,7 @@ export function CompleteWeightRepsTaskButton({
           </>
         )}
       </div>
-      {task?.timeDelayAfterCompletion && task.timeDelayAfterCompletion > 0 && (
+      {task.timeDelayAfterCompletion && task.timeDelayAfterCompletion > 0 && (
         <CompletionTimerDialog
           open={showTimer}
           onOpenChange={setShowTimer}

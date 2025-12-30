@@ -253,7 +253,7 @@ export function CreateSubtaskDialogForm({
                       type="number"
                       min="0"
                       {...field}
-                      value={field.value ?? 0}
+                      value={field.value}
                       onChange={(e) =>
                         field.onChange(parseInt(e.target.value) || 0)
                       }
